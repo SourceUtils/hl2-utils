@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="timepath-hl2-scores" default="default" basedir=".">
-    <description>Builds, tests, and runs the project timepath-hl2-scores.</description>
+    <description>Builds, tests, and runs the project.</description>
     <import file="nbproject/build-impl.xml"/>
 </project>
