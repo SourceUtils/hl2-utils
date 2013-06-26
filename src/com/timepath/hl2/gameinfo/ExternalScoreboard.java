@@ -1,5 +1,6 @@
 package com.timepath.hl2.gameinfo;
 
+import com.timepath.hl2.ExternalConsole;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
