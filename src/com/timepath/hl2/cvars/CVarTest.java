@@ -43,7 +43,8 @@ public class CVarTest extends javax.swing.JFrame {
         sorter = new TableRowSorter<TableModel>(jTable1.getModel());
         Comparator<String> comparator = new Comparator<String>() {
             public int compare(String s1, String s2) {
-                return s1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
+                return s1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(
+                        s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
             }
         };
         sorter.setComparator(0, comparator);
@@ -81,7 +82,8 @@ public class CVarTest extends javax.swing.JFrame {
                 if(!caseSensitiveCheckBox.isSelected()) {
                     str = "(?i)" + str;
                 }
-                RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, new int[]{0, 1, 2, 3, 4, 5, 6});
+                RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, new int[] {0, 1, 2, 3,
+                                                                                         4, 5, 6});
                 sorter.setRowFilter(rf);
             } else {
                 sorter.setRowFilter(null);
@@ -261,7 +263,8 @@ public class CVarTest extends javax.swing.JFrame {
                 SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
                     @Override
                     protected Void doInBackground() throws Exception {
-                        Map<String, CVar> map = CVarList.analyzeList(f[0], new HashMap<String, CVar>());
+                        Map<String, CVar> map = CVarList.analyzeList(f[0],
+                                                                     new HashMap<String, CVar>());
                         DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
                         String[] columns = new String[p.getColumnCount()];
                         for(int i = 0; i < columns.length; i++) {
@@ -269,7 +272,10 @@ public class CVarTest extends javax.swing.JFrame {
                         }
                         for(Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
-                            this.publish(new Object[]{var.getName(), var.getValue(), var.getDefaultValue(), var.getMinimum(), var.getMaximum(), Arrays.toString(var.getTags().toArray(new String[0])), var.getDesc()});
+                            this.publish(new Object[] {var.getName(), var.getValue(),
+                                                       var.getDefaultValue(), var.getMinimum(),
+                                                       var.getMaximum(), Arrays.toString(
+                                var.getTags().toArray(new String[0])), var.getDesc()});
                         }
                         return null;
                     }

@@ -85,11 +85,13 @@ public class ExternalScoreboard extends ExternalConsole {
             weapon = "*" + weapon + "*";
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(killer.getName()).append(" = ").append(weapon).append(" -> ").append(victim.getName());
+        sb.append(killer.getName()).append(" = ").append(weapon).append(" -> ").append(
+                victim.getName());
         output.append(sb.toString() + "\n");
     }
 
     public static void main(String... args) {
         new ExternalScoreboard().setVisible(true);
     }
+
 }

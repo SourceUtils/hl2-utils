@@ -25,7 +25,8 @@ public class CVarList {
             RandomAccessFile rf = new RandomAccessFile(f.getPath(), "r");
             Scanner scanner = new Scanner(rf.getChannel());
             CVar c = null;
-            Pattern cvarlist = Pattern.compile("([\\S]*)[\\s]*:[\\s]*([\\S]*)[\\s]*:[^\\\"]*(.*)[\\s]*:[\\s]*(.*)");
+            Pattern cvarlist = Pattern.compile(
+                    "([\\S]*)[\\s]*:[\\s]*([\\S]*)[\\s]*:[^\\\"]*(.*)[\\s]*:[\\s]*(.*)");
             Pattern tag = Pattern.compile("\\\"([^\\\"]*)\\\"");
             Pattern kv = Pattern.compile("\\\"([^\"]*)\\\"[\\s]*=[\\s]*\\\"([^\"]*)\\\"[\\s]*(.*)");
             Pattern desc = Pattern.compile("^(?: - | )(.*)");
@@ -136,7 +137,7 @@ public class CVarList {
         public Object getDefaultValue() {
             return defaultValue;
         }
-        
+
         private Object minimum;
 
         public Object getMinimum() {
@@ -146,7 +147,7 @@ public class CVarList {
         public void setMinimum(Object minimum) {
             this.minimum = minimum;
         }
-        
+
         private Object maximum;
 
         public Object getMaximum() {
@@ -188,10 +189,12 @@ public class CVarList {
             sb.append(" : ").append(desc);
             return sb.toString();
         }
+
     }
 
     private static final Logger LOG = Logger.getLogger(CVarList.class.getName());
 
     private CVarList() {
     }
+
 }

@@ -205,4 +205,5 @@ public class Player {
     private boolean hasAlly(Player player) {
         return allies.contains(player);
     }
+
 }

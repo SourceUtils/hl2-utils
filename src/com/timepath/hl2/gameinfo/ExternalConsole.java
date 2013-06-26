@@ -122,7 +122,6 @@ public class ExternalConsole extends JFrame {
     }
 
 //    private int cursorPos;
-
     private int currentUpdateLine;
 
     public void update(File file) {
@@ -155,9 +154,9 @@ public class ExternalConsole extends JFrame {
             output.setCaretPosition(output.getDocument().getLength());
         }
     }
-    
+
     protected void parse(String str) {
-         output.append(str);
+        output.append(str);
     }
-    
+
 }
