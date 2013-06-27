@@ -7,10 +7,9 @@ import com.timepath.steam.io.BVDF;
 import com.timepath.steam.io.BVDF.DataNode;
 import com.timepath.steam.io.VDF;
 import com.timepath.steam.io.util.VDFNode;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -20,28 +19,33 @@ import java.util.Map;
  */
 public class GameLauncher {
 
-    public static void main(String[] args) throws Exception {        
+    public static void main(String[] args) throws IOException {
         File base = new File(SteamUtils.getSteamApps(), "common/Team Fortress 2");
         Map<OS, String> m = new EnumMap<OS, String>(OS.class);
         m.put(OS.Windows, "hl2.exe");
-        m.put(OS.OSX, "hl2_osx");
-        m.put(OS.Linux, "hl2_linux");
+//        m.put(OS.OSX, "hl2_osx");
+//        m.put(OS.Linux, "hl2_linux");
+        m.put(OS.OSX, "hl2.sh");
+        m.put(OS.Linux, "hl2.sh");
+
         File binary = new File(base, m.get(OS.get()));
-        String run = "-steam -game tf";
+        String[] run = "-game tf -steam".split(" ");
+        String[] userOpts = null;
 
         File f = new File(SteamUtils.getUserData(), "config/localconfig.vdf");
         VDF v = new VDF();
         v.readExternal(new FileInputStream(f));
-        VDFNode apps = v.getRoot().get("UserLocalConfigStore").get("Software").get("Valve").get(
+        VDFNode apps = v.getRoot().get("UserLocalConfigStore").get("Software").get(
+                "Valve").get(
                 "Steam").get("apps");
         int game = 440;
         VDFNode launch = apps.get("" + game).get("LaunchOptions");
-        String userOpts = null;
+
         if(launch == null) {
             System.out.println("No launch options");
         } else {
-            userOpts = launch.getValue();
-            System.out.println(userOpts);
+            userOpts = launch.getValue().split(" ");
+            System.out.println(Arrays.toString(userOpts));
         }
 
         //<editor-fold defaultstate="collapsed" desc="If valve change something">
@@ -74,12 +78,30 @@ public class GameLauncher {
         }
         //</editor-fold>
 
-        String cmd = binary.getPath() + " " + run + (userOpts != null ? " " + userOpts : "");
-        System.out.println("Starting " + cmd);
+        ArrayList<String> params = new ArrayList<String>();
+//        script -q /dev/null "cmd" // OSX
+//        script -c "cmd" /dev/null // Linux
+
+//        params.add("unbuffer");
+        
+        params.add("stdbuf");
+        params.add("-i0");
+        params.add("-o0");
+        params.add("-e0");
+
+        params.add(binary.getPath());
+        params.addAll(Arrays.asList(run));
+        if(userOpts != null) {
+            params.addAll(Arrays.asList(userOpts));
+        }
+        String[] cmd = params.toArray(new String[0]);
+        System.out.println("Starting " + Arrays.toString(cmd));
+
         Process proc = Runtime.getRuntime().exec(cmd, null, base);
         ExternalConsole ec = new ExternalConsole();
         ec.setVisible(true);
         ec.setIn(new BufferedInputStream(proc.getInputStream()));
+        ec.setErr(new BufferedInputStream(proc.getErrorStream()));
         ec.setOut(new BufferedOutputStream(proc.getOutputStream()));
     }
 

@@ -1,5 +1,6 @@
 package com.timepath.hl2;
 
+import com.sun.script.javascript.RhinoScriptEngine;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import essiembre.FileChangeListener;
 import essiembre.FileMonitor;
@@ -11,17 +12,21 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.script.*;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.text.DefaultCaret;
 
 /**
- *
+ * http://www.perkin.org.uk/posts/how-to-fix-stdio-buffering.html
+ * <p/>
  * @author timepath
  */
 @SuppressWarnings("serial")
@@ -35,22 +40,12 @@ public class ExternalConsole extends JFrame {
 
     private JScrollPane jsp;
 
-    private void attachLinux() {
-//        > gdb -p 'pidof hl2_linux'
-//        > (gdb) call creat("/tmp/tf2out", 0600)
-//        < $1 = 3
-//        > (gdb) call dup2(3, 1)
-//        < $2 = 1
-//        Or maybe
-//        strace -ewrite -p 'pidof hl2_linux'
-//        Another
-//        http://superuser.com/questions/473240/redirect-stdout-while-a-process-is-running-what-is-that-process-sending-to-d/535938#535938
-    }
-
     public ExternalConsole() {
         output = new JTextArea();
         output.setFont(new Font("Monospaced", Font.PLAIN, 15));
         output.setEnabled(false);
+        DefaultCaret caret = (DefaultCaret) output.getCaret();
+        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
 
         jsp = new JScrollPane(output);
         jsp.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -60,11 +55,11 @@ public class ExternalConsole extends JFrame {
         input.setEnabled(false);
         input.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(ps == null) {
+                if(pw == null) {
                     return;
                 }
-                ps.println(input.getText());
-                ps.flush();
+                pw.println(input.getText());
+                pw.flush();
                 input.setText("");
             }
         });
@@ -75,6 +70,8 @@ public class ExternalConsole extends JFrame {
         jmb.add(fileMenu);
         JMenuItem logFile = new JMenuItem("Open");
         fileMenu.add(logFile);
+        JMenuItem reload = new JMenuItem("Reload script");
+        fileMenu.add(reload);
         logFile.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent ae) {
                 try {
@@ -91,6 +88,13 @@ public class ExternalConsole extends JFrame {
             }
         });
 
+        reload.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                engine = initScriptEngine();
+            }
+        });
+        
         this.setTitle("External console");
 //        setAlwaysOnTop(true);
 //        setUndecorated(true);
@@ -147,24 +151,56 @@ public class ExternalConsole extends JFrame {
     private int currentUpdateLine;
 
     public void update(String str) {
+//        System.out.println(str);
         parse(str);
         appendOutput(str);
     }
 
-    public static void main(String... args) {
-        new ExternalConsole().setVisible(true);
-    }
-
     private void appendOutput(String str) {
         output.append(str + '\n');
-
-        JScrollBar vertical = jsp.getVerticalScrollBar();
-        if(vertical.getValue() == vertical.getMaximum()) {
-            output.setCaretPosition(output.getDocument().getLength());
-        }
     }
 
+    ScriptEngine engine = initScriptEngine();
+
+    private ScriptEngine initScriptEngine() {
+        ScriptEngineManager factory = new ScriptEngineManager();
+        ScriptEngine engine = factory.getEngineByName("JavaScript");
+        engine.getContext().setWriter(pw);
+        try {
+            engine.eval(new FileReader("extern.js"));
+        } catch(ScriptException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(FileNotFoundException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return engine;
+    }
+
+    private static final Pattern regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*");
+
     protected void parse(String str) {
+        if(str.startsWith(">>>")) {
+            str = str.substring(3);
+            System.out.println("Matching " + str);
+            Matcher m = regex.matcher(str);
+            if(!m.matches()) {
+                System.out.println("Doesn't match");
+                return;
+            }
+            String fn = m.group(1);
+            System.out.println(fn);
+            String[] args = m.group(2).split(",");
+            System.out.println(System.currentTimeMillis());
+            Invocable inv = (Invocable) engine;
+            try {
+                inv.invokeFunction(fn, (Object[]) args);
+            } catch(ScriptException ex) {
+                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+            } catch(NoSuchMethodException ex) {
+                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex.getMessage());
+            }
+            System.out.println(System.currentTimeMillis());
+        }
     }
 
     public void setIn(final InputStream s) {
@@ -177,18 +213,37 @@ public class ExternalConsole extends JFrame {
                     while((line = in.readLine()) != null) {
                         update(line);
                     }
+                    System.err.println("Stopped reading stdout");
                 } catch(IOException ex) {
                     Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
         }).start();
     }
-    
-    private PrintStream ps;
+
+    public void setErr(final InputStream s) {
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
+                    String line;
+                    while((line = in.readLine()) != null) {
+                        System.err.println(line);
+                    }
+                    System.err.println("Stopped reading stderr");
+                } catch(IOException ex) {
+                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
+    }
+
+    private PrintWriter pw;
 
     public void setOut(OutputStream s) {
         input.setEnabled(s != null);
-        ps = new PrintStream(s);
+        pw = new PrintWriter(s);
+        engine.getContext().setWriter(pw);
     }
 
 }
