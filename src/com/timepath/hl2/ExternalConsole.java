@@ -1,6 +1,5 @@
 package com.timepath.hl2;
 
-import com.sun.script.javascript.RhinoScriptEngine;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import essiembre.FileChangeListener;
 import essiembre.FileMonitor;
