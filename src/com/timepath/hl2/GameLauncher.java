@@ -24,6 +24,15 @@ import static com.timepath.plaf.OS.Windows;
 
 /**
  *
+ * Starts a game and relay server.
+ * 
+ * echo toggleconsole > /dev/tcp/localhost/12345
+ * 
+ * N=bottles of beer
+ * for I in $(seq 99 -1 1); do echo "echo $I $N on the wall, $I $N. Take 1 down, pass it around, `expr $I - 1` $N on the wall" > /dev/tcp/localhost/12345; sleep 1; done
+ * 
+ * for I in $(seq 40 -1 0); do echo "say_team Uber in $I seconds" > /dev/tcp/localhost/12345; sleep 1; done
+ * <p/>
  * @author timepath
  */
 public class GameLauncher {
@@ -168,6 +177,7 @@ public class GameLauncher {
             try {
                 final Socket client = sock.accept();
 
+                // TODO: One main thread
                 new Thread(new Proxy(proc.getInputStream(), client.getOutputStream(),
                                      "game > client")).start();
                 new Thread(new Proxy(client.getInputStream(), proc.getOutputStream(),

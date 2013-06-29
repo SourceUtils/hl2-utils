@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -38,7 +39,7 @@ public class ExternalConsole extends JFrame {
     public static String exec(String cmd, String breakline) {
         StringBuilder sb = new StringBuilder();
         try {
-            
+
             Socket sock = new Socket(InetAddress.getByName(null), 12345);
             PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
@@ -110,12 +111,11 @@ public class ExternalConsole extends JFrame {
         });
 
         reload.addActionListener(new ActionListener() {
-
             public void actionPerformed(ActionEvent e) {
                 engine = initScriptEngine();
             }
         });
-        
+
         this.setTitle("External console");
 //        setAlwaysOnTop(true);
 //        setUndecorated(true);
@@ -186,6 +186,8 @@ public class ExternalConsole extends JFrame {
     private ScriptEngine initScriptEngine() {
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine engine = factory.getEngineByName("JavaScript");
+//        Bindings bindings = engine.createBindings();
+//        bindings.put("loadTime", new Date());
         engine.getContext().setWriter(pw);
         try {
             engine.eval(new FileReader("extern.js"));
@@ -218,7 +220,7 @@ public class ExternalConsole extends JFrame {
             } catch(ScriptException ex) {
                 Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
             } catch(NoSuchMethodException ex) {
-                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex.getMessage());
+                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
             }
             System.out.println(System.currentTimeMillis());
         }
@@ -266,13 +268,13 @@ public class ExternalConsole extends JFrame {
         pw = new PrintWriter(s, true);
         engine.getContext().setWriter(pw);
     }
-    
+
     public void connect(int port) throws IOException {
         Socket sock = new Socket(InetAddress.getByName(null), port);
         setIn(sock.getInputStream());
         setOut(sock.getOutputStream());
     }
-    
+
     public static void main(String... args) throws Exception {
         ExternalConsole ec = new ExternalConsole();
         ec.connect(12345);
