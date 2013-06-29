@@ -25,13 +25,15 @@ import static com.timepath.plaf.OS.Windows;
 /**
  *
  * Starts a game and relay server.
- * 
+ * <p/>
  * echo toggleconsole > /dev/tcp/localhost/12345
- * 
+ * <p/>
  * N=bottles of beer
- * for I in $(seq 99 -1 1); do echo "echo $I $N on the wall, $I $N. Take 1 down, pass it around, `expr $I - 1` $N on the wall" > /dev/tcp/localhost/12345; sleep 1; done
- * 
- * for I in $(seq 40 -1 0); do echo "say_team Uber in $I seconds" > /dev/tcp/localhost/12345; sleep 1; done
+ * for I in $(seq 99 -1 1); do echo "echo $I $N on the wall, $I $N. Take 1 down, pass it around,
+ * `expr $I - 1` $N on the wall" > /dev/tcp/localhost/12345; sleep 1; done
+ * <p/>
+ * for I in $(seq 40 -1 0); do echo "say_team Uber in $I seconds" > /dev/tcp/localhost/12345; sleep
+ * 1; done
  * <p/>
  * @author timepath
  */
@@ -57,6 +59,12 @@ public class GameLauncher {
             executable = new File(base, m.get(OS.get()));
             //</editor-fold>
         }
+
+        JFrame frame = new JFrame("Game Launcher");
+
+        frame.setUndecorated(true);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
 
         JPanel p = new JPanel();
         final JTextField executableField = new JTextField();
@@ -87,10 +95,16 @@ public class GameLauncher {
         p.add(argsField, BorderLayout.SOUTH);
 
         String[] opts = new String[] {"Launch", "Auto", "Cancel"};
-        int ret = JOptionPane.showOptionDialog(null, p, "Game Launcher",
+        int ret = JOptionPane.showOptionDialog(frame, p, "Game Launcher",
                                                JOptionPane.DEFAULT_OPTION,
                                                JOptionPane.PLAIN_MESSAGE, null,
                                                opts, opts[0]);
+        
+        frame.dispose();
+
+        if(ret < 0) {
+            return;
+        }
 
         if(ret == 2) {
             return;
