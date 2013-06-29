@@ -9,6 +9,8 @@ import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -32,6 +34,27 @@ import javax.swing.text.DefaultCaret;
 public class ExternalConsole extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(ExternalConsole.class.getName());
+
+    public static String exec(String cmd, String breakline) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            
+            Socket sock = new Socket(InetAddress.getByName(null), 12345);
+            PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            pw.println(cmd);
+            String line;
+            while((line = in.readLine()) != null) {
+                sb.append(line).append("\n");
+                if(line.contains(breakline)) {
+                    break;
+                }
+            }
+        } catch(IOException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return sb.toString();
+    }
 
     protected JTextArea output;
 
@@ -58,7 +81,6 @@ public class ExternalConsole extends JFrame {
                     return;
                 }
                 pw.println(input.getText());
-                pw.flush();
                 input.setText("");
             }
         });
@@ -241,8 +263,20 @@ public class ExternalConsole extends JFrame {
 
     public void setOut(OutputStream s) {
         input.setEnabled(s != null);
-        pw = new PrintWriter(s);
+        pw = new PrintWriter(s, true);
         engine.getContext().setWriter(pw);
+    }
+    
+    public void connect(int port) throws IOException {
+        Socket sock = new Socket(InetAddress.getByName(null), port);
+        setIn(sock.getInputStream());
+        setOut(sock.getOutputStream());
+    }
+    
+    public static void main(String... args) throws Exception {
+        ExternalConsole ec = new ExternalConsole();
+        ec.connect(12345);
+        ec.setVisible(true);
     }
 
 }

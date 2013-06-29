@@ -1,7 +1,7 @@
 package com.timepath.hl2.cvars;
 
 import com.timepath.backports.javax.swing.SwingWorker;
-import com.timepath.hl2.cvars.CVarList;
+import com.timepath.hl2.ExternalConsole;
 import com.timepath.hl2.cvars.CVarList.CVar;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import java.awt.Color;
@@ -9,12 +9,8 @@ import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.RandomAccessFile;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,6 +19,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SortOrder;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -84,6 +81,9 @@ public class CVarTest extends javax.swing.JFrame {
                 }
                 RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, new int[] {0, 1, 2, 3,
                                                                                          4, 5, 6});
+                if(notCheckBox.isSelected()) {
+                    rf = RowFilter.notFilter(rf);
+                }
                 sorter.setRowFilter(rf);
             } else {
                 sorter.setRowFilter(null);
@@ -120,9 +120,11 @@ public class CVarTest extends javax.swing.JFrame {
         jLabel3 = new javax.swing.JLabel();
         regexCheckBox = new javax.swing.JCheckBox();
         caseSensitiveCheckBox = new javax.swing.JCheckBox();
+        notCheckBox = new javax.swing.JCheckBox();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -173,6 +175,14 @@ public class CVarTest extends javax.swing.JFrame {
             }
         });
 
+        notCheckBox.setMnemonic('M');
+        notCheckBox.setText("Not");
+        notCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                notCheckBoxActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -183,10 +193,11 @@ public class CVarTest extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jTextField1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(notCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(caseSensitiveCheckBox)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(regexCheckBox)
-                .addContainerGap())
+                .addComponent(regexCheckBox))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -196,7 +207,8 @@ public class CVarTest extends javax.swing.JFrame {
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3)
                     .addComponent(regexCheckBox)
-                    .addComponent(caseSensitiveCheckBox))
+                    .addComponent(caseSensitiveCheckBox)
+                    .addComponent(notCheckBox))
                 .addGap(0, 0, 0))
         );
 
@@ -210,6 +222,14 @@ public class CVarTest extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem1);
+
+        jMenuItem4.setText("Connect");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem4);
 
         jMenuBar1.add(jMenu1);
 
@@ -240,7 +260,7 @@ public class CVarTest extends javax.swing.JFrame {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(statusBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 908, Short.MAX_VALUE)
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
@@ -248,13 +268,24 @@ public class CVarTest extends javax.swing.JFrame {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE)
                 .addGap(0, 0, 0)
                 .addComponent(statusBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private Map<String, CVar> analyze(Scanner scanner) {
+        Map<String, CVar> map = CVarList.analyzeList(scanner,
+                                                     new HashMap<String, CVar>());
+        DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
+        String[] columns = new String[p.getColumnCount()];
+        for(int i = 0; i < columns.length; i++) {
+            columns[i] = p.getColumnName(i);
+        }
+        return map;
+    }
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         try {
@@ -263,13 +294,9 @@ public class CVarTest extends javax.swing.JFrame {
                 SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
                     @Override
                     protected Void doInBackground() throws Exception {
-                        Map<String, CVar> map = CVarList.analyzeList(f[0],
-                                                                     new HashMap<String, CVar>());
-                        DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
-                        String[] columns = new String[p.getColumnCount()];
-                        for(int i = 0; i < columns.length; i++) {
-                            columns[i] = p.getColumnName(i);
-                        }
+                        RandomAccessFile rf = new RandomAccessFile(f[0].getPath(), "r");
+                        Scanner scanner = new Scanner(rf.getChannel());
+                        Map<String, CVar> map = analyze(scanner);
                         for(Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
                             this.publish(new Object[] {var.getName(), var.getValue(),
@@ -356,15 +383,29 @@ public class CVarTest extends javax.swing.JFrame {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        String ret = ExternalConsole.exec("cvarlist", "total convars/concommands");
+        Map<String, CVar> map = analyze(new Scanner(ret));
+        for(Entry<String, CVar> entry : map.entrySet()) {
+            CVar var = entry.getValue();
+            Object[] chunks = new Object[] {var.getName(), var.getValue(),
+                                            var.getDefaultValue(), var.getMinimum(),
+                                            var.getMaximum(), Arrays.toString(
+                var.getTags().toArray(new String[0])), var.getDesc()};
+            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+        }
+        filter();
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void notCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notCheckBoxActionPerformed
+        filter();
+    }//GEN-LAST:event_notCheckBoxActionPerformed
+
     /**
      * @param args the command line arguments
      */
     public static void main(String... args) {
-
-        /*
-         * Create and display the form
-         */
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 new CVarTest().setVisible(true);
             }
@@ -383,11 +424,13 @@ public class CVarTest extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
+    private javax.swing.JCheckBox notCheckBox;
     private javax.swing.JCheckBox regexCheckBox;
     private com.timepath.swing.StatusBar statusBar1;
     // End of variables declaration//GEN-END:variables

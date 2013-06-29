@@ -1,6 +1,7 @@
 package com.timepath.hl2.gameinfo;
 
 import com.timepath.hl2.ExternalConsole;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Logger;
 
@@ -91,8 +92,10 @@ public class ExternalScoreboard extends ExternalConsole {
         output.append(sb.toString() + "\n");
     }
 
-    public static void main(String... args) {
-        new ExternalScoreboard().setVisible(true);
+    public static void main(String... args) throws IOException {
+        ExternalScoreboard es = new ExternalScoreboard();
+        es.connect(12345);
+        es.setVisible(true);
     }
 
 }
