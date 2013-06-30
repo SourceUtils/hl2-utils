@@ -44,11 +44,13 @@ public class ExternalConsole extends JFrame {
             PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             pw.println(cmd);
-            String line;
-            while((line = in.readLine()) != null) {
-                sb.append(line).append("\n");
-                if(line.contains(breakline)) {
-                    break;
+            if(breakline != null) {
+                String line;
+                while((line = in.readLine()) != null) {
+                    sb.append(line).append("\n");
+                    if(line.contains(breakline)) {
+                        break;
+                    }
                 }
             }
         } catch(IOException ex) {
