@@ -1,6 +1,7 @@
 package com.timepath.hl2;
 
 import com.timepath.DataUtils;
+import com.timepath.io.AggregateOutputStream;
 import com.timepath.plaf.OS;
 import com.timepath.steam.SteamUtils;
 import com.timepath.steam.io.BVDF;
@@ -186,17 +187,17 @@ public class GameLauncher {
         int truePort = sock.getLocalPort();
 
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
+        
+        AggregateOutputStream aggregate = new AggregateOutputStream();
+        
+        new Thread(new Proxy(proc.getInputStream(), aggregate, "game > clients")).start();
 
         while(!sock.isClosed()) {
             try {
                 final Socket client = sock.accept();
-
-                // TODO: One main thread
-                new Thread(new Proxy(proc.getInputStream(), client.getOutputStream(),
-                                     "game > client")).start();
+                aggregate.register(client.getOutputStream());
                 new Thread(new Proxy(client.getInputStream(), proc.getOutputStream(),
                                      "client > game")).start();
-
             } catch(Exception ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
