@@ -100,7 +100,7 @@ public class GameLauncher {
                                                JOptionPane.DEFAULT_OPTION,
                                                JOptionPane.PLAIN_MESSAGE, null,
                                                opts, opts[0]);
-        
+
         frame.dispose();
 
         if(ret < 0) {
@@ -117,7 +117,7 @@ public class GameLauncher {
             DataNode gm = root.get("" + game);
             DataNode sections = gm.get("Sections");
             DataNode conf = sections.get("CONFIG");
-            DataNode g2 = conf.get("config");
+            DataNode g2 = conf.get("" + game);
             int type = Integer.parseInt(g2.get("contenttype").value.toString());
             String installdir = g2.get("installdir").value.toString();
             File dir = new File(SteamUtils.getSteamApps(), "common/" + installdir);
@@ -187,9 +187,9 @@ public class GameLauncher {
         int truePort = sock.getLocalPort();
 
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
-        
+
         AggregateOutputStream aggregate = new AggregateOutputStream();
-        
+
         new Thread(new Proxy(proc.getInputStream(), aggregate, "game > clients")).start();
 
         while(!sock.isClosed()) {
