@@ -189,15 +189,22 @@ public class GameLauncher {
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
 
         AggregateOutputStream aggregate = new AggregateOutputStream();
+        Thread thread = new Thread(new Proxy(proc.getInputStream(), aggregate, "game > clients") {
 
-        new Thread(new Proxy(proc.getInputStream(), aggregate, "game > clients")).start();
-
+            @Override
+            public void run() {
+                super.run();
+                System.exit(0);
+            }
+        });
+        thread.start();
         while(!sock.isClosed()) {
             try {
                 final Socket client = sock.accept();
                 aggregate.register(client.getOutputStream());
                 new Thread(new Proxy(client.getInputStream(), proc.getOutputStream(),
                                      "client > game")).start();
+            } catch(java.net.SocketTimeoutException ex) {
             } catch(Exception ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }

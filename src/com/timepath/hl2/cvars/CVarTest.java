@@ -125,7 +125,9 @@ public class CVarTest extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
+        jMenuItem7 = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -224,7 +226,7 @@ public class CVarTest extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
 
-        jMenuItem4.setText("Connect");
+        jMenuItem4.setText("Get cvarlist");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem4ActionPerformed(evt);
@@ -232,13 +234,29 @@ public class CVarTest extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem4);
 
-        jMenuItem5.setText("Reset");
+        jMenuItem6.setText("Get differences");
+        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem6ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem6);
+
+        jMenuItem5.setText("Reset cvars");
         jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem5ActionPerformed(evt);
             }
         });
         jMenu1.add(jMenuItem5);
+
+        jMenuItem7.setText("Clear");
+        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem7ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem7);
 
         jMenuBar1.add(jMenu1);
 
@@ -393,7 +411,25 @@ public class CVarTest extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        String ret = ExternalConsole.exec("cvarlist", "total convars/concommands");
+        clear();
+        String ret = null;
+        int limit = 5;
+        for(int i = 0;;i++) {
+            String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--",
+                                               "--end of cvarlist--");
+            if(temp.equals(ret)) {
+                break;
+            }
+            if(i == limit) {
+                LOG.warning("Aborting inconsistency fixer");
+                break;
+            }
+            ret = temp;
+        }
+
+        StringSelection selection = new StringSelection(ret);
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+
         Map<String, CVar> map = analyze(new Scanner(ret));
         for(Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
@@ -411,6 +447,8 @@ public class CVarTest extends javax.swing.JFrame {
     }//GEN-LAST:event_notCheckBoxActionPerformed
 
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        StringBuilder sb = new StringBuilder();
+        sb.append("sv_cheats 1\n");
         ExternalConsole.exec("sv_cheats 1", null);
         TableModel m = jTable1.getModel();
         int row, rows = m.getRowCount();
@@ -418,13 +456,51 @@ public class CVarTest extends javax.swing.JFrame {
             row = jTable1.convertRowIndexToModel(i);
             int j = 2;
             Object name = m.getValueAt(row, jTable1.convertColumnIndexToModel(0));
+            if(name.toString().equals("sv_cheats")) {
+                continue;
+            }
             Object val = m.getValueAt(row, jTable1.convertColumnIndexToModel(2));
             if(val != null) {
-                ExternalConsole.exec(name.toString() + " " + val.toString(), null);
+                String strVal = "\"" + val.toString() + "\"";
+                sb.append(name.toString()).append(" ").append(strVal).append("\n");
+                ExternalConsole.exec(name.toString() + " " + strVal, null);
             }
         }
+        sb.append("sv_cheats 0\n");
         ExternalConsole.exec("sv_cheats 0", null);
+
+        StringSelection selection = new StringSelection(sb.toString());
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }//GEN-LAST:event_jMenuItem5ActionPerformed
+
+    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+        clear();
+        String ret = ExternalConsole.exec("differences; echo --end of differences--",
+                                          "--end of differences--");
+        Map<String, CVar> map = analyze(new Scanner(ret));
+        for(Entry<String, CVar> entry : map.entrySet()) {
+            CVar var = entry.getValue();
+            Object[] chunks = new Object[] {var.getName(), var.getValue(),
+                                            var.getDefaultValue(), var.getMinimum(),
+                                            var.getMaximum(), Arrays.toString(
+                var.getTags().toArray(new String[0])), var.getDesc()};
+            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+        }
+        filter();
+    }//GEN-LAST:event_jMenuItem6ActionPerformed
+
+    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+        clear();
+    }//GEN-LAST:event_jMenuItem7ActionPerformed
+
+    private void clear() {
+        DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
+        int rowCount = dm.getRowCount();
+        for(int i = 0; i < rowCount; i++) {
+            dm.removeRow(0);
+        }
+        filter();
+    }
 
     /**
      * @param args the command line arguments
@@ -451,6 +527,8 @@ public class CVarTest extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JToolBar.Separator jSeparator1;

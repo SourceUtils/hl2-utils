@@ -11,7 +11,6 @@ import java.awt.event.ActionListener;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -53,6 +52,7 @@ public class ExternalConsole extends JFrame {
                     }
                 }
             }
+            sock.close();
         } catch(IOException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
