@@ -1,5 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="timepath-hl2-scores" default="default" basedir=".">
+<project name="hl2_utils" default="default" basedir=".">
     <description>Builds, tests, and runs the project.</description>
     <import file="nbproject/build-impl.xml"/>
+    
+    <property name="store.dir" value="${user.home}/Dropbox/Public/bin"/>
+    <property name="compression" value="9"/>
+    <!--Set to enable packing-->
+    <!--<property name="pack" value="true"/>-->
+    
+    <property name="store.jar" value="${store.dir}/${ant.project.name}.jar"/>
+    
+    <script language="javascript">
+        <![CDATA[property = project.setProperty("now", Math.floor((new Date()).getTime() / 1000));]]>
+    </script>
+	
+    <target name="-post-jar"> 
+        <!--Ensure exists-->
+        <mkdir dir="${store.dir}"/>
+        
+        <echo message="Packing ${store.jar} with ${basedir}${file.separator}${dist.jar}"/>
+        <jar destfile="${store.jar}" level="${compression}" filesetmanifest="merge" update="false">
+            <zipfileset src="${dist.jar}"/>
+            <manifest>
+                <attribute name="Implementation-Version" value="${now}"/>
+                <attribute name="Main-Class" value="${main.class}"/>
+                <attribute name="Class-Path" value=""/>
+            </manifest>
+        </jar>
+        
+        <antcall target="mergelibs"/>
+        
+        <chmod file="${store.jar}" perm="755"/>
+        <checksum file="${store.jar}" forceOverwrite="yes"/>
+        <echo file="${store.jar}.current" message="${now}" append="false"/>
+    </target>
+    
+    <target name="mergelibs" if="pack">
+        <echo message="Merging libs..."/>
+        <!--Ensure exists-->
+        <mkdir dir="dist/lib"/>
+        <jar destfile="${store.jar}" level="${compression}" filesetmanifest="skip" update="true">
+            <zipgroupfileset dir="dist/lib" includes="*.jar"/>
+        </jar>
+    </target>
 </project>
