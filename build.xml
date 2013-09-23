@@ -3,7 +3,7 @@
     <description>Builds, tests, and runs the project.</description>
     <import file="nbproject/build-impl.xml"/>
     
-    <property name="store.dir" value="${user.home}/Dropbox/Public/bin"/>
+    <property name="store.dir" value="${user.home}/Dropbox/Public/bin/java"/>
     <property name="compression" value="9"/>
     <!--Set to enable packing-->
     <!--<property name="pack" value="true"/>-->
