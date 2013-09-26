@@ -5,9 +5,8 @@ import com.timepath.hl2.io.VCCD.CaptionEntry;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import com.timepath.steam.SteamUtils;
-import com.timepath.steam.io.storage.GCF;
 import com.timepath.steam.io.VDF;
+import com.timepath.steam.io.storage.ACF;
 import com.timepath.steam.io.storage.util.DirectoryEntry;
 import com.timepath.swing.TreeUtils;
 import java.awt.Color;
@@ -272,7 +271,7 @@ public class VCCDTest extends javax.swing.JFrame {
             try {
                 entries = VCCD.load(new FileInputStream(files[0]));
             } catch(FileNotFoundException ex) {
-                Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
                 return;
             }
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
@@ -287,7 +286,7 @@ public class VCCDTest extends javax.swing.JFrame {
             }
             saveFile = files[0];
         } catch(IOException ex) {
-            Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_loadCaptions
     private File saveFile;
@@ -308,7 +307,7 @@ public class VCCDTest extends javax.swing.JFrame {
                 }
                 saveFile = fs[0];
             } catch(IOException ex) {
-                Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+                LOG.log(Level.SEVERE, null, ex);
                 return;
             }
         }
@@ -367,7 +366,7 @@ public class VCCDTest extends javax.swing.JFrame {
             }
             persistHashmap(hashmap);
         } catch(IOException ex) {
-            Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_importCaptions
 
@@ -523,11 +522,8 @@ public class VCCDTest extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     // End of variables declaration//GEN-END:variables
 
-    private static Preferences prefs = Preferences.userRoot().node("tf2-hud-editor").node("captions");
+    private static Preferences prefs = Preferences.userRoot().node("timepath").node("hl2-caption-editor");
 
-    /**
-     * Creates new form CaptionLoaderFrame
-     */
     public VCCDTest() {
         try {
             String[] children = prefs.keys();
@@ -539,7 +535,7 @@ public class VCCDTest extends javax.swing.JFrame {
                 }
             }
         } catch(BackingStoreException ex) {
-            Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
 
         initComponents();
@@ -738,9 +734,6 @@ public class VCCDTest extends javax.swing.JFrame {
                 for(CaptionEntry i : in) { // learning
                     Object crc = i.getKey();
                     String token = i.getTrueKey();
-//                    if(token != null && !token.toString().isEmpty()) {
-//                        crc = hexFormat(VCCD.takeCRC32(token));
-//                    }
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
                     hashmap.put((int) hash, token);
                 }
@@ -749,7 +742,7 @@ public class VCCDTest extends javax.swing.JFrame {
                 return;
             }
         } catch(FileNotFoundException ex) {
-            Logger.getLogger(VCCDTest.class.getName()).log(Level.SEVERE, null, ex);
+            LOG.log(Level.SEVERE, null, ex);
         }
 
         java.awt.EventQueue.invokeLater(
@@ -779,30 +772,26 @@ public class VCCDTest extends javax.swing.JFrame {
                 HashMap<Integer, String> map = new HashMap<Integer, String>();
                 LOG.info("Generating hash codes ...");
                 try {
-                    File f = new File(SteamUtils.getSteamApps(), "Team Fortress 2 Content.gcf");
-                    if(f.exists()) {
-                        GCF gcf = new GCF(f);
+                    ACF a = ACF.fromManifest(440);
+                    CRC32 crc = new CRC32();
+                    DefaultMutableTreeNode top = new DefaultMutableTreeNode();
+                    ArrayList<DirectoryEntry> caps = a.find("game_sounds", a.getRoot());//_vo");
+                    pb.setMaximum(caps.size());
+                    pb.setIndeterminate(false);
+                    for(int i = 0; i < caps.size(); i++) {
+                        VDF e = new VDF();
+                        e.readExternal(caps.get(i).asStream());
+                        TreeUtils.moveChildren(e.getRoot(), top);
+                        pb.setValue(i);
+                    }
 
-                        CRC32 crc = new CRC32();
-                        DefaultMutableTreeNode top = new DefaultMutableTreeNode();
-                        ArrayList<DirectoryEntry> caps = gcf.find("game_sounds", gcf.getRoot());//_vo");
-                        pb.setMaximum(caps.size());
-                        pb.setIndeterminate(false);
-                        for(int i = 0; i < caps.size(); i++) {
-                            VDF e = new VDF();
-                            e.readExternal(caps.get(i).asStream());
-                            TreeUtils.moveChildren(e.getRoot(), top);
-                            pb.setValue(i);
-                        }
-
-                        for(int i = 0; i < top.getChildCount(); i++) {
-                            String str = top.getChildAt(i).toString();
-                            str = str.replaceAll("\"", "").toLowerCase();
-                            LOG.log(Level.FINER, str);
-                            crc.update(str.getBytes());
-                            map.put((int) crc.getValue(), str);
-                            crc.reset();
-                        }
+                    for(int i = 0; i < top.getChildCount(); i++) {
+                        String str = top.getChildAt(i).toString();
+                        str = str.replaceAll("\"", "").toLowerCase();
+                        LOG.log(Level.FINER, str);
+                        crc.update(str.getBytes());
+                        map.put((int) crc.getValue(), str);
+                        crc.reset();
                     }
                 } catch(IOException ex) {
                     LOG.log(Level.WARNING, "Error generating hash codes", ex);

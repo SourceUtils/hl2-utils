@@ -80,8 +80,6 @@ public class VBFTest extends javax.swing.JFrame {
     public VBFTest() {
         initComponents();
 
-        this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
