@@ -1,8 +1,5 @@
 package com.timepath.hl2;
 
-import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import essiembre.FileChangeListener;
-import essiembre.FileMonitor;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -92,25 +89,8 @@ public class ExternalConsole extends JFrame {
         this.setJMenuBar(jmb);
         JMenu fileMenu = new JMenu("File");
         jmb.add(fileMenu);
-        JMenuItem logFile = new JMenuItem("Open");
-        fileMenu.add(logFile);
         JMenuItem reload = new JMenuItem("Reload script");
         fileMenu.add(reload);
-        logFile.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent ae) {
-                try {
-                    File[] log = new NativeFileChooser().setTitle("Select logfile").choose();
-                    if(log == null) {
-                        return;
-                    }
-                    watch(log[0]);
-                    output.setText("");
-                } catch(IOException ex) {
-                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-            }
-        });
 
         reload.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -131,50 +111,7 @@ public class ExternalConsole extends JFrame {
         this.pack();
     }
 
-    private File log;
-
-    private FileChangeListener fcl = new FileChangeListener() {
-        public void fileChanged(File file) {
-            try {
-                RandomAccessFile rf = new RandomAccessFile(file, "r");
-                for(int i = 0; i < currentUpdateLine; i++) {
-                    rf.readLine();
-                }
-                StringBuilder sb = new StringBuilder();
-                String str;
-                while((str = rf.readLine()) != null) {
-                    sb.append(str).append("\n");
-                    currentUpdateLine++;
-                }
-                update(sb.toString());
-            } catch(IOException ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-    };
-
-    public void watch(File f) {
-        output.setEnabled(f != null);
-        FileMonitor.getInstance().removeFileChangeListener(fcl, f);
-        log = f;
-        try {
-            FileMonitor.getInstance().addFileChangeListener(fcl, log, 500);
-//            FTPWatcher.getInstance().addFileChangeListener(new FTPUpdateListener() {
-//                public void fileChanged(String newLines) {
-//                    appendOutput(newLines.substring(cursorPos));
-//                    cursorPos = newLines.length();
-//                }
-//            });
-        } catch(FileNotFoundException ex) {
-            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
-//    private int cursorPos;
-    private int currentUpdateLine;
-
     public void update(String str) {
-//        System.out.println(str);
         parse(str);
         appendOutput(str);
     }
