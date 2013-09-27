@@ -1,6 +1,6 @@
 package com.timepath.hl2.cvars;
 
-import com.timepath.backports.javax.swing.SwingWorker;
+import javax.swing.SwingWorker;
 import com.timepath.hl2.ExternalConsole;
 import com.timepath.hl2.cvars.CVarList.CVar;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;

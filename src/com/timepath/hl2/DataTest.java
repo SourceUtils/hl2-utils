@@ -1,7 +1,7 @@
 package com.timepath.hl2;
 
 import com.timepath.DataUtils;
-import com.timepath.backports.javax.swing.SwingWorker;
+import javax.swing.SwingWorker;
 import com.timepath.hl2.io.util.Element;
 import com.timepath.plaf.OS;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
