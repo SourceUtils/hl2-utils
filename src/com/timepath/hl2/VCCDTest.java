@@ -9,43 +9,23 @@ import com.timepath.steam.io.VDF;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.steam.io.storage.util.DirectoryEntry;
 import com.timepath.swing.TreeUtils;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.Toolkit;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import com.timepath.ui.swing.StringAutoCompleter;
+import com.timepath.utils.Trie;
+import java.awt.*;
+import java.io.*;
+import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.zip.CRC32;
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
-import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 /**
@@ -56,6 +36,164 @@ import javax.swing.tree.DefaultMutableTreeNode;
  */
 @SuppressWarnings("serial")
 public class VCCDTest extends javax.swing.JFrame {
+    
+    private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
+
+    private static Preferences prefs = Preferences.userRoot()
+            .node("timepath").node("hl2-caption-editor");
+
+    public VCCDTest() {
+        try {
+            String[] children = prefs.keys();
+            for(int i = 0; i < children.length; i++) {
+                int hash = prefs.getInt(children[i], -1);
+                LOG.log(Level.FINER, "{0} = {1}", new Object[] {children[i], hash});
+                if(hash != -1) {
+                    hashmap.put(hash, children[i]);
+                    trie.add(children[i]);
+                }
+            }
+        } catch(BackingStoreException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+
+        initComponents();
+
+        jTextField3.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+                updateCRC();
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                updateCRC();
+            }
+
+            public void insertUpdate(DocumentEvent e) {
+                updateCRC();
+            }
+
+            public void updateCRC() {
+                jTextField4.setText(hexFormat(VCCD.takeCRC32(jTextField3.getText())));
+            }
+        });
+    }
+    
+    private HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
+    
+    private Trie trie = new Trie();
+
+    private TableCellEditor getKeyEditor() {
+        JTextField t = new JTextField();
+        new StringAutoCompleter(t, trie, 2);
+        return new DefaultCellEditor(t);
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) throws IOException {
+        try {
+            if(args.length > 0) {
+                ArrayList<CaptionEntry> in = VCCD.importFile(args[0]);
+                HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
+                for(CaptionEntry i : in) { // learning
+                    Object crc = i.getKey();
+                    String token = i.getTrueKey();
+                    long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
+                    hashmap.put((int) hash, token);
+                }
+                persistHashmap(hashmap);
+                VCCD.save(in, new FileOutputStream("closecaption_english.dat"));
+                return;
+            }
+        } catch(FileNotFoundException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+
+        java.awt.EventQueue.invokeLater(
+                new Runnable() {
+            public void run() {
+                VCCDTest c = new VCCDTest();
+                c.setLocationRelativeTo(null);
+                c.setVisible(true);
+            }
+        });
+    }
+    //<editor-fold defaultstate="collapsed" desc="Hash codes">
+
+    private void generateHash() {
+        new Thread(new Runnable() {
+            public void run() {
+                final JFrame frame = new JFrame("Generating hash codes...");
+                JProgressBar pb = new JProgressBar();
+                pb.setIndeterminate(true);
+                frame.add(pb);
+                frame.setMinimumSize(new Dimension(300, 50));
+                frame.setLocationRelativeTo(null);
+                frame.setVisible(true);
+
+                HashMap<Integer, String> map = new HashMap<Integer, String>();
+                LOG.info("Generating hash codes ...");
+                try {
+                    ACF a = ACF.fromManifest(440);
+                    CRC32 crc = new CRC32();
+                    DefaultMutableTreeNode top = new DefaultMutableTreeNode();
+                    ArrayList<DirectoryEntry> caps = a.find("game_sounds", a.getRoot());//_vo");
+                    pb.setMaximum(caps.size());
+                    pb.setIndeterminate(false);
+                    for(int i = 0; i < caps.size(); i++) {
+                        VDF e = new VDF();
+                        e.readExternal(caps.get(i).asStream());
+                        TreeUtils.moveChildren(e.getRoot(), top);
+                        pb.setValue(i);
+                    }
+
+                    for(int i = 0; i < top.getChildCount(); i++) {
+                        String str = top.getChildAt(i).toString();
+                        str = str.replaceAll("\"", "").toLowerCase();
+                        LOG.log(Level.FINER, str);
+                        crc.update(str.getBytes());
+                        map.put((int) crc.getValue(), str);
+                        crc.reset();
+                    }
+                } catch(IOException ex) {
+                    LOG.log(Level.WARNING, "Error generating hash codes", ex);
+                }
+
+                hashmap.putAll(map);
+                persistHashmap(hashmap);
+                frame.dispose();
+            }
+        }).start();
+    }
+
+    private static void persistHashmap(HashMap<Integer, String> map) {
+        for(Entry<Integer, String> entry : map.entrySet()) {
+            Integer key = entry.getKey();
+            String value = entry.getValue();
+            if(key == null || value == null) {
+                continue;
+            }
+            prefs.putInt(value, key);
+        }
+    }
+
+    private static String hexFormat(int in) {
+        String str = Integer.toHexString(in).toUpperCase();
+        while(str.length() < 8) {
+            str = "0" + str;
+        }
+        return str;
+    }
+
+    private String attemptDecode(int hash) {
+        if(!hashmap.containsKey(hash)) {
+//            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
+            return null;
+        }
+        return hashmap.get(hash);
+    }
+    //</editor-fold>
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -134,7 +272,7 @@ public class VCCDTest extends javax.swing.JFrame {
         jTable1.getColumnModel().getColumn(0).setMaxWidth(85);
         jTable1.getColumnModel().getColumn(1).setPreferredWidth(160);
         jTable1.getColumnModel().getColumn(1).setCellEditor(getKeyEditor());
-        jTable1.getColumnModel().getColumn(1).setCellRenderer(getKeyRenderer());
+        jTable1.getColumnModel().getColumn(1).setCellRenderer(null);
         jTable1.getColumnModel().getColumn(2).setPreferredWidth(160);
 
         getContentPane().add(contentPane);
@@ -267,7 +405,7 @@ public class VCCDTest extends javax.swing.JFrame {
             if(files == null) {
                 return;
             }
-            ArrayList<CaptionEntry> entries;
+            List<CaptionEntry> entries;
             try {
                 entries = VCCD.load(new FileInputStream(files[0]));
             } catch(FileNotFoundException ex) {
@@ -325,14 +463,19 @@ public class VCCDTest extends javax.swing.JFrame {
                 crc = hexFormat(VCCD.takeCRC32(model.getValueAt(i, 1).toString()));
             }
             long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
-            String token = model.getValueAt(i, 1).toString();
+            Object val = model.getValueAt(i, 1);
+            String token = val instanceof String ? val.toString() : null;
             hashmap.put((int) hash, token);
             e.setKey(hash);
             e.setValue(model.getValueAt(i, 2).toString());
             entries.add(e);
         }
         persistHashmap(hashmap);
-        VCCD.save(saveFile.getAbsolutePath().toString(), entries);
+        try {
+            VCCD.save(entries, new FileOutputStream(saveFile.getAbsolutePath().toString()));
+        } catch(IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
     }
 
     private void saveCaptions(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveCaptions
@@ -522,313 +665,4 @@ public class VCCDTest extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     // End of variables declaration//GEN-END:variables
 
-    private static Preferences prefs = Preferences.userRoot().node("timepath").node("hl2-caption-editor");
-
-    public VCCDTest() {
-        try {
-            String[] children = prefs.keys();
-            for(int i = 0; i < children.length; i++) {
-                int hash = prefs.getInt(children[i], -1);
-                LOG.log(Level.FINER, "{0} = {1}", new Object[] {children[i], hash});
-                if(hash != -1) {
-                    hashmap.put(hash, children[i]);
-                }
-            }
-        } catch(BackingStoreException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-
-        initComponents();
-
-        jTextField3.getDocument().addDocumentListener(new DocumentListener() {
-            public void changedUpdate(DocumentEvent e) {
-                updateCRC();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updateCRC();
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                updateCRC();
-            }
-
-            public void updateCRC() {
-                jTextField4.setText(hexFormat(VCCD.takeCRC32(jTextField3.getText())));
-            }
-        });
-    }
-
-    private class TokenDropdown extends DefaultCellEditor {
-
-        private ArrayList<String> tokens = initVals();
-
-        private ArrayList<String> initVals() {
-            ArrayList<String> list = new ArrayList<String>(hashmap.values());
-            Collections.sort(list);
-            return list;
-        }
-
-        private ComboBoxChangeListener dl = new ComboBoxChangeListener();
-
-        TokenDropdown() {
-            super(new JComboBox/*<String>*/());
-            createComboBox(initVals());
-        }
-
-        private void createComboBox(ArrayList<String> list) {
-            SharedPoolComboBox comboBox = new SharedPoolComboBox(list);
-            dl.setField((JTextField) comboBox.getEditor().getEditorComponent());
-            super.editorComponent = comboBox;
-        }
-
-        //<editor-fold defaultstate="collapsed" desc="ComboBox">
-        private class SharedPoolComboBox extends JComboBox/*<String>*/ {
-
-            SharedPoolComboBox(ArrayList<String> list) {
-                DefaultComboBoxModel/*<String>*/ model = new DefaultComboBoxModel/*<String>*/();
-                this.setModel(model);
-                this.setEditable(true);
-                for(int i = 0; i < list.size(); i++) {
-                    this.addItem(list.get(i));
-                }
-            }
-
-        }
-        //</editor-fold>
-
-        private class ComboBoxChangeListener implements DocumentListener {
-
-            String old;
-
-            JTextField field;
-
-            private void updated() {
-                if(field == null) {
-                    return;
-                }
-                String str = field.getText();
-
-//                        ArrayList<String> entries = new ArrayList<String>();
-//                        for(int i = 0; i < model.getRowCount(); i++) {
-//                            entries.add((String) model.getValueAt(jTable1.convertRowIndexToModel(i), 1));
-//                        }
-
-                ArrayList<String> diff = new ArrayList<String>(tokens);
-//                        diff.removeAll(entries);
-                if("".equals(str)) {
-                    LOG.log(Level.INFO, "Adding: {0}", old);
-                    diff.remove(old);
-                } else {
-                    LOG.log(Level.INFO, "Removing: {0}", str);
-                    diff.remove(str);
-                }
-//                createComboBox(diff);
-
-                int erow = jTable1.getEditingRow();
-                if(erow > -1 && erow < jTable1.getRowCount()) {
-                    jTable1.getModel().setValueAt(hexFormat(VCCD.takeCRC32(str)),
-                                                  jTable1.convertRowIndexToModel(erow), 0);
-                }
-                old = str;
-            }
-
-            //<editor-fold defaultstate="collapsed" desc="Overrides">
-            public void changedUpdate(DocumentEvent e) {
-                updated();
-            }
-
-            public void removeUpdate(DocumentEvent e) {
-                updated();
-            }
-
-            public void insertUpdate(DocumentEvent e) {
-                updated();
-            }
-            //</editor-fold>            
-
-            private void setField(JTextField jTextField) {
-                field = jTextField;
-                field.getDocument().addDocumentListener(this);
-            }
-
-        }
-
-    }
-
-    private TableCellEditor getKeyEditor() {
-        return new DefaultCellEditor(new JTextField());//new TokenDropdown(); // TODO
-    }
-
-    private TableCellRenderer getKeyRenderer() {
-        return new KeyRenderer();
-    }
-
-    private class KeyRenderer extends DefaultTableCellRenderer {
-    }
-
-    private class EditorPaneRenderer extends JPanel implements TableCellRenderer {
-
-        private int curX;
-
-        private String text;
-
-        EditorPaneRenderer() {
-            super();
-        }
-
-        @Override
-        public void paint(Graphics g) {
-            g.setFont(this.getFont());
-            FontMetrics fm = g.getFontMetrics();
-            g.setColor(this.getBackground());
-            g.fillRect(0, 0, this.getWidth(), this.getHeight());
-            g.setColor(this.getForeground());
-
-            for(int i = 0; i < text.length(); i++) {
-                if(text.charAt(i) == '<') {
-                }
-            }
-
-            drawWords(fm, g, text);
-            curX = 0;
-        }
-
-        public void drawWords(FontMetrics fm, Graphics g, String str) {
-            g.drawString(text, curX, fm.getHeight());
-            curX += fm.stringWidth(str);
-        }
-
-        public Component getTableCellRendererComponent(JTable table, Object value,
-                                                       boolean isSelected, boolean hasFocus, int row,
-                                                       int column) {
-            setText((value == null) ? "" : value.toString());
-            if(isSelected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            } else {
-                setForeground(table.getForeground());
-                setBackground(table.getBackground());
-            }
-            return this;
-        }
-
-        private void setText(String string) {
-            this.text = string;
-        }
-
-    }
-
-    private TableCellRenderer valueRenderer = new EditorPaneRenderer();
-
-    private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String... args) {
-        try {
-            if(args.length > 0) {
-                ArrayList<CaptionEntry> in = VCCD.importFile(args[0]);
-                HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
-                for(CaptionEntry i : in) { // learning
-                    Object crc = i.getKey();
-                    String token = i.getTrueKey();
-                    long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
-                    hashmap.put((int) hash, token);
-                }
-                persistHashmap(hashmap);
-                VCCD.save("closecaption_english.dat", in);
-                return;
-            }
-        } catch(FileNotFoundException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        }
-
-        java.awt.EventQueue.invokeLater(
-                new Runnable() {
-            public void run() {
-                VCCDTest c = new VCCDTest();
-                c.setLocationRelativeTo(null);
-                c.setVisible(true);
-            }
-        });
-    }
-    //<editor-fold defaultstate="collapsed" desc="Hash codes">
-
-    private HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
-
-    private void generateHash() {
-        new Thread(new Runnable() {
-            public void run() {
-                final JFrame frame = new JFrame("Generating hash codes...");
-                JProgressBar pb = new JProgressBar();
-                pb.setIndeterminate(true);
-                frame.add(pb);
-                frame.setMinimumSize(new Dimension(300, 50));
-                frame.setLocationRelativeTo(null);
-                frame.setVisible(true);
-
-                HashMap<Integer, String> map = new HashMap<Integer, String>();
-                LOG.info("Generating hash codes ...");
-                try {
-                    ACF a = ACF.fromManifest(440);
-                    CRC32 crc = new CRC32();
-                    DefaultMutableTreeNode top = new DefaultMutableTreeNode();
-                    ArrayList<DirectoryEntry> caps = a.find("game_sounds", a.getRoot());//_vo");
-                    pb.setMaximum(caps.size());
-                    pb.setIndeterminate(false);
-                    for(int i = 0; i < caps.size(); i++) {
-                        VDF e = new VDF();
-                        e.readExternal(caps.get(i).asStream());
-                        TreeUtils.moveChildren(e.getRoot(), top);
-                        pb.setValue(i);
-                    }
-
-                    for(int i = 0; i < top.getChildCount(); i++) {
-                        String str = top.getChildAt(i).toString();
-                        str = str.replaceAll("\"", "").toLowerCase();
-                        LOG.log(Level.FINER, str);
-                        crc.update(str.getBytes());
-                        map.put((int) crc.getValue(), str);
-                        crc.reset();
-                    }
-                } catch(IOException ex) {
-                    LOG.log(Level.WARNING, "Error generating hash codes", ex);
-                }
-
-                hashmap.putAll(map);
-                persistHashmap(hashmap);
-                frame.dispose();
-            }
-        }).start();
-    }
-
-    private static void persistHashmap(HashMap<Integer, String> map) {
-        for(Entry<Integer, String> entry : map.entrySet()) {
-            Integer key = entry.getKey();
-            String value = entry.getValue();
-            if(key == null || value == null) {
-                continue;
-            }
-            prefs.putInt(value, key);
-        }
-    }
-
-    private static String hexFormat(int in) {
-        String str = Integer.toHexString(in).toUpperCase();
-        while(str.length() < 8) {
-            str = "0" + str;
-        }
-        return str;
-    }
-
-    private String attemptDecode(int hash) {
-        if(!hashmap.containsKey(hash)) {
-//            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
-            return null;
-        }
-        return hashmap.get(hash);
-    }
-    //</editor-fold>
 }
