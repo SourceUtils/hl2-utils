@@ -1,7 +1,6 @@
 package com.timepath.hl2.cvars;
 
 import com.timepath.hl2.ExternalConsole;
-import com.timepath.hl2.cvars.CVarList.CVar;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import java.awt.Color;
 import java.awt.Toolkit;
@@ -26,6 +25,7 @@ import javax.swing.table.TableRowSorter;
  *
  * @author TimePath
  */
+@SuppressWarnings("serial")
 public class CVarTest extends javax.swing.JFrame {
 
     /**
@@ -37,7 +37,7 @@ public class CVarTest extends javax.swing.JFrame {
         Comparator<String> comparator = new Comparator<String>() {
             public int compare(String s1, String s2) {
                 return s1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(
-                        s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
+                    s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
             }
         };
         sorter.setComparator(0, comparator);
@@ -48,6 +48,10 @@ public class CVarTest extends javax.swing.JFrame {
 
         jTable1.setRowSorter(sorter);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent de) {
+                filter();
+            }
+
             public void insertUpdate(DocumentEvent de) {
                 filter();
             }
@@ -55,14 +59,8 @@ public class CVarTest extends javax.swing.JFrame {
             public void removeUpdate(DocumentEvent de) {
                 filter();
             }
-
-            public void changedUpdate(DocumentEvent de) {
-                filter();
-            }
         });
     }
-
-    SwingWorker filterWorker;
 
     private void filter() {
         jLabel1.setText(Integer.toString(sorter.getModelRowCount()));
@@ -322,10 +320,13 @@ public class CVarTest extends javax.swing.JFrame {
                         Map<String, CVar> map = analyze(scanner);
                         for(Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
-                            this.publish(new Object[] {var.getName(), var.getValue(),
-                                                       var.getDefaultValue(), var.getMinimum(),
-                                                       var.getMaximum(), Arrays.toString(
-                                var.getTags().toArray(new String[0])), var.getDesc()});
+                            this.publish(new Object[] {
+                                var.getName(), var.getValue(),
+                                var.getDefaultValue(), var.getMinimum(),
+                                var.getMaximum(),
+                                Arrays.toString(
+                                var.getTags().toArray(new String[var.getTags().size()])),
+                                var.getDesc()});
                         }
                         return null;
                     }
@@ -369,7 +370,7 @@ public class CVarTest extends javax.swing.JFrame {
         StringBuilder sb = new StringBuilder();
         String tab = "|";
         String line = "\n";
-        int row = 0, rows = m.getRowCount(), col = 0, cols = m.getColumnCount();
+        int row, col, rows = m.getRowCount(), cols = m.getColumnCount();
         for(int i = 0; i < cols; i++) {
             col = jTable1.convertColumnIndexToModel(i);
             sb.append(tab).append(m.getColumnName(col));
@@ -431,7 +432,7 @@ public class CVarTest extends javax.swing.JFrame {
             Object[] chunks = new Object[] {var.getName(), var.getValue(),
                                             var.getDefaultValue(), var.getMinimum(),
                                             var.getMaximum(), Arrays.toString(
-                var.getTags().toArray(new String[0])), var.getDesc()};
+                var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
             ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();
@@ -478,7 +479,7 @@ public class CVarTest extends javax.swing.JFrame {
             Object[] chunks = new Object[] {var.getName(), var.getValue(),
                                             var.getDefaultValue(), var.getMinimum(),
                                             var.getMaximum(), Arrays.toString(
-                var.getTags().toArray(new String[0])), var.getDesc()};
+                var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
             ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();

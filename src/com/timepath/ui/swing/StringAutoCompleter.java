@@ -15,20 +15,31 @@ public class StringAutoCompleter extends AutoCompleter {
 
     private static final Logger LOG = Logger.getLogger(StringAutoCompleter.class.getName());
 
-    private Trie trie = new Trie();
+    private boolean cached = false;
 
     private final int depth;
 
-    TrieMapping n = trie.root;
+    private String last = "";
 
-    String last = "";
+    private TrieMapping n;
 
-    boolean cached = false;
+    private final Trie trie;
 
     public StringAutoCompleter(JTextComponent comp, Trie trie, int depth) {
         super(comp);
         this.trie = trie;
+        this.n = trie.root;
         this.depth = depth;
+    }
+
+    protected void acceptedListItem(String selected) {
+        if(selected == null) {
+            return;
+        }
+        
+        textComponent.setCaretPosition(0);
+        textComponent.setText(selected);
+        textComponent.setCaretPosition(selected.length());
     }
 
     protected boolean updateListData() {
@@ -62,16 +73,6 @@ public class StringAutoCompleter extends AutoCompleter {
         list.setSelectedIndex(0);
         cached = true;
         return true;
-    }
-
-    protected void acceptedListItem(String selected) {
-        if(selected == null) {
-            return;
-        }
-
-        textComponent.setCaretPosition(0);
-        textComponent.setText(selected);
-        textComponent.setCaretPosition(selected.length());
     }
 
 }

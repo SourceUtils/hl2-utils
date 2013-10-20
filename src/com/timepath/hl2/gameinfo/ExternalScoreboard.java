@@ -54,12 +54,12 @@ public class ExternalScoreboard extends ExternalConsole {
         StringBuilder sb = new StringBuilder();
         sb.append(killer.getName()).append(" = ").append(weapon).append(" -> ").append(
                 victim.getName());
-        output.append(sb.toString() + "\n");
+        getOutput().append(sb.toString() + "\n");
     }
 
     @Override
     protected void parse(String lines) {
-        output.setText("");
+        getOutput().setText("");
         String[] strings = lines.split("\n");
         for(String s : strings) {
             if(s.contains(" killed ")) {
@@ -80,21 +80,21 @@ public class ExternalScoreboard extends ExternalConsole {
             }
         }
 
-        output.append("\nPlayers:\n");
+        getOutput().append("\nPlayers:\n");
         for(int i = 0; i < players.size(); i++) {
-            output.append(players.get(i).toString() + "\n");
+            getOutput().append(players.get(i).toString() + "\n");
         }
 
         Player me = getPlayer("TimePath");
-        output.append("\nAllies:\n");
+        getOutput().append("\nAllies:\n");
         for(int i = 0; i < me.getAllies().size(); i++) {
-            output.append(me.getAllies().get(i) + "\n");
+            getOutput().append(me.getAllies().get(i) + "\n");
         }
-        output.append("\nEnemies:\n");
+        getOutput().append("\nEnemies:\n");
         for(int i = 0; i < me.getEnemies().size(); i++) {
-            output.append(me.getEnemies().get(i) + "\n");
+            getOutput().append(me.getEnemies().get(i) + "\n");
         }
-        output.append("\n");
+        getOutput().append("\n");
     }
 
 }

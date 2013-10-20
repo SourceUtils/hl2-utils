@@ -10,6 +10,7 @@ import java.util.logging.Logger;
  *
  * @author TimePath
  */
+@SuppressWarnings("serial")
 public class CTXTest extends javax.swing.JFrame {
 
     /**

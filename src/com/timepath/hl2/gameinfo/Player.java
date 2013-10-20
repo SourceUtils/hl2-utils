@@ -76,9 +76,9 @@ public class Player {
         }
     }
 
-    private final ArrayList<Player> enemies = new ArrayList<Player>();
-
     private final ArrayList<Player> allies = new ArrayList<Player>();
+
+    private final ArrayList<Player> enemies = new ArrayList<Player>();
 
     private String name;
 
@@ -86,33 +86,14 @@ public class Player {
         this.name = name;
     }
 
-    public void addEnemy(Player other) {
-        if(other == this) {
-            return;
-        }
-        if(!enemies.contains(other)) {
-            getEnemies().add(other);
-        }
-        if(!other.hasEnemy(this)) {
-            other.getEnemies().add(this);
-        }
-    }
-    public void addEnemyR(Player other) {
-        addEnemy(other);
-        for(int j = 0; j < getAllies().size(); j++) {
-            getAllies().get(j).addEnemy(other);
-        }
-    }
-
-    public void addEnemies(ArrayList<Player> list) {
+    public void addAllies(ArrayList<Player> list) {
         for(int i = 0; i < list.size(); i++) {
-            addEnemyR(list.get(i));
-            for(int j = 0; j < getAllies().size(); j++) {
-                getAllies().get(j).addEnemyR(list.get(i));
+            addAllyR(list.get(i));
+            for(int j = 0; j < getEnemies().size(); j++) {
+                getEnemies().get(j).addEnemyR(list.get(i));
             }
         }
     }
-
     public void addAlly(Player other) {
         if(other == this) {
             return;
@@ -132,42 +113,46 @@ public class Player {
         }
     }
 
-    public void addAllies(ArrayList<Player> list) {
+    public void addEnemies(ArrayList<Player> list) {
         for(int i = 0; i < list.size(); i++) {
-            addAllyR(list.get(i));
-            for(int j = 0; j < getEnemies().size(); j++) {
-                getEnemies().get(j).addEnemyR(list.get(i));
+            addEnemyR(list.get(i));
+            for(int j = 0; j < getAllies().size(); j++) {
+                getAllies().get(j).addEnemyR(list.get(i));
             }
         }
     }
 
-    //<editor-fold defaultstate="collapsed" desc="toString()">
-    @Override
-public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(getName());
-    
-    sb.append(" (e:{");
-    ArrayList<Player> myEnemies = getEnemies();
-    for(int i = 0; i < getEnemies().size(); i++) {
-        sb.append(myEnemies.get(i).getName());
-        if(i + 1 < getEnemies().size()) {
-            sb.append(", ");
+    public void addEnemy(Player other) {
+        if(other == this) {
+            return;
+        }
+        if(!enemies.contains(other)) {
+            getEnemies().add(other);
+        }
+        if(!other.hasEnemy(this)) {
+            other.getEnemies().add(this);
         }
     }
-    sb.append("}, a:{");
-    ArrayList<Player> myAllies = getAllies();
-    for(int i = 0; i < getAllies().size(); i++) {
-        sb.append(myAllies.get(i).getName());
-        if(i + 1 < getAllies().size()) {
-            sb.append(", ");
+
+    public void addEnemyR(Player other) {
+        addEnemy(other);
+        for(int j = 0; j < getAllies().size(); j++) {
+            getAllies().get(j).addEnemy(other);
         }
     }
-    sb.append("})");
-    
-    return sb.toString();
-}
-    //</editor-fold>
+
+    /**
+     * @return the allies
+     */public ArrayList<Player> getAllies() {
+         return allies;
+     }
+
+    /**
+     * @return the enemies
+     */
+    public ArrayList<Player> getEnemies() {
+        return enemies;
+    }
 
     /**
      * @return the name
@@ -183,26 +168,41 @@ public String toString() {
         this.name = name;
     }
 
-    /**
-     * @return the enemies
-     */
-    public ArrayList<Player> getEnemies() {
-        return enemies;
-    }
+    //<editor-fold defaultstate="collapsed" desc="toString()">
 
-    /**
-     * @return the allies
-     */
-    public ArrayList<Player> getAllies() {
-        return allies;
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getName());
+        
+        sb.append(" (e:{");
+        ArrayList<Player> myEnemies = getEnemies();
+        for(int i = 0; i < getEnemies().size(); i++) {
+            sb.append(myEnemies.get(i).getName());
+            if(i + 1 < getEnemies().size()) {
+                sb.append(", ");
+            }
+        }
+        sb.append("}, a:{");
+        ArrayList<Player> myAllies = getAllies();
+        for(int i = 0; i < getAllies().size(); i++) {
+            sb.append(myAllies.get(i).getName());
+            if(i + 1 < getAllies().size()) {
+                sb.append(", ");
+            }
+        }
+        sb.append("})");
+        
+        return sb.toString();
+    }
+    //</editor-fold>
+    
+    private boolean hasAlly(Player player) {
+        return allies.contains(player);
     }
 
     private boolean hasEnemy(Player player) {
         return enemies.contains(player);
-    }
-
-    private boolean hasAlly(Player player) {
-        return allies.contains(player);
     }
 
 }

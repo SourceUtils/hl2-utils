@@ -15,31 +15,20 @@ import javax.swing.text.JTextComponent;
  *
  * @author TimePath
  */
+@SuppressWarnings("serial")
 public abstract class AutoCompleter {
 
-    private static final Logger LOG = Logger.getLogger(AutoCompleter.class.getName());
-
     private static final String COMPLETION = "AUTOCOMPLETION";
+
+    private static final Logger LOG = Logger.getLogger(AutoCompleter.class.getName());
 
     //<editor-fold defaultstate="collapsed" desc="Actions">
     private static final Action acceptAction = new AbstractAction() {
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            completer.popup.setVisible(false);
-            completer.acceptedListItem((String) completer.list.getSelectedValue());
-        }
-    };
-
-    private static final Action showAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            if(tf.isEnabled()) {
-                if(!completer.popup.isVisible()) {
-                    completer.showPopup();
-                }
-            }
+            completer.getPopup().setVisible(false);
+            completer.acceptedListItem(completer.getList().getSelectedValue());
         }
     };
 
@@ -48,7 +37,19 @@ public abstract class AutoCompleter {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
             if(tf.isEnabled()) {
-                completer.popup.setVisible(false);
+                completer.getPopup().setVisible(false);
+            }
+        }
+    };
+
+    private static final Action showAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            JComponent tf = (JComponent) e.getSource();
+            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+            if(tf.isEnabled()) {
+                if(!completer.getPopup().isVisible()) {
+                    completer.showPopup();
+                }
             }
         }
     };
@@ -59,19 +60,31 @@ public abstract class AutoCompleter {
                 JComponent tf = (JComponent) e.getSource();
                 AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
                 if(tf.isEnabled()) {
-                    if(completer.popup.isVisible()) {
+                    if(completer.getPopup().isVisible()) {
                         completer.shiftSelection(val);
                     }
                 }
             }
         };
     }
+    //</editor-fold>
 
-    private final int rowCount = 10;
+    private final DocumentListener documentListener = new DocumentListener() {
+        public void changedUpdate(DocumentEvent e) {
+        }
+        
+        public void insertUpdate(DocumentEvent e) {
+            showPopup();
+        }
+        
+        public void removeUpdate(DocumentEvent e) {
+            showPopup();
+        }
+    };
 
-    private JPopupMenu popup = new JPopupMenu() {
+    private final JPopupMenu popup = new JPopupMenu() {
         {
-            JScrollPane scroll = new JScrollPane(list) {
+            JScrollPane scroll = new JScrollPane(getList()) {
                 {
                     setBorder(null);
                     getVerticalScrollBar().setFocusable(false);
@@ -83,27 +96,16 @@ public abstract class AutoCompleter {
         }
     };
 
-    private final DocumentListener documentListener = new DocumentListener() {
-        public void insertUpdate(DocumentEvent e) {
-            showPopup();
-        }
+    private final int rowCount = 10;
 
-        public void removeUpdate(DocumentEvent e) {
-            showPopup();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-        }
-    };
-
-    protected JList list = new JList() {
+    protected final JList<String> list = new JList<String>() {
         {
             setFocusable(false);
             setRequestFocusEnabled(false);
         }
     };
 
-    protected JTextComponent textComponent;
+    protected final JTextComponent textComponent;
 
     public AutoCompleter(final JTextComponent jtc) {
         this.textComponent = jtc;
@@ -137,15 +139,29 @@ public abstract class AutoCompleter {
                                    JComponent.WHEN_FOCUSED);
     }
 
+    /**
+     * @return the list
+     */
+    public JList<String> getList() {
+        return list;
+    }
+
+    /**
+     * @return the popup
+     */
+    public JPopupMenu getPopup() {
+        return popup;
+    }
+
     private void showPopup() {
-        popup.setVisible(false);
-        if(textComponent.isEnabled() && updateListData() && list.getModel().getSize() != 0) {
+        getPopup().setVisible(false);
+        if(textComponent.isEnabled() && updateListData() && getList().getModel().getSize() != 0) {
             textComponent.getDocument().addDocumentListener(documentListener);
             textComponent.registerKeyboardAction(acceptAction,
                                                  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                                                  JComponent.WHEN_FOCUSED);
-            int size = list.getModel().getSize();
-            list.setVisibleRowCount(size < rowCount ? size : rowCount);
+            int size = getList().getModel().getSize();
+            getList().setVisibleRowCount(size < rowCount ? size : rowCount);
 
             int xPos = 0;
             try {
@@ -155,32 +171,12 @@ public abstract class AutoCompleter {
             } catch(BadLocationException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            popup.show(textComponent, xPos, textComponent.getHeight());
+            getPopup().show(textComponent, xPos, textComponent.getHeight());
         } else {
-            popup.setVisible(false);
+            getPopup().setVisible(false);
         }
         textComponent.requestFocus();
     }
-
-    /**
-     * Move the list selection within its boundaries
-     * <p>
-     * @param val
-     */
-    protected void shiftSelection(int val) {
-        int si = list.getSelectedIndex() + val;
-        si = Math.min(Math.max(0, si), list.getModel().getSize() - 1);
-        list.setSelectedIndex(si);
-        list.ensureIndexIsVisible(si);
-    }
-    //</editor-fold>
-    
-    /**
-     * update list model depending on the data in textfield
-     * <p/>
-     * @return whether to display the list
-     */
-    protected abstract boolean updateListData();
 
     /**
      * user has selected some item in the list, update textfield accordingly
@@ -188,5 +184,25 @@ public abstract class AutoCompleter {
      * @param selected
      */
     protected abstract void acceptedListItem(String selected);
+    
+    /**
+     * Move the list selection within its boundaries
+     * <p>
+     * @param val
+     */
+    protected void shiftSelection(int val) {
+        int si = getList().getSelectedIndex() + val;
+        si = Math.min(Math.max(0, si), getList().getModel().getSize() - 1);
+        getList().setSelectedIndex(si);
+        getList().ensureIndexIsVisible(si);
+    }
+    
+    
+    /**
+     * update list model depending on the data in textfield
+     * <p/>
+     * @return whether to display the list
+     */
+    protected abstract boolean updateListData();
 
 }

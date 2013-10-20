@@ -15,6 +15,7 @@ import java.util.logging.Logger;
  *
  * @author TimePath
  */
+@SuppressWarnings("serial")
 public class DemoTest extends javax.swing.JFrame {
 
     /**

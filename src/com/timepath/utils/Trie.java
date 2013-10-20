@@ -25,9 +25,9 @@ public class Trie {
         LOG.info(t.get("a", 3).toString());
     }
 
-    public TrieMapping root = new TrieMapping();
+    public final TrieMapping root = new TrieMapping();
 
-    HashMap<String, List<String>> cache = new HashMap<String, List<String>>();
+    private final HashMap<String, List<String>> cache = new HashMap<String, List<String>>();
 
     public void add(String s) {
         TrieMapping n = root;
@@ -43,6 +43,19 @@ public class Trie {
         n.put(null, null); // Terminator
     }
 
+    public boolean contains(String s) {
+        TrieMapping n = root;
+        for(int i = 0; i < s.length(); i++) {
+            Character c = s.charAt(i);
+            if(n.containsKey(c)) {
+                n = n.get(c);
+            } else {
+                return false;
+            }
+        }
+        return n.containsKey(null);
+    }
+
     /**
      *
      * @param s
@@ -52,18 +65,6 @@ public class Trie {
      */
     public List<String> get(String s, int depth) {
         return get(s, depth, root);
-    }
-
-    public TrieMapping node(String s) {
-        TrieMapping n = root;
-        for(int i = 0; i < s.length(); i++) {
-            Character c = s.charAt(i);
-            if(!n.containsKey(c)) { // Return null if a letter is not present in the tree
-                return null;
-            }
-            n = n.get(c);
-        }
-        return n;
     }
 
     public List<String> get(String s, int depth, TrieMapping n) {
@@ -125,24 +126,24 @@ public class Trie {
         return results;
     }
 
-    public boolean contains(String s) {
+    public TrieMapping node(String s) {
         TrieMapping n = root;
         for(int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
-            if(n.containsKey(c)) {
-                n = n.get(c);
-            } else {
-                return false;
+            if(!n.containsKey(c)) { // Return null if a letter is not present in the tree
+                return null;
             }
+            n = n.get(c);
         }
-        return n.containsKey(null);
+        return n;
     }
 
+    @SuppressWarnings("serial")
     public class TrieMapping extends Mapping<Character, TrieMapping> {
 
-        TrieMapping parent;
-
         Character key;
+
+        TrieMapping parent;
 
         @Override
         public TrieMapping put(Character key, TrieMapping value) {

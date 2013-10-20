@@ -58,15 +58,15 @@ public class ExternalConsole extends JFrame {
         ec.setVisible(true);
     }
 
+    private ScriptEngine engine = initScriptEngine();
+
     private JTextField input;
 
     private JScrollPane jsp;
 
+    private JTextArea output;
+
     private PrintWriter pw;
-
-    protected JTextArea output;
-
-    ScriptEngine engine = initScriptEngine();
 
     public ExternalConsole() {
         output = new JTextArea();
@@ -117,27 +117,17 @@ public class ExternalConsole extends JFrame {
         this.pack();
     }
 
-    public void update(String str) {
-        parse(str);
-        appendOutput(str);
+    public void connect(int port) throws IOException {
+        Socket sock = new Socket(InetAddress.getByName(null), port);
+        setIn(sock.getInputStream());
+        setOut(sock.getOutputStream());
     }
 
-    public void setIn(final InputStream s) {
-        output.setEnabled(s != null);
-        new Thread(new Runnable() {
-            public void run() {
-                try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
-                    String line;
-                    while((line = in.readLine()) != null) {
-                        update(line);
-                    }
-                    System.err.println("Stopped reading stdout");
-                } catch(IOException ex) {
-                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }).start();
+    /**
+     * @return the engine
+     */
+    public ScriptEngine getEngine() {
+        return engine;
     }
 
     public void setErr(final InputStream s) {
@@ -157,61 +147,87 @@ public class ExternalConsole extends JFrame {
         }).start();
     }
 
+    public void setIn(final InputStream s) {
+        getOutput().setEnabled(s != null);
+        new Thread(new Runnable() {
+            public void run() {
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
+                    String line;
+                    while((line = in.readLine()) != null) {
+                        update(line);
+                    }
+                    System.err.println("Stopped reading stdout");
+                } catch(IOException ex) {
+                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
+    }
+
     public void setOut(OutputStream s) {
         input.setEnabled(s != null);
         pw = new PrintWriter(s, true);
-        engine.getContext().setWriter(pw);
+        getEngine().getContext().setWriter(pw);
     }
 
-    public void connect(int port) throws IOException {
-        Socket sock = new Socket(InetAddress.getByName(null), port);
-        setIn(sock.getInputStream());
-        setOut(sock.getOutputStream());
+    /**
+     * @return the output
+     */
+    public JTextArea getOutput() {
+        return output;
+    }
+
+    public void update(String str) {
+        parse(str);
+        appendOutput(str);
     }
 
     private void appendOutput(String str) {
-        output.append(str + '\n');
+        getOutput().append(str + '\n');
     }
 
     private ScriptEngine initScriptEngine() {
         ScriptEngineManager factory = new ScriptEngineManager();
-        ScriptEngine engine = factory.getEngineByName("JavaScript");
+        ScriptEngine scriptEngine = factory.getEngineByName("JavaScript");
 //        Bindings bindings = engine.createBindings();
 //        bindings.put("loadTime", new Date());
-        engine.getContext().setWriter(pw);
+        scriptEngine.getContext().setWriter(pw);
         try {
-            engine.eval(new FileReader("extern.js"));
+            scriptEngine.eval(new FileReader("extern.js"));
         } catch(ScriptException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         } catch(FileNotFoundException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return engine;
+        return scriptEngine;
     }
 
-    protected void parse(String str) {
-        if(str.startsWith(">>>")) {
-            str = str.substring(3);
-            System.out.println("Matching " + str);
-            Matcher m = regex.matcher(str);
-            if(!m.matches()) {
-                System.out.println("Doesn't match");
-                return;
-            }
-            String fn = m.group(1);
-            System.out.println(fn);
-            String[] args = m.group(2).split(",");
-            System.out.println(System.currentTimeMillis());
-            Invocable inv = (Invocable) engine;
-            try {
-                inv.invokeFunction(fn, args);
-            } catch(ScriptException ex) {
-                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-            } catch(NoSuchMethodException ex) {
-                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            System.out.println(System.currentTimeMillis());
+    protected void parse(String in) {
+        if(!in.startsWith(">>>")) {
+            return;
         }
+        String str = in.substring(3);
+        System.out.println("Matching " + str);
+        Matcher m = regex.matcher(str);
+        if(!m.matches()) {
+            System.out.println("Doesn't match");
+            return;
+        }
+        String fn = m.group(1);
+        System.out.println(fn);
+        Object args = m.group(2).split(",");
+        System.out.println(System.currentTimeMillis());
+        Invocable inv = (Invocable) getEngine();
+        try {
+            inv.invokeFunction(fn, args);
+        } catch(ScriptException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(NoSuchMethodException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println(System.currentTimeMillis());
+
     }
 
 }

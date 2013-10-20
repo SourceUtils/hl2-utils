@@ -24,6 +24,14 @@ public class VTFTest {
 
     private static final Logger LOG = Logger.getLogger(VTFTest.class.getName());
 
+    public static void main(String... args) {
+        new Thread(new Runnable() {
+            public void run() {
+                test();
+            }
+        }).start();
+    }
+
     public static void test() {
         final JFrame f = new JFrame("VTF Loader");
         f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -41,11 +49,13 @@ public class VTFTest {
 
             private static final int ACCSIZE = 256;
 
-            private Image image;
-
             private Color bg;
 
-            private final JSpinner lod, frame;
+            private final JSpinner frame;
+
+            private Image image;
+
+            private final JSpinner lod;
 
             private VTF v;
 
@@ -79,6 +89,16 @@ public class VTFTest {
                 this.add(frame, BorderLayout.EAST);
             }
 
+            @Override
+            public void paintComponent(Graphics g) {
+                g.setColor(bg);
+                g.fillRect(0, 0, ACCSIZE, getHeight());
+                if(image != null) {
+                    g.drawImage(image, getWidth() / 2 - image.getWidth(null) / 2,
+                                getHeight() / 2 - image.getHeight(null) / 2, this);
+                }
+            }
+
             public void propertyChange(PropertyChangeEvent e) {
                 String propertyName = e.getPropertyName();
                 if(propertyName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
@@ -91,14 +111,17 @@ public class VTFTest {
                 }
             }
 
-            @Override
-            public void paintComponent(Graphics g) {
-                g.setColor(bg);
-                g.fillRect(0, 0, ACCSIZE, getHeight());
-                if(image != null) {
-                    g.drawImage(image, getWidth() / 2 - image.getWidth(null) / 2,
-                                       getHeight() / 2 - image.getHeight(null) / 2, this);
+            private void createImage(VTF v) throws IOException {
+                if(v != null) {
+                    Image i = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
+                    if(i != null) {
+                        f.setIconImage(v.getThumbImage());
+                        image = i;
+                        return;
+                    }
                 }
+                image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+
             }
 
             private void load(File selection) throws IOException {
@@ -112,24 +135,11 @@ public class VTFTest {
                 createImage(v);
             }
 
-                        private void createImage(VTF v) throws IOException {
-                            if(v != null) {
-                                Image i = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
-                                if(i != null) {
-                                    f.setIconImage(v.getThumbImage());
-                                    image = i;
-                                    return;
-                                }
-                            }
-                            image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
-                            
-                        }
-
         }
 
         class VtfFileFilter extends FileFilter {
 
-            Format vtfFormat;
+            private Format vtfFormat;
 
             VtfFileFilter(Format format) {
                 this.vtfFormat = format;
@@ -157,7 +167,8 @@ public class VTFTest {
 
             @Override
             public String getDescription() {
-                return "VTF (" + (vtfFormat != Format.IMAGE_FORMAT_NONE ? vtfFormat.name() : "All") + ")";
+                return "VTF (" + (vtfFormat != Format.IMAGE_FORMAT_NONE ? vtfFormat.name() : "All")
+                       + ")";
             }
 
         }
@@ -176,14 +187,6 @@ public class VTFTest {
         f.setVisible(true);
         f.pack();
         f.setLocationRelativeTo(null);
-    }
-
-    public static void main(String... args) {
-        new Thread(new Runnable() {
-            public void run() {
-                test();
-            }
-        }).start();
     }
 
 }

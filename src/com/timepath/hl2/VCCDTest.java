@@ -64,11 +64,11 @@ public class VCCDTest extends javax.swing.JFrame {
                 updateCRC();
             }
 
-            public void removeUpdate(DocumentEvent e) {
+            public void insertUpdate(DocumentEvent e) {
                 updateCRC();
             }
 
-            public void insertUpdate(DocumentEvent e) {
+            public void removeUpdate(DocumentEvent e) {
                 updateCRC();
             }
 

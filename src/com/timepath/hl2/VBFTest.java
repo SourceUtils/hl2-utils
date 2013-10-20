@@ -573,10 +573,6 @@ public class VBFTest extends javax.swing.JFrame {
             if(clicked == null) {
                 return;
             }
-            Object obj = clicked.getLastPathComponent();
-            if(obj instanceof DefaultMutableTreeNode) {
-                obj = ((DefaultMutableTreeNode) obj).getUserObject();
-            }
             if(jTree.getSelectionPaths() == null || !Arrays.asList(jTree.getSelectionPaths()).contains(
                     clicked)) {
                 jTree.setSelectionPath(clicked);

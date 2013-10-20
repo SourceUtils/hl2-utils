@@ -14,6 +14,7 @@ import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -204,7 +205,7 @@ public class GameLauncher {
                 aggregate.register(client.getOutputStream());
                 new Thread(new Proxy(client.getInputStream(), proc.getOutputStream(),
                                      "client > game")).start();
-            } catch(java.net.SocketTimeoutException ex) {
+            } catch(SocketTimeoutException ex) {
             } catch(Exception ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
@@ -239,19 +240,13 @@ public class GameLauncher {
 
     private static class Proxy implements Runnable {
 
-        private final InputStream in;
-
-        private final OutputStream out;
-
         private final BufferedReader br;
-
-        private final PrintWriter pw;
 
         private final String name;
 
+        private final PrintWriter pw;
+
         Proxy(InputStream in, OutputStream out, String name) {
-            this.in = in;
-            this.out = out;
             this.br = new BufferedReader(new InputStreamReader(in));
             this.pw = new PrintWriter(out, true);
             this.name = name;
