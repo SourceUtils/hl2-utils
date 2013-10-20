@@ -4,6 +4,7 @@ import com.timepath.utils.Trie;
 import com.timepath.utils.Trie.TrieMapping;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
 /**
@@ -12,20 +13,23 @@ import javax.swing.text.JTextComponent;
  */
 public class StringAutoCompleter extends AutoCompleter {
 
+    private static final Logger LOG = Logger.getLogger(StringAutoCompleter.class.getName());
+
     private Trie trie = new Trie();
 
-    private int depth;
+    private final int depth;
+
+    TrieMapping n = trie.root;
+
+    String last = "";
+
+    boolean cached = false;
 
     public StringAutoCompleter(JTextComponent comp, Trie trie, int depth) {
         super(comp);
         this.trie = trie;
         this.depth = depth;
     }
-
-    TrieMapping n = trie.root;
-    
-    String last = "";
-    boolean cached = false;
 
     protected boolean updateListData() {
         String text = textComponent.getText().toLowerCase();
@@ -54,7 +58,7 @@ public class StringAutoCompleter extends AutoCompleter {
             }
         }
         Collections.sort(strings);
-        list.setListData(strings.toArray(new String[0]));
+        list.setListData(strings.toArray(new String[strings.size()]));
         list.setSelectedIndex(0);
         cached = true;
         return true;

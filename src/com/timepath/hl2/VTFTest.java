@@ -18,7 +18,7 @@ import javax.swing.filechooser.FileFilter;
 
 /**
  *
- * @author timepath
+ * @author TimePath
  */
 public class VTFTest {
 
@@ -39,9 +39,9 @@ public class VTFTest {
         @SuppressWarnings("serial")
         class ImagePreviewPanel extends JPanel implements PropertyChangeListener {
 
-            private Image image;
-
             private static final int ACCSIZE = 256;
+
+            private Image image;
 
             private Color bg;
 
@@ -91,6 +91,16 @@ public class VTFTest {
                 }
             }
 
+            @Override
+            public void paintComponent(Graphics g) {
+                g.setColor(bg);
+                g.fillRect(0, 0, ACCSIZE, getHeight());
+                if(image != null) {
+                    g.drawImage(image, getWidth() / 2 - image.getWidth(null) / 2,
+                                       getHeight() / 2 - image.getHeight(null) / 2, this);
+                }
+            }
+
             private void load(File selection) throws IOException {
                 if(selection == null) {
                     return;
@@ -102,38 +112,28 @@ public class VTFTest {
                 createImage(v);
             }
 
-            private void createImage(VTF v) throws IOException {
-                if(v != null) {
-                    Image i = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
-                    if(i != null) {
-                        f.setIconImage(v.getThumbImage());
-                        image = i;
-                        return;
-                    }
-                }
-                image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
-
-            }
-
-            @Override
-            public void paintComponent(Graphics g) {
-                g.setColor(bg);
-                g.fillRect(0, 0, ACCSIZE, getHeight());
-                if(image != null) {
-                    g.drawImage(image, getWidth() / 2 - image.getWidth(null) / 2,
-                                getHeight() / 2 - image.getHeight(null) / 2, this);
-                }
-            }
+                        private void createImage(VTF v) throws IOException {
+                            if(v != null) {
+                                Image i = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
+                                if(i != null) {
+                                    f.setIconImage(v.getThumbImage());
+                                    image = i;
+                                    return;
+                                }
+                            }
+                            image = new BufferedImage(128, 128, BufferedImage.TYPE_INT_ARGB);
+                            
+                        }
 
         }
 
         class VtfFileFilter extends FileFilter {
 
+            Format vtfFormat;
+
             VtfFileFilter(Format format) {
                 this.vtfFormat = format;
             }
-
-            Format vtfFormat;
 
             @Override
             public boolean accept(File file) {

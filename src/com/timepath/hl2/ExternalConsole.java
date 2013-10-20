@@ -13,24 +13,20 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.script.*;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+import javax.swing.*;
 import javax.swing.text.DefaultCaret;
 
 /**
  * http://www.perkin.org.uk/posts/how-to-fix-stdio-buffering.html
  * <p/>
- * @author timepath
+ * @author TimePath
  */
 @SuppressWarnings("serial")
 public class ExternalConsole extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(ExternalConsole.class.getName());
+
+    private static final Pattern regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*");
 
     public static String exec(String cmd, String breakline) {
         StringBuilder sb = new StringBuilder();
@@ -56,11 +52,21 @@ public class ExternalConsole extends JFrame {
         return sb.toString();
     }
 
-    protected JTextArea output;
+    public static void main(String... args) throws Exception {
+        ExternalConsole ec = new ExternalConsole();
+        ec.connect(12345);
+        ec.setVisible(true);
+    }
 
     private JTextField input;
 
     private JScrollPane jsp;
+
+    private PrintWriter pw;
+
+    protected JTextArea output;
+
+    ScriptEngine engine = initScriptEngine();
 
     public ExternalConsole() {
         output = new JTextArea();
@@ -116,55 +122,6 @@ public class ExternalConsole extends JFrame {
         appendOutput(str);
     }
 
-    private void appendOutput(String str) {
-        output.append(str + '\n');
-    }
-
-    ScriptEngine engine = initScriptEngine();
-
-    private ScriptEngine initScriptEngine() {
-        ScriptEngineManager factory = new ScriptEngineManager();
-        ScriptEngine engine = factory.getEngineByName("JavaScript");
-//        Bindings bindings = engine.createBindings();
-//        bindings.put("loadTime", new Date());
-        engine.getContext().setWriter(pw);
-        try {
-            engine.eval(new FileReader("extern.js"));
-        } catch(ScriptException ex) {
-            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-        } catch(FileNotFoundException ex) {
-            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return engine;
-    }
-
-    private static final Pattern regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*");
-
-    protected void parse(String str) {
-        if(str.startsWith(">>>")) {
-            str = str.substring(3);
-            System.out.println("Matching " + str);
-            Matcher m = regex.matcher(str);
-            if(!m.matches()) {
-                System.out.println("Doesn't match");
-                return;
-            }
-            String fn = m.group(1);
-            System.out.println(fn);
-            String[] args = m.group(2).split(",");
-            System.out.println(System.currentTimeMillis());
-            Invocable inv = (Invocable) engine;
-            try {
-                inv.invokeFunction(fn, (Object[]) args);
-            } catch(ScriptException ex) {
-                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-            } catch(NoSuchMethodException ex) {
-                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-            }
-            System.out.println(System.currentTimeMillis());
-        }
-    }
-
     public void setIn(final InputStream s) {
         output.setEnabled(s != null);
         new Thread(new Runnable() {
@@ -200,8 +157,6 @@ public class ExternalConsole extends JFrame {
         }).start();
     }
 
-    private PrintWriter pw;
-
     public void setOut(OutputStream s) {
         input.setEnabled(s != null);
         pw = new PrintWriter(s, true);
@@ -214,10 +169,49 @@ public class ExternalConsole extends JFrame {
         setOut(sock.getOutputStream());
     }
 
-    public static void main(String... args) throws Exception {
-        ExternalConsole ec = new ExternalConsole();
-        ec.connect(12345);
-        ec.setVisible(true);
+    private void appendOutput(String str) {
+        output.append(str + '\n');
+    }
+
+    private ScriptEngine initScriptEngine() {
+        ScriptEngineManager factory = new ScriptEngineManager();
+        ScriptEngine engine = factory.getEngineByName("JavaScript");
+//        Bindings bindings = engine.createBindings();
+//        bindings.put("loadTime", new Date());
+        engine.getContext().setWriter(pw);
+        try {
+            engine.eval(new FileReader("extern.js"));
+        } catch(ScriptException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        } catch(FileNotFoundException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return engine;
+    }
+
+    protected void parse(String str) {
+        if(str.startsWith(">>>")) {
+            str = str.substring(3);
+            System.out.println("Matching " + str);
+            Matcher m = regex.matcher(str);
+            if(!m.matches()) {
+                System.out.println("Doesn't match");
+                return;
+            }
+            String fn = m.group(1);
+            System.out.println(fn);
+            String[] args = m.group(2).split(",");
+            System.out.println(System.currentTimeMillis());
+            Invocable inv = (Invocable) engine;
+            try {
+                inv.invokeFunction(fn, args);
+            } catch(ScriptException ex) {
+                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+            } catch(NoSuchMethodException ex) {
+                Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            System.out.println(System.currentTimeMillis());
+        }
     }
 
 }

@@ -32,25 +32,25 @@ import javax.swing.tree.DefaultMutableTreeNode;
  * http://hlssmod.net/he_code/utils/captioncompiler/captioncompiler.cpp
  * http://hlssmod.net/he_code/public/captioncompiler.h
  *
- * @author timepath
+ * @author TimePath
  */
 @SuppressWarnings("serial")
 public class VCCDTest extends javax.swing.JFrame {
-    
+
     private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
 
-    private static Preferences prefs = Preferences.userRoot()
+    private static final Preferences prefs = Preferences.userRoot()
             .node("timepath").node("hl2-caption-editor");
 
     public VCCDTest() {
         try {
             String[] children = prefs.keys();
-            for(int i = 0; i < children.length; i++) {
-                int hash = prefs.getInt(children[i], -1);
-                LOG.log(Level.FINER, "{0} = {1}", new Object[] {children[i], hash});
+            for(String children1 : children) {
+                int hash = prefs.getInt(children1, -1);
+                LOG.log(Level.FINER, "{0} = {1}", new Object[] {children1, hash});
                 if(hash != -1) {
-                    hashmap.put(hash, children[i]);
-                    trie.add(children[i]);
+                    hashmap.put(hash, children1);
+                    trie.add(children1);
                 }
             }
         } catch(BackingStoreException ex) {
@@ -77,10 +77,10 @@ public class VCCDTest extends javax.swing.JFrame {
             }
         });
     }
-    
-    private HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
-    
-    private Trie trie = new Trie();
+
+    private final HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
+
+    private final Trie trie = new Trie();
 
     private TableCellEditor getKeyEditor() {
         JTextField t = new JTextField();
@@ -90,6 +90,7 @@ public class VCCDTest extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
         try {
@@ -112,12 +113,12 @@ public class VCCDTest extends javax.swing.JFrame {
 
         java.awt.EventQueue.invokeLater(
                 new Runnable() {
-            public void run() {
-                VCCDTest c = new VCCDTest();
-                c.setLocationRelativeTo(null);
-                c.setVisible(true);
-            }
-        });
+                    public void run() {
+                        VCCDTest c = new VCCDTest();
+                        c.setLocationRelativeTo(null);
+                        c.setVisible(true);
+                    }
+                });
     }
     //<editor-fold defaultstate="collapsed" desc="Hash codes">
 

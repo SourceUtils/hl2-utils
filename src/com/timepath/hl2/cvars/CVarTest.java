@@ -1,6 +1,5 @@
 package com.timepath.hl2.cvars;
 
-import javax.swing.SwingWorker;
 import com.timepath.hl2.ExternalConsole;
 import com.timepath.hl2.cvars.CVarList.CVar;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
@@ -16,10 +15,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
-import javax.swing.RowFilter;
-import javax.swing.RowSorter;
-import javax.swing.SortOrder;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
@@ -28,7 +24,7 @@ import javax.swing.table.TableRowSorter;
 
 /**
  *
- * @author timepath
+ * @author TimePath
  */
 public class CVarTest extends javax.swing.JFrame {
 
@@ -393,7 +389,6 @@ public class CVarTest extends javax.swing.JFrame {
                 }
                 sb.append(tab);
                 if(obj == null) {
-                    continue;
                 } else if(obj instanceof Object[]) {
                     Object[] arr = (Object[]) obj;
                     sb.append(arr[0]);
@@ -414,7 +409,7 @@ public class CVarTest extends javax.swing.JFrame {
         clear();
         String ret = null;
         int limit = 5;
-        for(int i = 0;;i++) {
+        for(int i = 0;; i++) {
             String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--",
                                                "--end of cvarlist--");
             if(temp.equals(ret)) {

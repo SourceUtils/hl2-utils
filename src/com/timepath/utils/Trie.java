@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -14,32 +15,19 @@ public class Trie {
 
     private static final Logger LOG = Logger.getLogger(Trie.class.getName());
 
-    private class Mapping<A, B> extends HashMap<A, B> {
-    }
-
-    public class TrieMapping extends Mapping<Character, TrieMapping> {
-
-        TrieMapping parent;
-
-        Character key;
-
-        @Override
-        public TrieMapping put(Character key, TrieMapping value) {
-            if(value != null) {
-                value.parent = this;
-                value.key = key;
-            }
-            return super.put(key, value);
-        }
-
-        @Override
-        public String toString() {
-            return (parent != null ? parent.toString() + "" + key : "");
-        }
-
+    public static void main(String[] args) {
+        Trie t = new Trie();
+        t.add("af");
+        t.add("abd");
+        t.add("abc");
+        t.add("ace");
+        t.add("abed");
+        LOG.info(t.get("a", 3).toString());
     }
 
     public TrieMapping root = new TrieMapping();
+
+    HashMap<String, List<String>> cache = new HashMap<String, List<String>>();
 
     public void add(String s) {
         TrieMapping n = root;
@@ -59,7 +47,7 @@ public class Trie {
      *
      * @param s
      * @param depth
-     *              <p/>
+     *              <p>
      * @return A list of strings, or null
      */
     public List<String> get(String s, int depth) {
@@ -77,12 +65,11 @@ public class Trie {
         }
         return n;
     }
-    
-    HashMap<String, List<String>> cache = new HashMap<String, List<String>>();
 
     public List<String> get(String s, int depth, TrieMapping n) {
         String path = s + n.toString();
-        LOG.info("Searching for '" + s + "' " + depth + " levels down in " + n);
+        LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", new Object[] {s, depth,
+                                                                                             n});
         if(cache.containsKey(path)) {
             LOG.info("Fom cache");
             return cache.get(path);
@@ -97,31 +84,32 @@ public class Trie {
             }
             n = n.get(c);
         }
-        LOG.info("Stopped at " + s.substring(0, i) + ", keys: " + n.keySet());
+        LOG.log(Level.INFO, "Stopped at {0}, keys: {1}",
+                new Object[] {s.substring(0, i), n.keySet()});
 
-        depth = depth + 1;
+        depth += 1;
         ArrayList<TrieMapping> all = new ArrayList<TrieMapping>();
         all.add(n);
         ArrayList<TrieMapping> local = new ArrayList<TrieMapping>();
         local.addAll(n.values());
-        LOG.info("  all " + all);
+        LOG.log(Level.INFO, "  all {0}", all);
         for(int j = 1; j < depth; j++) {
-            LOG.info("Depth " + j);
-            LOG.info("  local " + local);
-            ArrayList local2 = new ArrayList<TrieMapping>();
+            LOG.log(Level.INFO, "Depth {0}", j);
+            LOG.log(Level.INFO, "  local {0}", local);
+            ArrayList<TrieMapping> local2 = new ArrayList<TrieMapping>();
             for(TrieMapping tm : local) {
                 if(tm == null) { // char mismatch
                     continue;
                 }
                 Set<Character> chars = tm.keySet();
-                LOG.info("    examining " + tm + ", " + chars);
+                 LOG.log(Level.INFO, "    examining {0}, {1}", new Object[] {tm, chars});
                 for(Character ch : chars) {
                     if(ch == null) { // exact match
                         results.add(tm.toString());
                     } else {
-                        LOG.info("      " + ch);
+                        LOG.log(Level.INFO, "      {0}", ch);
                         TrieMapping tm2 = tm.get(ch);
-                        LOG.info("        " + tm2);
+                        LOG.log(Level.INFO, "        {0}", tm2);
                         local2.add(tm2);
                         if(j == depth - 1) {
                             results.add(tm.toString() + "...");
@@ -150,14 +138,29 @@ public class Trie {
         return n.containsKey(null);
     }
 
-    public static void main(String[] args) {
-        Trie t = new Trie();
-        t.add("af");
-        t.add("abd");
-        t.add("abc");
-        t.add("ace");
-        t.add("abed");
-        LOG.info(t.get("a", 3).toString());
+    public class TrieMapping extends Mapping<Character, TrieMapping> {
+
+        TrieMapping parent;
+
+        Character key;
+
+        @Override
+        public TrieMapping put(Character key, TrieMapping value) {
+            if(value != null) {
+                value.parent = this;
+                value.key = key;
+            }
+            return super.put(key, value);
+        }
+
+        @Override
+        public String toString() {
+            return (parent != null ? parent.toString() + "" + key : "");
+        }
+
+    }
+
+    private class Mapping<A, B> extends HashMap<A, B> {
     }
 
 }

@@ -36,7 +36,7 @@ import static com.timepath.plaf.OS.Windows;
  * for I in $(seq 40 -1 0); do echo "say_team Uber in $I seconds" > /dev/tcp/localhost/12345; sleep
  * 1; done
  * <p/>
- * @author timepath
+ * @author TimePath
  */
 public class GameLauncher {
 
@@ -79,13 +79,13 @@ public class GameLauncher {
         //<editor-fold defaultstate="collapsed" desc="Set the args field">
         String g = "";
         if(gameArgs != null) {
-            for(int i = 0; i < gameArgs.length; i++) {
-                g += gameArgs[i] + " ";
+            for(String gameArg : gameArgs) {
+                g += gameArg + " ";
             }
         }
         if(userArgs != null) {
-            for(int i = 0; i < userArgs.length; i++) {
-                g += userArgs[i] + " ";
+            for(String userArg : userArgs) {
+                g += userArg + " ";
             }
         }
         g = g.trim();
@@ -177,7 +177,7 @@ public class GameLauncher {
         if(userArgs != null) {
             params.addAll(Arrays.asList(userArgs));
         }
-        String[] cmd = params.toArray(new String[0]);
+        String[] cmd = params.toArray(new String[params.size()]);
         LOG.log(Level.INFO, "Starting {0}", Arrays.toString(cmd));
 
         final Process proc = Runtime.getRuntime().exec(cmd, null, executable.getParentFile());
@@ -211,44 +211,6 @@ public class GameLauncher {
         }
     }
 
-    private static class Proxy implements Runnable {
-
-        private InputStream in;
-
-        private OutputStream out;
-
-        private BufferedReader br;
-
-        private PrintWriter pw;
-
-        private String name;
-
-        public Proxy(InputStream in, OutputStream out, String name) {
-            this.in = in;
-            this.out = out;
-            this.br = new BufferedReader(new InputStreamReader(in));
-            this.pw = new PrintWriter(out, true);
-            this.name = name;
-        }
-
-        public void run() {
-            try {
-                String line;
-                while((line = br.readLine()) != null) {
-                    pw.println(line);
-                    if(pw.checkError()) {
-                        break;
-                    }
-//                    System.out.println(line);
-                }
-                LOG.log(Level.INFO, "Stopped proxying {0}", name);
-            } catch(IOException ex) {
-                Logger.getLogger(GameLauncher.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-
-    }
-
     private static String[] getUserOpts(int appID) {
         try {
             File f = new File(SteamUtils.getUserData(), "config/localconfig.vdf");
@@ -273,6 +235,44 @@ public class GameLauncher {
             Logger.getLogger(GameLauncher.class.getName()).log(Level.SEVERE, null, ex);
         }
         return null;
+    }
+
+    private static class Proxy implements Runnable {
+
+        private final InputStream in;
+
+        private final OutputStream out;
+
+        private final BufferedReader br;
+
+        private final PrintWriter pw;
+
+        private final String name;
+
+        Proxy(InputStream in, OutputStream out, String name) {
+            this.in = in;
+            this.out = out;
+            this.br = new BufferedReader(new InputStreamReader(in));
+            this.pw = new PrintWriter(out, true);
+            this.name = name;
+        }
+
+        public void run() {
+            try {
+                String line;
+                while((line = br.readLine()) != null) {
+                    pw.println(line);
+                    if(pw.checkError()) {
+                        break;
+                    }
+//                    System.out.println(line);
+                }
+                LOG.log(Level.INFO, "Stopped proxying {0}", name);
+            } catch(IOException ex) {
+                Logger.getLogger(GameLauncher.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+
     }
 
 }

@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author timepath
+ * @author TimePath
  */
 public class DemoTest extends javax.swing.JFrame {
 
@@ -91,4 +91,7 @@ public class DemoTest extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
     // End of variables declaration//GEN-END:variables
+
+    private static final Logger LOG = Logger.getLogger(DemoTest.class.getName());
+
 }

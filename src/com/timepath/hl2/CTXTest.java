@@ -88,17 +88,18 @@ public class CTXTest extends javax.swing.JFrame {
             if(f == null) {
                 return;
             }
-            BufferedReader br = new BufferedReader(new InputStreamReader(CTX.decrypt(this.jTextField1.getText().getBytes(), new FileInputStream(f[0]))));
+            BufferedReader br = new BufferedReader(new InputStreamReader(CTX.decrypt(
+                    this.jTextField1.getText().getBytes(), new FileInputStream(f[0]))));
             this.jTextArea1.setText("");
             String line;
             while((line = br.readLine()) != null) {
                 this.jTextArea1.append(line + "\n");
             }
-            
+
         } catch(IOException ex) {
             Logger.getLogger(CTXTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     /**
@@ -120,4 +121,7 @@ public class CTXTest extends javax.swing.JFrame {
     private javax.swing.JTextArea jTextArea1;
     private javax.swing.JTextField jTextField1;
     // End of variables declaration//GEN-END:variables
+
+    private static final Logger LOG = Logger.getLogger(CTXTest.class.getName());
+
 }

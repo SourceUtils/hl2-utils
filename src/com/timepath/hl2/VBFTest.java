@@ -11,38 +11,23 @@ import java.awt.Component;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.DropMode;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JTree;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
-import javax.swing.tree.TreePath;
+import javax.swing.tree.*;
 
 /**
  *
  * If one of the dimensions is 0, then do not use it to calculate the maxcharwidth/height
  *
- * @author timepath
+ * @author TimePath
  */
 public class VBFTest extends javax.swing.JFrame {
 
@@ -52,15 +37,15 @@ public class VBFTest extends javax.swing.JFrame {
 
     private static class DisplayableCharacter {
 
+        private final char c;
+
         DisplayableCharacter(int i) {
             this.c = (char) i;
         }
 
-        private final char c;
-
-        public char getC() {
-            return c;
-        }
+                public char getC() {
+                    return c;
+                }
 
         @Override
         public String toString() {
@@ -517,7 +502,7 @@ public class VBFTest extends javax.swing.JFrame {
         try {
             File[] fs = new NativeFileChooser().setParent(this).setTitle("Select vbf").addFilter(
                     new ExtensionFilter("Valve Bitmap Font", ".vbf")).addFilter(new ExtensionFilter(
-                    "Valve Texture File", ".vtf")).choose();
+                                    "Valve Texture File", ".vtf")).choose();
             if(fs == null) {
                 return;
             }
@@ -532,7 +517,7 @@ public class VBFTest extends javax.swing.JFrame {
         try {
             File[] fs = new NativeFileChooser().setParent(this).setTitle("Select save location").addFilter(
                     new ExtensionFilter("Valve Bitmap Font", ".vbf")).setDialogType(
-                    BaseFileChooser.DialogType.SAVE_DIALOG).choose();
+                            BaseFileChooser.DialogType.SAVE_DIALOG).choose();
             if(fs == null) {
                 return;
             }

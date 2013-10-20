@@ -1,7 +1,6 @@
 package com.timepath.hl2;
 
 import com.timepath.DataUtils;
-import javax.swing.SwingWorker;
 import com.timepath.hl2.io.util.Element;
 import com.timepath.plaf.OS;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
@@ -13,28 +12,24 @@ import com.timepath.steam.io.util.Property;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DnDConstants;
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetContext;
-import java.awt.dnd.DropTargetDropEvent;
-import java.awt.dnd.InvalidDnDOperationException;
+import java.awt.dnd.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
 /**
  *
- * @author timepath
+ * @author TimePath
  */
 @SuppressWarnings("serial")
 public class DataTest extends javax.swing.JFrame {
@@ -72,8 +67,7 @@ public class DataTest extends javax.swing.JFrame {
                     } else {
                         Object data = t.getTransferData(DataFlavor.javaFileListFlavor);
                         if(data instanceof List) {
-                            for(Iterator<?> it = ((List<?>) data).iterator(); it.hasNext();) {
-                                Object o = it.next();
+                            for(Object o : ((Iterable<? extends Object>) data)) {
                                 if(o instanceof File) {
                                     file = (File) o;
                                 }

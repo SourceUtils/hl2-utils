@@ -19,14 +19,55 @@ public abstract class AutoCompleter {
 
     private static final Logger LOG = Logger.getLogger(AutoCompleter.class.getName());
 
-    private int rowCount = 10;
+    private static final String COMPLETION = "AUTOCOMPLETION";
 
-    protected JList list = new JList() {
-        {
-            setFocusable(false);
-            setRequestFocusEnabled(false);
+    //<editor-fold defaultstate="collapsed" desc="Actions">
+    private static final Action acceptAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            JComponent tf = (JComponent) e.getSource();
+            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+            completer.popup.setVisible(false);
+            completer.acceptedListItem((String) completer.list.getSelectedValue());
         }
     };
+
+    private static final Action showAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            JComponent tf = (JComponent) e.getSource();
+            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+            if(tf.isEnabled()) {
+                if(!completer.popup.isVisible()) {
+                    completer.showPopup();
+                }
+            }
+        }
+    };
+
+    private static final Action hideAction = new AbstractAction() {
+        public void actionPerformed(ActionEvent e) {
+            JComponent tf = (JComponent) e.getSource();
+            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+            if(tf.isEnabled()) {
+                completer.popup.setVisible(false);
+            }
+        }
+    };
+
+    private static Action shift(final int val) {
+        return new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                JComponent tf = (JComponent) e.getSource();
+                AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+                if(tf.isEnabled()) {
+                    if(completer.popup.isVisible()) {
+                        completer.shiftSelection(val);
+                    }
+                }
+            }
+        };
+    }
+
+    private final int rowCount = 10;
 
     private JPopupMenu popup = new JPopupMenu() {
         {
@@ -42,9 +83,27 @@ public abstract class AutoCompleter {
         }
     };
 
-    protected JTextComponent textComponent;
+    private final DocumentListener documentListener = new DocumentListener() {
+        public void insertUpdate(DocumentEvent e) {
+            showPopup();
+        }
 
-    private static final String COMPLETION = "AUTOCOMPLETION";
+        public void removeUpdate(DocumentEvent e) {
+            showPopup();
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+        }
+    };
+
+    protected JList list = new JList() {
+        {
+            setFocusable(false);
+            setRequestFocusEnabled(false);
+        }
+    };
+
+    protected JTextComponent textComponent;
 
     public AutoCompleter(final JTextComponent jtc) {
         this.textComponent = jtc;
@@ -78,76 +137,6 @@ public abstract class AutoCompleter {
                                    JComponent.WHEN_FOCUSED);
     }
 
-    //<editor-fold defaultstate="collapsed" desc="Actions">
-    private static Action acceptAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            completer.popup.setVisible(false);
-            completer.acceptedListItem((String) completer.list.getSelectedValue());
-        }
-    };
-
-    private static Action shift(final int val) {
-        return new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                JComponent tf = (JComponent) e.getSource();
-                AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-                if(tf.isEnabled()) {
-                    if(completer.popup.isVisible()) {
-                        completer.shiftSelection(val);
-                    }
-                }
-            }
-        };
-    }
-
-    private static Action showAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            if(tf.isEnabled()) {
-                if(!completer.popup.isVisible()) {
-                    completer.showPopup();
-                }
-            }
-        }
-    };
-
-    private static Action hideAction = new AbstractAction() {
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            if(tf.isEnabled()) {
-                completer.popup.setVisible(false);
-            }
-        }
-    };
-
-    /**
-     * Move the list selection within its boundaries
-     */
-    protected void shiftSelection(int val) {
-        int si = list.getSelectedIndex() + val;
-        si = Math.min(Math.max(0, si), list.getModel().getSize() - 1);
-        list.setSelectedIndex(si);
-        list.ensureIndexIsVisible(si);
-    }
-    //</editor-fold>
-
-    private DocumentListener documentListener = new DocumentListener() {
-        public void insertUpdate(DocumentEvent e) {
-            showPopup();
-        }
-
-        public void removeUpdate(DocumentEvent e) {
-            showPopup();
-        }
-
-        public void changedUpdate(DocumentEvent e) {
-        }
-    };
-
     private void showPopup() {
         popup.setVisible(false);
         if(textComponent.isEnabled() && updateListData() && list.getModel().getSize() != 0) {
@@ -173,6 +162,19 @@ public abstract class AutoCompleter {
         textComponent.requestFocus();
     }
 
+    /**
+     * Move the list selection within its boundaries
+     * <p>
+     * @param val
+     */
+    protected void shiftSelection(int val) {
+        int si = list.getSelectedIndex() + val;
+        si = Math.min(Math.max(0, si), list.getModel().getSize() - 1);
+        list.setSelectedIndex(si);
+        list.ensureIndexIsVisible(si);
+    }
+    //</editor-fold>
+    
     /**
      * update list model depending on the data in textfield
      * <p/>

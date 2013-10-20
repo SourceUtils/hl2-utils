@@ -5,77 +5,11 @@ import java.util.logging.Logger;
 
 /**
  *
- * @author timepath
+ * @author TimePath
  */
 public class Player {
 
     private static final Logger LOG = Logger.getLogger(Player.class.getName());
-
-    private ArrayList<Player> enemies = new ArrayList<Player>();
-
-    public void addEnemy(Player other) {
-        if(other == this) {
-            return;
-        }
-        if(!enemies.contains(other)) {
-            getEnemies().add(other);
-        }
-        if(!other.hasEnemy(this)) {
-            other.getEnemies().add(this);
-        }
-    }
-
-    public void addEnemyR(Player other) {
-        addEnemy(other);
-        for(int j = 0; j < getAllies().size(); j++) {
-            getAllies().get(j).addEnemy(other);
-        }
-    }
-
-    public void addEnemies(ArrayList<Player> list) {
-        for(int i = 0; i < list.size(); i++) {
-            addEnemyR(list.get(i));
-            for(int j = 0; j < getAllies().size(); j++) {
-                getAllies().get(j).addEnemyR(list.get(i));
-            }
-        }
-    }
-
-    private ArrayList<Player> allies = new ArrayList<Player>();
-
-    public void addAlly(Player other) {
-        if(other == this) {
-            return;
-        }
-        if(!allies.contains(other)) {
-            getAllies().add(other);
-        }
-        if(!other.hasAlly(this)) {
-            other.getAllies().add(this);
-        }
-    }
-
-    public void addAllyR(Player other) {
-        addAlly(other);
-        for(int j = 0; j < getAllies().size(); j++) {
-            getAllies().get(j).addAlly(other);
-        }
-    }
-
-    public void addAllies(ArrayList<Player> list) {
-        for(int i = 0; i < list.size(); i++) {
-            addAllyR(list.get(i));
-            for(int j = 0; j < getEnemies().size(); j++) {
-                getEnemies().get(j).addEnemyR(list.get(i));
-            }
-        }
-    }
-
-    private String name;
-
-    Player(String name) {
-        this.name = name;
-    }
 
     /**
      * Makes players enemies
@@ -142,32 +76,97 @@ public class Player {
         }
     }
 
+    private final ArrayList<Player> enemies = new ArrayList<Player>();
+
+    private final ArrayList<Player> allies = new ArrayList<Player>();
+
+    private String name;
+
+    Player(String name) {
+        this.name = name;
+    }
+
+    public void addEnemy(Player other) {
+        if(other == this) {
+            return;
+        }
+        if(!enemies.contains(other)) {
+            getEnemies().add(other);
+        }
+        if(!other.hasEnemy(this)) {
+            other.getEnemies().add(this);
+        }
+    }
+    public void addEnemyR(Player other) {
+        addEnemy(other);
+        for(int j = 0; j < getAllies().size(); j++) {
+            getAllies().get(j).addEnemy(other);
+        }
+    }
+
+    public void addEnemies(ArrayList<Player> list) {
+        for(int i = 0; i < list.size(); i++) {
+            addEnemyR(list.get(i));
+            for(int j = 0; j < getAllies().size(); j++) {
+                getAllies().get(j).addEnemyR(list.get(i));
+            }
+        }
+    }
+
+    public void addAlly(Player other) {
+        if(other == this) {
+            return;
+        }
+        if(!allies.contains(other)) {
+            getAllies().add(other);
+        }
+        if(!other.hasAlly(this)) {
+            other.getAllies().add(this);
+        }
+    }
+
+    public void addAllyR(Player other) {
+        addAlly(other);
+        for(int j = 0; j < getAllies().size(); j++) {
+            getAllies().get(j).addAlly(other);
+        }
+    }
+
+    public void addAllies(ArrayList<Player> list) {
+        for(int i = 0; i < list.size(); i++) {
+            addAllyR(list.get(i));
+            for(int j = 0; j < getEnemies().size(); j++) {
+                getEnemies().get(j).addEnemyR(list.get(i));
+            }
+        }
+    }
+
     //<editor-fold defaultstate="collapsed" desc="toString()">
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getName());
-
-        sb.append(" (e:{");
-        ArrayList<Player> myEnemies = getEnemies();
-        for(int i = 0; i < getEnemies().size(); i++) {
-            sb.append(myEnemies.get(i).getName());
-            if(i + 1 < getEnemies().size()) {
-                sb.append(", ");
-            }
+public String toString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append(getName());
+    
+    sb.append(" (e:{");
+    ArrayList<Player> myEnemies = getEnemies();
+    for(int i = 0; i < getEnemies().size(); i++) {
+        sb.append(myEnemies.get(i).getName());
+        if(i + 1 < getEnemies().size()) {
+            sb.append(", ");
         }
-        sb.append("}, a:{");
-        ArrayList<Player> myAllies = getAllies();
-        for(int i = 0; i < getAllies().size(); i++) {
-            sb.append(myAllies.get(i).getName());
-            if(i + 1 < getAllies().size()) {
-                sb.append(", ");
-            }
-        }
-        sb.append("})");
-
-        return sb.toString();
     }
+    sb.append("}, a:{");
+    ArrayList<Player> myAllies = getAllies();
+    for(int i = 0; i < getAllies().size(); i++) {
+        sb.append(myAllies.get(i).getName());
+        if(i + 1 < getAllies().size()) {
+            sb.append(", ");
+        }
+    }
+    sb.append("})");
+    
+    return sb.toString();
+}
     //</editor-fold>
 
     /**

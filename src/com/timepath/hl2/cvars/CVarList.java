@@ -12,9 +12,11 @@ import java.util.regex.Pattern;
 /**
  * http://gskinner.com/RegExr/
  *
- * @author timepath
+ * @author TimePath
  */
 public class CVarList {
+
+    private static final Logger LOG = Logger.getLogger(CVarList.class.getName());
 
     public static Map<String, CVar> analyzeList(Scanner scanner, Map<String, CVar> map) {
         CVar c = null;
@@ -96,9 +98,27 @@ public class CVarList {
         return map;
     }
 
+    private CVarList() {
+    }
+
     public static class CVar {
 
         private String name;
+
+        /**
+         * null if cmd
+         */
+        private Object value;
+
+        private Object defaultValue;
+
+        private Object minimum;
+
+        private Object maximum;
+
+        private String desc;
+
+        private final ArrayList<String> tags = new ArrayList<String>();
 
         public void setName(String name) {
             this.name = name;
@@ -108,11 +128,6 @@ public class CVarList {
             return name;
         }
 
-        /**
-         *  // null if cmd
-         */
-        private Object value;
-
         public void setValue(Object value) {
             this.value = value;
         }
@@ -120,8 +135,6 @@ public class CVarList {
         public Object getValue() {
             return value;
         }
-
-        private Object defaultValue;
 
         public void setDefaultValue(Object defaultValue) {
             this.defaultValue = defaultValue;
@@ -131,8 +144,6 @@ public class CVarList {
             return defaultValue;
         }
 
-        private Object minimum;
-
         public Object getMinimum() {
             return minimum;
         }
@@ -140,8 +151,6 @@ public class CVarList {
         public void setMinimum(Object minimum) {
             this.minimum = minimum;
         }
-
-        private Object maximum;
 
         public Object getMaximum() {
             return maximum;
@@ -151,8 +160,6 @@ public class CVarList {
             this.maximum = maximum;
         }
 
-        private String desc;
-
         public void setDesc(String desc) {
             this.desc = desc;
         }
@@ -160,8 +167,6 @@ public class CVarList {
         public String getDesc() {
             return desc;
         }
-
-        private ArrayList<String> tags = new ArrayList<String>();
 
         public ArrayList<String> getTags() {
             return tags;
@@ -183,11 +188,6 @@ public class CVarList {
             return sb.toString();
         }
 
-    }
-
-    private static final Logger LOG = Logger.getLogger(CVarList.class.getName());
-
-    private CVarList() {
     }
 
 }
