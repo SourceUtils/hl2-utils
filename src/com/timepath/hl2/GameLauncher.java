@@ -1,5 +1,6 @@
 package com.timepath.hl2;
 
+import com.pty4j.PtyProcess;
 import com.timepath.DataUtils;
 import com.timepath.io.AggregateOutputStream;
 import com.timepath.plaf.OS;
@@ -27,6 +28,8 @@ import static com.timepath.plaf.OS.Windows;
 /**
  *
  * Starts a game and relay server.
+ * TODO: Use Steam runtime
+ * 4096 byte buffer
  * <p/>
  * echo toggleconsole > /dev/tcp/localhost/12345
  * <p/>
@@ -113,7 +116,7 @@ public class GameLauncher {
         } else if(ret == 1) {
             BVDF bin = new BVDF();
             bin.readExternal(DataUtils.mapFile(
-                    new File(SteamUtils.getSteam(), "appcache/appinfo.vdf")));
+                new File(SteamUtils.getSteam(), "appcache/appinfo.vdf")));
             DataNode root = bin.getRoot();
             DataNode gm = root.get("" + game);
             DataNode sections = gm.get("Sections");
@@ -161,10 +164,10 @@ public class GameLauncher {
         if(OS.isLinux()) {
             // params.add("unbuffer");
             // script -c "cmd" /dev/null // Linux
-            params.add("stdbuf");
-            params.add("-i0");
-            params.add("-o0");
-            params.add("-e0");
+//            params.add("stdbuf"); // old
+//            params.add("-i0"); // old
+//            params.add("-o0"); // old
+//            params.add("-e0"); // old
         } else if(OS.isMac()) {
             // http://stackoverflow.com/a/5573272
             // script -q /dev/null "cmd" // OSX
@@ -181,7 +184,22 @@ public class GameLauncher {
         String[] cmd = params.toArray(new String[params.size()]);
         LOG.log(Level.INFO, "Starting {0}", Arrays.toString(cmd));
 
-        final Process proc = Runtime.getRuntime().exec(cmd, null, executable.getParentFile());
+        HashMap<String, String> sysenv = new HashMap<String, String>();
+        sysenv.putAll(System.getenv());
+        if(!sysenv.containsKey("TERM")) {
+            sysenv.put("TERM", "xterm");
+        }
+        String[] env = new String[sysenv.size()];
+        ArrayList<String> vars = new ArrayList<String>();
+        for(String envName : sysenv.keySet()) {
+            String v = String.format("%s=%s", envName, sysenv.get(envName));
+            vars.add(v);
+        }
+        env = vars.toArray(env);
+        LOG.log(Level.INFO, "Env: {0}", Arrays.toString(env));
+
+//        final Process proc = Runtime.getRuntime().exec(cmd, env, executable.getParentFile()); // old
+        final Process proc = PtyProcess.exec(cmd, env, executable.getParent());
 
         int port = 12345;
         final ServerSocket sock = new ServerSocket(port, 0, InetAddress.getByName(null));
@@ -190,13 +208,19 @@ public class GameLauncher {
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
 
         AggregateOutputStream aggregate = new AggregateOutputStream();
-        Thread thread = new Thread(new Proxy(proc.getInputStream(), aggregate, "game > clients") {
+        Thread thread = new Thread(new Proxy(proc.getInputStream(), aggregate, "< game") {
 
             @Override
-            public void run() {
-                super.run();
-                System.exit(0);
+            protected String readLine() {
+                String line = super.readLine();
+                try {
+                    proc.getOutputStream().flush();
+                } catch(IOException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+                return line;
             }
+
         });
         thread.start();
         while(!sock.isClosed()) {
@@ -218,12 +242,12 @@ public class GameLauncher {
             VDF v = new VDF();
             v.readExternal(new FileInputStream(f));
             VDFNode game = v.getRoot()
-                    .get("UserLocalConfigStore")
-                    .get("Software")
-                    .get("Valve")
-                    .get("Steam")
-                    .get("apps")
-                    .get("" + appID);
+                .get("UserLocalConfigStore")
+                .get("Software")
+                .get("Valve")
+                .get("Steam")
+                .get("apps")
+                .get("" + appID);
             if(game == null) {
                 return null;
             }
@@ -240,32 +264,32 @@ public class GameLauncher {
 
     private static class Proxy implements Runnable {
 
-        private final BufferedReader br;
-
         private final String name;
 
         private final PrintWriter pw;
 
+        private final Scanner scan;
+
         Proxy(InputStream in, OutputStream out, String name) {
-            this.br = new BufferedReader(new InputStreamReader(in));
+            this.scan = new Scanner(in);
             this.pw = new PrintWriter(out, true);
             this.name = name;
         }
 
         public void run() {
-            try {
-                String line;
-                while((line = br.readLine()) != null) {
-                    pw.println(line);
-                    if(pw.checkError()) {
-                        break;
-                    }
-//                    System.out.println(line);
+            while(scan.hasNextLine()) {
+                String line = readLine();
+                System.out.println(line);
+                pw.println(line);
+                if(pw.checkError()) {
+                    break;
                 }
-                LOG.log(Level.INFO, "Stopped proxying {0}", name);
-            } catch(IOException ex) {
-                Logger.getLogger(GameLauncher.class.getName()).log(Level.SEVERE, null, ex);
             }
+            LOG.log(Level.INFO, "Stopped proxying {0}", name);
+        }
+
+        protected String readLine() {
+            return scan.nextLine();
         }
 
     }
