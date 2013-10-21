@@ -12,10 +12,7 @@ import com.timepath.steam.io.util.VDFNode;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.*;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketTimeoutException;
+import java.net.*;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +25,7 @@ import static com.timepath.plaf.OS.Windows;
 /**
  *
  * Starts a game and relay server.
- * TODO: Use Steam runtime
- * 4096 byte buffer
+ * TODO: Use Steam runtime on linux
  * <p/>
  * echo toggleconsole > /dev/tcp/localhost/12345
  * <p/>
@@ -66,7 +62,7 @@ public class GameLauncher {
         }
 
         JFrame frame = new JFrame("Game Launcher");
-
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setUndecorated(true);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
@@ -159,23 +155,6 @@ public class GameLauncher {
         }
 
         ArrayList<String> params = new ArrayList<String>();
-
-        // http://stackoverflow.com/q/1551436
-        if(OS.isLinux()) {
-            // params.add("unbuffer");
-            // script -c "cmd" /dev/null // Linux
-//            params.add("stdbuf"); // old
-//            params.add("-i0"); // old
-//            params.add("-o0"); // old
-//            params.add("-e0"); // old
-        } else if(OS.isMac()) {
-            // http://stackoverflow.com/a/5573272
-            // script -q /dev/null "cmd" // OSX
-        } else {
-            // http://stackoverflow.com/q/12534018
-            // https://github.com/jawi/JPty
-        }
-
         params.add(executable.getPath());
         params.addAll(Arrays.asList(gameArgs));
         if(userArgs != null) {
@@ -207,33 +186,51 @@ public class GameLauncher {
 
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
 
-        AggregateOutputStream aggregate = new AggregateOutputStream();
-        Thread thread = new Thread(new Proxy(proc.getInputStream(), aggregate, "< game") {
+        final AggregateOutputStream aggregate = new AggregateOutputStream();
+        final Thread main = new Thread(new Proxy(proc.getInputStream(), aggregate, "< game"), "Subprocess");
+        main.start();
+        final Thread acceptor = new Thread("Acceptor") {
+            @Override
+            public void run() {
+                for(;;) {
+                    try {
+                        final Socket client = sock.accept();
+                        aggregate.register(client.getOutputStream());
+                        Thread t = new Thread(
+                            new Proxy(client.getInputStream(), proc.getOutputStream(),
+                                      "client > game"));
+                        t.setDaemon(true);
+                        t.start();
+                    } catch(SocketTimeoutException ex) {
+                    } catch(IOException ex) {
+                        if(sock.isClosed()) {
+                            return;
+                        }
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+
+            }
+        };
+        acceptor.setDaemon(true);
+        acceptor.start();
+        new Thread("Reaper") {
 
             @Override
-            protected String readLine() {
-                String line = super.readLine();
+            public void run() {
                 try {
-                    proc.getOutputStream().flush();
+                    main.join();
+                } catch(InterruptedException ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+                LOG.info("Reaping");
+                try {
+                    sock.close();
                 } catch(IOException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
-                return line;
             }
-
-        });
-        thread.start();
-        while(!sock.isClosed()) {
-            try {
-                final Socket client = sock.accept();
-                aggregate.register(client.getOutputStream());
-                new Thread(new Proxy(client.getInputStream(), proc.getOutputStream(),
-                                     "client > game")).start();
-            } catch(SocketTimeoutException ex) {
-            } catch(Exception ex) {
-                LOG.log(Level.SEVERE, null, ex);
-            }
-        }
+        }.start();
     }
 
     private static String[] getUserOpts(int appID) {
@@ -278,18 +275,13 @@ public class GameLauncher {
 
         public void run() {
             while(scan.hasNextLine()) {
-                String line = readLine();
-                System.out.println(line);
+                String line = scan.nextLine();
                 pw.println(line);
                 if(pw.checkError()) {
                     break;
                 }
             }
             LOG.log(Level.INFO, "Stopped proxying {0}", name);
-        }
-
-        protected String readLine() {
-            return scan.nextLine();
         }
 
     }
