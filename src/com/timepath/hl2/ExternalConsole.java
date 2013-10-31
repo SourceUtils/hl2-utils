@@ -37,6 +37,7 @@ public class ExternalConsole extends JFrame {
             BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             pw.println(cmd);
             if(breakline != null) {
+                in.readLine(); // first line is echoed
                 String line;
                 while((line = in.readLine()) != null) {
                     sb.append(line).append("\n");
@@ -86,6 +87,7 @@ public class ExternalConsole extends JFrame {
                 if(pw == null) {
                     return;
                 }
+                getOutput().append("] ");
                 pw.println(input.getText());
                 input.setText("");
             }
