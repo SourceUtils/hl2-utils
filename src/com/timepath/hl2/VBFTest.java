@@ -29,35 +29,74 @@ import javax.swing.tree.*;
  *
  * @author TimePath
  */
+@SuppressWarnings("serial")
 public class VBFTest extends javax.swing.JFrame {
-
-    private static final long serialVersionUID = 1L;
 
     private static final Logger LOG = Logger.getLogger(VBFTest.class.getName());
 
-    private static class DisplayableCharacter {
-
-        private final char c;
-
-        DisplayableCharacter(int i) {
-            this.c = (char) i;
-        }
-
-                public char getC() {
-                    return c;
-                }
-
-        @Override
-        public String toString() {
-            Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-            boolean printable = ((!Character.isISOControl(c)) && c != KeyEvent.CHAR_UNDEFINED && block != null && block != Character.UnicodeBlock.SPECIALS);
-            if(!printable) {
-                return "0x" + (c < 16 ? "0" : "") + Integer.toHexString(c).toUpperCase();
+    public static void main(String... args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new VBFTest().setVisible(true);
             }
-            return Character.toString(c);
-        }
-
+        });
     }
+
+    private com.timepath.hl2.swing.VBFCanvas canvas;
+
+    private BitmapGlyph currentGlyph;
+
+    private VBF data;
+
+    private javax.swing.JSpinner heightSpinner;
+
+    private VTF image;
+
+    private javax.swing.JMenu jMenu1;
+
+    private javax.swing.JMenu jMenu2;
+
+    private javax.swing.JMenuBar jMenuBar1;
+
+    private javax.swing.JMenuItem jMenuItem1;
+
+    private javax.swing.JMenuItem jMenuItem2;
+
+    private javax.swing.JMenuItem jMenuItem3;
+
+    private javax.swing.JMenuItem jMenuItem4;
+
+    private javax.swing.JPanel jPanel1;
+
+    private javax.swing.JPanel jPanel2;
+
+    private javax.swing.JPanel jPanel3;
+
+    private javax.swing.JPanel jPanel5;
+
+    private javax.swing.JPopupMenu jPopupMenu1;
+
+    private javax.swing.JScrollPane jScrollPane1;
+
+    private javax.swing.JScrollPane jScrollPane2;
+
+    private javax.swing.JScrollPane jScrollPane3;
+
+    private javax.swing.JSplitPane jSplitPane1;
+
+    private javax.swing.JSplitPane jSplitPane2;
+
+    private com.timepath.swing.ReorderableJTree jTree1;
+
+    private com.timepath.swing.ReorderableJTree jTree2;
+
+    private char toCopy;
+
+    private javax.swing.JSpinner widthSpinner;
+
+    private javax.swing.JSpinner xSpinner;
+
+    private javax.swing.JSpinner ySpinner;
 
     /**
      * Creates new form VBFTest
@@ -69,7 +108,7 @@ public class VBFTest extends javax.swing.JFrame {
             @Override
             public void windowClosing(WindowEvent we) {
                 int choice = JOptionPane.showInternalConfirmDialog(VBFTest.this.getContentPane(),
-                                                                   "Don't you want to save?");
+                                                                   "Do you want to save?");
                 if(choice == JOptionPane.NO_OPTION) {
                     VBFTest.this.dispose();
                 }
@@ -91,7 +130,7 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 for(int i = 0; i < which.getModel().getChildCount(which.getModel().getRoot()); i++) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) which.getModel().getChild(
-                            which.getModel().getRoot(), i);
+                        which.getModel().getRoot(), i);
                     if(((BitmapGlyph) node.getUserObject()) == seek) {
                         which.setSelectionRow(node.getParent().getIndex(node) + 1);
                         break;
@@ -129,7 +168,8 @@ public class VBFTest extends javax.swing.JFrame {
                                                           boolean expanded, boolean leaf, int row,
                                                           boolean hasFocus) {
                 return super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                                                          ((TreeNode) value).getParent() != null && ((TreeNode) value).getParent() != tree.getModel().getRoot(),
+                                                          ((TreeNode) value).getParent() != null && ((TreeNode) value)
+                    .getParent() != tree.getModel().getRoot(),
                                                           row, hasFocus);
             }
 
@@ -164,7 +204,7 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) widthSpinner.getModel()).setMaximum(
-                            wide - ((Number) xSpinner.getValue()).intValue());
+                        wide - ((Number) xSpinner.getValue()).intValue());
                 }
             }
         });
@@ -189,7 +229,7 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) xSpinner.getModel()).setMaximum(
-                            wide - ((Number) widthSpinner.getValue()).intValue());
+                        wide - ((Number) widthSpinner.getValue()).intValue());
                 }
             }
         });
@@ -214,7 +254,7 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) heightSpinner.getModel()).setMaximum(
-                            high - ((Number) ySpinner.getValue()).intValue());
+                        high - ((Number) ySpinner.getValue()).intValue());
                 }
             }
         });
@@ -239,76 +279,36 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) ySpinner.getModel()).setMaximum(
-                            high - ((Number) heightSpinner.getValue()).intValue());
+                        high - ((Number) heightSpinner.getValue()).intValue());
                 }
             }
         });
         //</editor-fold>
     }
 
+    private void createGlyph(java.awt.event.ActionEvent evt) {
+        BitmapGlyph g = new BitmapGlyph();
+        if(data == null) {
+            data = new VBF();
+            canvas.setVBF(data);
+        }
+        for(int i = 0; i < 256; i++) {
+            if(!data.hasGlyph(i)) {
+                g.setIndex((byte) i);
+                break;
+            }
+            if(i == data.getGlyphs().size()) {
+                g.setIndex((byte) (i + 1));
+            }
+        }
+        data.getGlyphs().add(g);
+        this.insertGlyph((DefaultTreeModel) jTree1.getModel(), g);
+    }
+
     private void doRepaint(int x, int y, int w, int h) {
         this.canvas.repaint();//x, y, h, h);
     }
 
-    private VBF data;
-
-    private BitmapGlyph currentGlyph;
-
-    private VTF image;
-
-    private void load(String f) throws IOException {
-        LOG.log(Level.INFO, "Loading {0}", f);
-        VBFCanvas p = this.canvas;
-
-        File vbf = new File(f + ".vbf");
-        File vtf = new File(f + ".vtf");
-
-        if(vbf.exists()) {
-            data = VBF.load(new FileInputStream(vbf));
-            p.setVBF(data);
-
-            DefaultTreeModel model = (DefaultTreeModel) this.jTree1.getModel();
-            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-            root.removeAllChildren();
-            for(BitmapGlyph g : data.getGlyphs()) {
-                insertGlyph(model, g);
-            }
-        }
-
-        if(vtf.exists()) {
-            image = VTF.load(new FileInputStream(vtf));
-            p.setVTF(image);
-        }
-        canvas.repaint();
-    }
-
-    private void insertGlyph(DefaultTreeModel model, BitmapGlyph glyph) {
-        DefaultMutableTreeNode child = new DefaultMutableTreeNode(glyph);
-        model.insertNodeInto(child, (MutableTreeNode) model.getRoot(), model.getChildCount(
-                model.getRoot()));
-        insertCharacters(model, child, glyph.getIndex());
-        model.reload();
-    }
-
-    private void insertCharacters(DefaultTreeModel model, DefaultMutableTreeNode child, int g) {
-        for(int i = 0; i < data.getTable().length; i++) {
-            int glyphIndex = data.getTable()[i];
-            if(glyphIndex != g) {
-                continue;
-            }
-            DefaultMutableTreeNode sub = new DefaultMutableTreeNode(new DisplayableCharacter(i));
-            model.insertNodeInto(sub, child, model.getChildCount(child));
-        }
-    }
-
-    /**
-     * This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jPopupMenu1 = new javax.swing.JPopupMenu();
@@ -344,7 +344,7 @@ public class VBFTest extends javax.swing.JFrame {
         });
         jPopupMenu1.add(jMenuItem4);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Bitmap Font Editor");
         setPreferredSize(new java.awt.Dimension(640, 480));
 
@@ -359,6 +359,7 @@ public class VBFTest extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Glyphs");
         jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree1.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTree1MouseClicked(evt);
             }
@@ -374,6 +375,7 @@ public class VBFTest extends javax.swing.JFrame {
 
         jTree2.setModel(jTree1.getModel());
         jTree2.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jTree2MouseClicked(evt);
             }
@@ -392,34 +394,42 @@ public class VBFTest extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Position"));
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
 
-        xSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+        xSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
+            .valueOf(1)));
         jPanel3.add(xSpinner);
 
-        ySpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+        ySpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
+            .valueOf(1)));
         jPanel3.add(ySpinner);
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Dimensions"));
         jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.LINE_AXIS));
 
-        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
+            .valueOf(1)));
         jPanel5.add(widthSpinner);
 
-        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer.valueOf(1)));
+        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
+            .valueOf(1)));
         jPanel5.add(heightSpinner);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE,
+                          javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE,
+                          javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                              javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
+                              javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -435,7 +445,8 @@ public class VBFTest extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148,
+                              javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jSplitPane1.setLeftComponent(jPanel1);
@@ -459,7 +470,8 @@ public class VBFTest extends javax.swing.JFrame {
 
         jMenu1.setText("File");
 
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O,
+                                                                     java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem1.setMnemonic('O');
         jMenuItem1.setText("Open");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
@@ -469,7 +481,8 @@ public class VBFTest extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
 
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
+                                                                     java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem2.setMnemonic('S');
         jMenuItem2.setText("Save");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -496,13 +509,95 @@ public class VBFTest extends javax.swing.JFrame {
         setJMenuBar(jMenuBar1);
 
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void open(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_open
+    private void insertCharacters(DefaultTreeModel model, DefaultMutableTreeNode child, int g) {
+        for(int i = 0; i < data.getTable().length; i++) {
+            int glyphIndex = data.getTable()[i];
+            if(glyphIndex != g) {
+                continue;
+            }
+            DefaultMutableTreeNode sub = new DefaultMutableTreeNode(new DisplayableCharacter(i));
+            model.insertNodeInto(sub, child, model.getChildCount(child));
+        }
+    }
+
+    private void insertGlyph(DefaultTreeModel model, BitmapGlyph glyph) {
+        DefaultMutableTreeNode child = new DefaultMutableTreeNode(glyph);
+        model.insertNodeInto(child, (MutableTreeNode) model.getRoot(), model.getChildCount(
+            model.getRoot()));
+        insertCharacters(model, child, glyph.getIndex());
+        model.reload();
+    }
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {
+        StringSelection selection = new StringSelection(String.valueOf(toCopy));
+        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
+    }
+
+    private void jTree1MouseClicked(java.awt.event.MouseEvent evt) {
+        mouseClicked(evt);
+    }
+
+    private void jTree2MouseClicked(java.awt.event.MouseEvent evt) {
+        mouseClicked(evt);
+    }
+
+    private void load(String f) throws IOException {
+        LOG.log(Level.INFO, "Loading {0}", f);
+        VBFCanvas p = this.canvas;
+
+        File vbf = new File(f + ".vbf");
+        File vtf = new File(f + ".vtf");
+
+        if(vbf.exists()) {
+            data = VBF.load(new FileInputStream(vbf));
+            p.setVBF(data);
+
+            DefaultTreeModel model = (DefaultTreeModel) this.jTree1.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+            root.removeAllChildren();
+            for(BitmapGlyph g : data.getGlyphs()) {
+                insertGlyph(model, g);
+            }
+        }
+
+        if(vtf.exists()) {
+            image = VTF.load(new FileInputStream(vtf));
+            p.setVTF(image);
+        }
+        canvas.repaint();
+    }
+
+    private void mouseClicked(MouseEvent evt) {
+        if(SwingUtilities.isRightMouseButton(evt)) {
+            JTree jTree = ((JTree) evt.getComponent());
+            TreePath clicked = jTree.getPathForLocation(evt.getX(), evt.getY());
+            if(clicked == null) {
+                return;
+            }
+            if(jTree.getSelectionPaths() == null || !Arrays.asList(jTree.getSelectionPaths()).contains(
+                clicked)) {
+                jTree.setSelectionPath(clicked);
+            }
+            for(TreePath p : jTree.getSelectionPaths()) {
+                if(!(p.getLastPathComponent() instanceof DefaultMutableTreeNode)) {
+                    return;
+                }
+                Object userObject = ((DefaultMutableTreeNode) p.getLastPathComponent()).getUserObject();
+                if(userObject instanceof DisplayableCharacter) {
+                    toCopy = ((DisplayableCharacter) userObject).getC();
+                    jPopupMenu1.show(jTree, evt.getX(), evt.getY());
+                }
+            }
+        }
+    }
+
+    private void open(java.awt.event.ActionEvent evt) {
         try {
             File[] fs = new NativeFileChooser().setParent(this).setTitle("Select vbf").addFilter(
-                    new ExtensionFilter("Valve Bitmap Font", ".vbf")).addFilter(new ExtensionFilter(
-                                    "Valve Texture File", ".vtf")).choose();
+                new ExtensionFilter("Valve Bitmap Font", ".vbf")).addFilter(new ExtensionFilter(
+                        "Valve Texture File", ".vtf")).choose();
             if(fs == null) {
                 return;
             }
@@ -511,13 +606,13 @@ public class VBFTest extends javax.swing.JFrame {
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_open
+    }
 
-    private void save(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_save
+    private void save(java.awt.event.ActionEvent evt) {
         try {
             File[] fs = new NativeFileChooser().setParent(this).setTitle("Select save location").addFilter(
-                    new ExtensionFilter("Valve Bitmap Font", ".vbf")).setDialogType(
-                            BaseFileChooser.DialogType.SAVE_DIALOG).choose();
+                new ExtensionFilter("Valve Bitmap Font", ".vbf")).setDialogType(
+                    BaseFileChooser.DialogType.SAVE_DIALOG).choose();
             if(fs == null) {
                 return;
             }
@@ -534,7 +629,8 @@ public class VBFTest extends javax.swing.JFrame {
                     if(obj instanceof DisplayableCharacter) {
                         this.data.getTable()[((DisplayableCharacter) obj).getC()] = g.getIndex();
                     } else if(obj instanceof DefaultMutableTreeNode) { // XXX: hack
-                        this.data.getTable()[((DisplayableCharacter) (((DefaultMutableTreeNode) obj).getUserObject())).getC()] = g.getIndex();
+                        this.data.getTable()[((DisplayableCharacter) (((DefaultMutableTreeNode) obj).getUserObject()))
+                            .getC()] = g.getIndex();
                     }
                 }
             }
@@ -543,68 +639,9 @@ public class VBFTest extends javax.swing.JFrame {
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_save
-
-    private void createGlyph(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createGlyph
-        BitmapGlyph g = new BitmapGlyph();
-        if(data == null) {
-            data = new VBF();
-            canvas.setVBF(data);
-        }
-        for(int i = 0; i < 256; i++) {
-            if(!data.hasGlyph(i)) {
-                g.setIndex((byte) i);
-                break;
-            }
-            if(i == data.getGlyphs().size()) {
-                g.setIndex((byte) (i + 1));
-            }
-        }
-        data.getGlyphs().add(g);
-        this.insertGlyph((DefaultTreeModel) jTree1.getModel(), g);
-    }//GEN-LAST:event_createGlyph
-
-    private char toCopy;
-
-    private void mouseClicked(MouseEvent evt) {
-        if(SwingUtilities.isRightMouseButton(evt)) {
-            JTree jTree = ((JTree) evt.getComponent());
-            TreePath clicked = jTree.getPathForLocation(evt.getX(), evt.getY());
-            if(clicked == null) {
-                return;
-            }
-            if(jTree.getSelectionPaths() == null || !Arrays.asList(jTree.getSelectionPaths()).contains(
-                    clicked)) {
-                jTree.setSelectionPath(clicked);
-            }
-            TreePath[] paths = jTree.getSelectionPaths();
-            for(TreePath p : paths) {
-                if(!(p.getLastPathComponent() instanceof DefaultMutableTreeNode)) {
-                    return;
-                }
-                Object userObject = ((DefaultMutableTreeNode) p.getLastPathComponent()).getUserObject();
-                if(userObject instanceof DisplayableCharacter) {
-                    toCopy = ((DisplayableCharacter) userObject).getC();
-                    jPopupMenu1.show(jTree, evt.getX(), evt.getY());
-                }
-            }
-        }
     }
 
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        StringSelection selection = new StringSelection(String.valueOf(toCopy));
-        Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
-
-    private void jTree1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTree1MouseClicked
-        mouseClicked(evt);
-    }//GEN-LAST:event_jTree1MouseClicked
-
-    private void jTree2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTree2MouseClicked
-        mouseClicked(evt);
-    }//GEN-LAST:event_jTree2MouseClicked
-
-    private void treeInteraction(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeInteraction
+    private void treeInteraction(javax.swing.event.TreeSelectionEvent evt) {
         TreePath selection = evt.getNewLeadSelectionPath();
         if(selection == null) {
             return;
@@ -631,42 +668,31 @@ public class VBFTest extends javax.swing.JFrame {
         ySpinner.setValue(r.y);
         widthSpinner.setValue(r.width);
         heightSpinner.setValue(r.height);
-    }//GEN-LAST:event_treeInteraction
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String... args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new VBFTest().setVisible(true);
-            }
-        });
     }
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private com.timepath.hl2.swing.VBFCanvas canvas;
-    private javax.swing.JSpinner heightSpinner;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPopupMenu jPopupMenu1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
-    private com.timepath.swing.ReorderableJTree jTree1;
-    private com.timepath.swing.ReorderableJTree jTree2;
-    private javax.swing.JSpinner widthSpinner;
-    private javax.swing.JSpinner xSpinner;
-    private javax.swing.JSpinner ySpinner;
-    // End of variables declaration//GEN-END:variables
+
+    private static class DisplayableCharacter {
+
+        private final char c;
+
+        DisplayableCharacter(int i) {
+            this.c = (char) i;
+        }
+
+        public char getC() {
+            return c;
+        }
+
+        @Override
+        public String toString() {
+            Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
+            boolean printable = ((!Character.isISOControl(c)) && c != KeyEvent.CHAR_UNDEFINED && block != null && block
+                                                                                                                  != Character.UnicodeBlock.SPECIALS);
+            if(!printable) {
+                return "0x" + (c <= 0xF ? "0" : "") + Integer.toHexString(c).toUpperCase();
+            }
+            return Character.toString(c);
+        }
+
+    }
+
 }
