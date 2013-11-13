@@ -3,8 +3,7 @@ package com.timepath.hl2;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -69,6 +68,8 @@ public class ExternalConsole extends JFrame {
 
     private PrintWriter pw;
 
+    private Socket sock;
+
     public ExternalConsole() {
         output = new JTextArea();
         output.setFont(new Font("Monospaced", Font.PLAIN, 15));
@@ -110,8 +111,21 @@ public class ExternalConsole extends JFrame {
 //        setAlwaysOnTop(true);
 //        setUndecorated(true);
         this.setPreferredSize(new Dimension(800, 600));
+        
+        this.addWindowListener(new WindowAdapter() {
 
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            @Override
+            public void windowClosing(WindowEvent e) {
+                if(sock != null) {
+                    try {
+                        sock.close();
+                    } catch(IOException ex) {
+                        LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+                dispose();
+            }
+        });
 
         this.getContentPane().add(jsp, BorderLayout.CENTER);
         this.getContentPane().add(input, BorderLayout.SOUTH); // TODO: work out better way of sending input
@@ -120,7 +134,7 @@ public class ExternalConsole extends JFrame {
     }
 
     public void connect(int port) throws IOException {
-        Socket sock = new Socket(InetAddress.getByName(null), port);
+        sock = new Socket(InetAddress.getByName(null), port);
         setIn(sock.getInputStream());
         setOut(sock.getOutputStream());
     }
