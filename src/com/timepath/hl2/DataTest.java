@@ -7,7 +7,7 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
 import com.timepath.steam.io.BVDF;
 import com.timepath.steam.io.Blob;
-import com.timepath.steam.io.VDF;
+import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.util.Property;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -234,12 +234,12 @@ public class DataTest extends javax.swing.JFrame {
                     } else if(f.getName().toLowerCase().endsWith(".vdf") || f.getName().toLowerCase().endsWith(
                             ".res")) {
                         if(f.getName().toLowerCase().endsWith(".res")) {
-                            VDF res = new VDF();
+                            VDF1 res = new VDF1();
                             res.readExternal(new FileInputStream(f));
                             n = res.getRoot();
                             System.out.println(res.save());
-                        } else if(!VDF.isBinary(f)) {
-                            VDF vdf = new VDF();
+                        } else if(!VDF1.isBinary(f)) {
+                            VDF1 vdf = new VDF1();
                             vdf.readExternal(new FileInputStream(f));
                             n = vdf.getRoot();
 //                            addProperties(n);

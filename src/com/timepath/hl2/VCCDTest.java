@@ -5,7 +5,7 @@ import com.timepath.hl2.io.VCCD.CaptionEntry;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import com.timepath.steam.io.VDF;
+import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.steam.io.storage.util.DirectoryEntry;
 import com.timepath.swing.TreeUtils;
@@ -143,7 +143,7 @@ public class VCCDTest extends javax.swing.JFrame {
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
                     for(int i = 0; i < caps.size(); i++) {
-                        VDF e = new VDF();
+                        VDF1 e = new VDF1();
                         e.readExternal(caps.get(i).asStream());
                         TreeUtils.moveChildren(e.getRoot(), top);
                         pb.setValue(i);

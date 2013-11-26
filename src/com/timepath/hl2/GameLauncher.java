@@ -7,8 +7,8 @@ import com.timepath.plaf.OS;
 import com.timepath.steam.SteamUtils;
 import com.timepath.steam.io.BVDF;
 import com.timepath.steam.io.BVDF.DataNode;
-import com.timepath.steam.io.VDF;
-import com.timepath.steam.io.util.VDFNode;
+import com.timepath.steam.io.VDF1;
+import com.timepath.steam.io.util.VDFNode1;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.io.*;
@@ -236,9 +236,9 @@ public class GameLauncher {
     private static String[] getUserOpts(int appID) {
         try {
             File f = new File(SteamUtils.getUserData(), "config/localconfig.vdf");
-            VDF v = new VDF();
+            VDF1 v = new VDF1();
             v.readExternal(new FileInputStream(f));
-            VDFNode game = v.getRoot()
+            VDFNode1 game = v.getRoot()
                 .get("UserLocalConfigStore")
                 .get("Software")
                 .get("Valve")
@@ -248,7 +248,7 @@ public class GameLauncher {
             if(game == null) {
                 return null;
             }
-            VDFNode launch = game.get("LaunchOptions");
+            VDFNode1 launch = game.get("LaunchOptions");
             if(launch == null) {
                 return null;
             }
