@@ -7,10 +7,10 @@ import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.storage.ACF;
-import com.timepath.steam.io.storage.util.DirectoryEntry;
 import com.timepath.swing.TreeUtils;
 import com.timepath.ui.swing.StringAutoCompleter;
 import com.timepath.utils.Trie;
+import com.timepath.vfs.SimpleVFile;
 import java.awt.*;
 import java.io.*;
 import java.util.*;
@@ -136,15 +136,14 @@ public class VCCDTest extends javax.swing.JFrame {
                 HashMap<Integer, String> map = new HashMap<Integer, String>();
                 LOG.info("Generating hash codes ...");
                 try {
-                    ACF a = ACF.fromManifest(440);
                     CRC32 crc = new CRC32();
                     DefaultMutableTreeNode top = new DefaultMutableTreeNode();
-                    ArrayList<DirectoryEntry> caps = a.find("game_sounds", a.getRoot());//_vo");
+                    ArrayList<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");//_vo");
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
                     for(int i = 0; i < caps.size(); i++) {
                         VDF1 e = new VDF1();
-                        e.readExternal(caps.get(i).asStream());
+                        e.readExternal(caps.get(i).stream());
                         TreeUtils.moveChildren(e.getRoot(), top);
                         pb.setValue(i);
                     }

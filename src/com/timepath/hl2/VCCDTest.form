@@ -231,9 +231,7 @@
                   <Editor editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                     <Connection code="getKeyEditor()" type="code"/>
                   </Editor>
-                  <Renderer editor="org.netbeans.modules.form.ComponentChooserEditor">
-                    <ComponentRef name="null"/>
-                  </Renderer>
+                  <Renderer/>
                 </Column>
                 <Column maxWidth="-1" minWidth="-1" prefWidth="160" resizable="true">
                   <Title/>
