@@ -88,7 +88,7 @@ public class GameLauncher {
      * Split command, replace %command% with args
      * @param command
      * @param args
-     * @return 
+     * @return
      */
     public static String[] tokenize(String command, String[] args) {
         LOG.log(Level.INFO, "Tokenize: {0}, {1}", new Object[] {command, Arrays.toString(args)});
@@ -260,7 +260,38 @@ public class GameLauncher {
 
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
 
-        final AggregateOutputStream aggregate = new AggregateOutputStream();
+        final ArrayList<String> queue = new ArrayList<String>();
+
+        final AggregateOutputStream aggregate = new AggregateOutputStream() {
+
+            /**
+             * Ignore input in output since the PTY solution also prints that to the output...
+             * TODO: Stop it from doing that, print to output manually to avoid performance hit
+             * @param b
+             * @param off
+             * @param len
+             * @throws IOException 
+             */
+            @Override
+            public void write(byte[] b, int off, int len) throws IOException {
+                synchronized(queue) {
+                    String[] test = new String(Arrays.copyOfRange(b, off, off + len)).split("\n");
+                    boolean intern;
+                    for(String t : test) {
+                        if(queue.contains(t)) {
+                            queue.remove(t);
+                            intern = true;
+                        } else {
+                            intern = false;
+                        }
+                        byte[] bytes = ((intern ? "\1" : "") + t + "\n").getBytes("UTF-8");
+                        super.write(bytes, 0, bytes.length);
+                    }
+                }
+                super.flush();
+            }
+
+        };
         final Thread main = new Thread(new Proxy(proc.getInputStream(), aggregate, "< game"), "Subprocess");
         main.start();
         final Thread acceptor = new Thread("Acceptor") {
@@ -270,8 +301,18 @@ public class GameLauncher {
                     try {
                         final Socket client = sock.accept();
                         aggregate.register(client.getOutputStream());
-                        Thread t = new Thread(
-                            new Proxy(client.getInputStream(), proc.getOutputStream(), "client > game"));
+                        Proxy pipe = new Proxy(client.getInputStream(), proc.getOutputStream(), "client > game") {
+
+                            @Override
+                            protected boolean print(String line) {
+                                synchronized(queue) {
+                                    queue.add(line);
+                                }
+                                return super.print(line);
+                            }
+
+                        };
+                        Thread t = new Thread(pipe);
                         t.setDaemon(true);
                         t.start();
                     } catch(SocketTimeoutException ex) {
@@ -330,6 +371,13 @@ public class GameLauncher {
 
         private final Scanner scan;
 
+        /**
+         * Pipes in to out
+         * <p>
+         * @param in
+         * @param out
+         * @param name
+         */
         Proxy(InputStream in, OutputStream out, String name) {
             this.scan = new Scanner(in);
             this.pw = new PrintWriter(out, true);
@@ -337,14 +385,18 @@ public class GameLauncher {
         }
 
         public void run() {
-            while(scan.hasNextLine()) {
-                String line = scan.nextLine();
-                pw.println(line);
-                if(pw.checkError()) {
-                    break;
-                }
-            }
+            while(scan.hasNextLine() && print(scan.nextLine())) {}
             LOG.log(Level.INFO, "Stopped proxying {0}", name);
+        }
+
+        /**
+         * 
+         * @param line
+         * @return false if error
+         */
+        protected boolean print(String line) {
+            pw.println(line);
+            return !pw.checkError();
         }
 
     }
