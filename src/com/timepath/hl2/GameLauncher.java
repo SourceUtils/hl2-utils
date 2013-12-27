@@ -26,14 +26,6 @@ import static com.timepath.plaf.OS.Windows;
  * Starts a game and relay server.
  * TODO: Use Steam runtime on linux
  * <p/>
- * echo toggleconsole > /dev/tcp/localhost/12345
- * <p/>
- * N=bottles of beer
- * for I in $(seq 99 -1 1); do echo "echo $I $N on the wall, $I $N. Take 1 down, pass it around,\
- * `expr $I - 1` $N on the wall" > /dev/tcp/localhost/12345; sleep 1; done
- * <p/>
- * for I in $(seq 40 -1 0); do echo "say_team Uber in $I seconds" > /dev/tcp/localhost/12345; sleep 1; done
- * <p/>
  * @author TimePath
  */
 public class GameLauncher {
@@ -48,7 +40,6 @@ public class GameLauncher {
             script = new File(base, m.get(OS.get()));
             args = new String[] {script.getPath(), "-game", "tf", "-steam"};
         }
-
     };
 
     private static final Logger LOG = Logger.getLogger(GameLauncher.class.getName());
@@ -86,8 +77,10 @@ public class GameLauncher {
 
     /**
      * Split command, replace %command% with args
-     * @param command
-     * @param args
+     * <p>
+     * @param command Command string
+     * @param args    %command% replacement
+     * <p>
      * @return
      */
     public static String[] tokenize(String command, String[] args) {
@@ -150,7 +143,8 @@ public class GameLauncher {
     }
 
     /**
-     *
+     * Prompt user for execution command
+     * <p>
      * @return tokenized args
      * <p>
      * @throws IOException
@@ -203,7 +197,7 @@ public class GameLauncher {
 
     /**
      *
-     * @param appID
+     * @param appID Steam application ID
      * <p>
      * @return User launch options prepended with %command% if not present
      */
@@ -240,11 +234,11 @@ public class GameLauncher {
     /**
      * Starts the process
      * <p>
-     * @param cmd
-     * @param env
-     * @param dir
-     * @param port
-     *             <p>
+     * @param cmd  Command to exec
+     * @param env  Env vars
+     * @param dir  Working directory to run game from
+     * @param port Port to listen on
+     * <p>
      * @throws IOException
      */
     private static void start(String[] cmd, String[] env, String dir, int port) throws IOException {
@@ -267,10 +261,8 @@ public class GameLauncher {
             /**
              * Ignore input in output since the PTY solution also prints that to the output...
              * TODO: Stop it from doing that, print to output manually to avoid performance hit
-             * @param b
-             * @param off
-             * @param len
-             * @throws IOException 
+             * <p>
+             * @throws IOException
              */
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
@@ -292,7 +284,14 @@ public class GameLauncher {
             }
 
         };
-        final Thread main = new Thread(new Proxy(proc.getInputStream(), aggregate, "< game"), "Subprocess");
+        final Thread main = new Thread(new Proxy(proc.getInputStream(), aggregate, "server <--> game") {
+
+            @Override
+            protected boolean print(String line) {
+//                System.err.println(line); // Steam listens to stderr
+                return super.print(line);
+            }
+        }, "Subprocess");
         main.start();
         final Thread acceptor = new Thread("Acceptor") {
             @Override
@@ -301,7 +300,7 @@ public class GameLauncher {
                     try {
                         final Socket client = sock.accept();
                         aggregate.register(client.getOutputStream());
-                        Proxy pipe = new Proxy(client.getInputStream(), proc.getOutputStream(), "client > game") {
+                        Proxy pipe = new Proxy(client.getInputStream(), proc.getOutputStream(), "client <--> game") {
 
                             @Override
                             protected boolean print(String line) {
@@ -384,14 +383,16 @@ public class GameLauncher {
             this.name = name;
         }
 
+        @SuppressWarnings("empty-statement")
         public void run() {
-            while(scan.hasNextLine() && print(scan.nextLine())) {}
+            while(scan.hasNextLine() && print(scan.nextLine()));
             LOG.log(Level.INFO, "Stopped proxying {0}", name);
         }
 
         /**
-         * 
-         * @param line
+         *
+         * @param line The line to print
+         * <p>
          * @return false if error
          */
         protected boolean print(String line) {
