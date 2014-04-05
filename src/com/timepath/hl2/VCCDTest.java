@@ -27,6 +27,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.TreeNode;
 
 /**
  * http://hlssmod.net/he_code/utils/captioncompiler/captioncompiler.cpp
@@ -39,18 +40,20 @@ public class VCCDTest extends javax.swing.JFrame {
 
     private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
 
-    private static final Preferences prefs = Preferences.userRoot()
-            .node("timepath").node("hl2-caption-editor");
+    private static final Preferences prefs = Preferences.userRoot().node("timepath").node("hl2-caption-editor");
 
     public VCCDTest() {
+        // Load known mappings from preferences
         try {
-            String[] children = prefs.keys();
-            for(String children1 : children) {
-                int hash = prefs.getInt(children1, -1);
-                LOG.log(Level.FINER, "{0} = {1}", new Object[] {children1, hash});
-                if(hash != -1) {
-                    hashmap.put(hash, children1);
-                    trie.add(children1);
+            String[] children = prefs.childrenNames();
+            for(String channel : children) {
+                for(String name : prefs.node(channel).keys()) {
+                    int hash = prefs.getInt(name, -1);
+                    LOG.log(Level.FINER, "{0} = {1}", new Object[] {name, hash});
+                    if(hash != -1) {
+                        hashmap.put(hash, new StringPair(name, channel));
+                        trie.add(name);
+                    }
                 }
             }
         } catch(BackingStoreException ex) {
@@ -78,7 +81,7 @@ public class VCCDTest extends javax.swing.JFrame {
         });
     }
 
-    private final HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
+    private final HashMap<Integer, StringPair> hashmap = new HashMap<Integer, StringPair>();
 
     private final Trie trie = new Trie();
 
@@ -90,18 +93,19 @@ public class VCCDTest extends javax.swing.JFrame {
 
     /**
      * @param args the command line arguments
+     * <p/>
      * @throws java.io.IOException
      */
     public static void main(String[] args) throws IOException {
         try {
             if(args.length > 0) {
                 ArrayList<CaptionEntry> in = VCCD.importFile(args[0]);
-                HashMap<Integer, String> hashmap = new HashMap<Integer, String>();
+                HashMap<Integer, StringPair> hashmap = new HashMap<Integer, StringPair>();
                 for(CaptionEntry i : in) { // learning
                     Object crc = i.getKey();
                     String token = i.getTrueKey();
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
-                    hashmap.put((int) hash, token);
+                    hashmap.put((int) hash, new StringPair(token, CHAN_UNKNOWN));
                 }
                 persistHashmap(hashmap);
                 VCCD.save(in, new FileOutputStream("closecaption_english.dat"));
@@ -111,19 +115,32 @@ public class VCCDTest extends javax.swing.JFrame {
             LOG.log(Level.SEVERE, null, ex);
         }
 
-        java.awt.EventQueue.invokeLater(
-                new Runnable() {
-                    public void run() {
-                        VCCDTest c = new VCCDTest();
-                        c.setLocationRelativeTo(null);
-                        c.setVisible(true);
-                    }
-                });
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                VCCDTest c = new VCCDTest();
+                c.setLocationRelativeTo(null);
+                c.setVisible(true);
+            }
+        });
     }
     //<editor-fold defaultstate="collapsed" desc="Hash codes">
 
+    private static final String CHAN_UNKNOWN = "CHAN_UNKNOWN";
+
+    private static class StringPair {
+
+        String channel, name;
+
+        StringPair(String name, String channel) {
+            this.channel = channel;
+            this.name = name;
+        }
+
+    }
+
     private void generateHash() {
         new Thread(new Runnable() {
+
             public void run() {
                 final JFrame frame = new JFrame("Generating hash codes...");
                 JProgressBar pb = new JProgressBar();
@@ -133,27 +150,36 @@ public class VCCDTest extends javax.swing.JFrame {
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
 
-                HashMap<Integer, String> map = new HashMap<Integer, String>();
+                HashMap<Integer, StringPair> map = new HashMap<Integer, StringPair>();
                 LOG.info("Generating hash codes ...");
                 try {
                     CRC32 crc = new CRC32();
                     DefaultMutableTreeNode top = new DefaultMutableTreeNode();
-                    ArrayList<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");//_vo");
+                    ArrayList<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
                     for(int i = 0; i < caps.size(); i++) {
                         VDF1 e = new VDF1();
                         e.readExternal(caps.get(i).stream());
                         TreeUtils.moveChildren(e.getRoot(), top);
-                        pb.setValue(i);
+                        pb.setValue(i + 1);
                     }
 
+                    String spl = "channel == ";
                     for(int i = 0; i < top.getChildCount(); i++) {
-                        String str = top.getChildAt(i).toString();
+                        TreeNode node = top.getChildAt(i);
+                        String str = node.toString();
                         str = str.replaceAll("\"", "").toLowerCase();
+                        String channel = CHAN_UNKNOWN;
+                        for(int j = 0; j < node.getChildCount(); j++) {
+                            String prop = node.getChildAt(j).toString();
+                            if(prop.startsWith(spl)) {
+                                channel = prop.split(spl)[1];
+                            }
+                        }
                         LOG.log(Level.FINER, str);
                         crc.update(str.getBytes());
-                        map.put((int) crc.getValue(), str);
+                        map.put((int) crc.getValue(), new StringPair(str, channel));
                         crc.reset();
                     }
                 } catch(IOException ex) {
@@ -167,14 +193,14 @@ public class VCCDTest extends javax.swing.JFrame {
         }).start();
     }
 
-    private static void persistHashmap(HashMap<Integer, String> map) {
-        for(Entry<Integer, String> entry : map.entrySet()) {
+    private static void persistHashmap(HashMap<Integer, StringPair> map) {
+        for(Entry<Integer, StringPair> entry : map.entrySet()) {
             Integer key = entry.getKey();
-            String value = entry.getValue();
+            String value = entry.getValue().name;
             if(key == null || value == null) {
                 continue;
             }
-            prefs.putInt(value, key);
+            prefs.node(entry.getValue().channel).putInt(value, key);
         }
     }
 
@@ -191,7 +217,7 @@ public class VCCDTest extends javax.swing.JFrame {
 //            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
             return null;
         }
-        return hashmap.get(hash);
+        return hashmap.get(hash).name;
     }
     //</editor-fold>
 
@@ -214,6 +240,8 @@ public class VCCDTest extends javax.swing.JFrame {
         jMenuItem6 = new javax.swing.JMenuItem();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem8 = new javax.swing.JMenuItem();
+        jMenuItem12 = new javax.swing.JMenuItem();
         jMenuItem11 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem10 = new javax.swing.JMenuItem();
@@ -221,7 +249,6 @@ public class VCCDTest extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
         jMenuItem9 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         jMenuItem7 = new javax.swing.JMenuItem();
 
@@ -267,13 +294,14 @@ public class VCCDTest extends javax.swing.JFrame {
         jTable1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
         jTable1.setRowHeight(24);
         contentPane.setViewportView(jTable1);
-        jTable1.getColumnModel().getColumn(0).setMinWidth(85);
-        jTable1.getColumnModel().getColumn(0).setPreferredWidth(85);
-        jTable1.getColumnModel().getColumn(0).setMaxWidth(85);
-        jTable1.getColumnModel().getColumn(1).setPreferredWidth(160);
-        jTable1.getColumnModel().getColumn(1).setCellEditor(getKeyEditor());
-        jTable1.getColumnModel().getColumn(1).setCellRenderer(null);
-        jTable1.getColumnModel().getColumn(2).setPreferredWidth(160);
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
+            jTable1.getColumnModel().getColumn(0).setMinWidth(85);
+            jTable1.getColumnModel().getColumn(0).setPreferredWidth(85);
+            jTable1.getColumnModel().getColumn(0).setMaxWidth(85);
+            jTable1.getColumnModel().getColumn(1).setPreferredWidth(160);
+            jTable1.getColumnModel().getColumn(1).setCellEditor(getKeyEditor());
+            jTable1.getColumnModel().getColumn(2).setPreferredWidth(160);
+        }
 
         getContentPane().add(contentPane);
 
@@ -309,10 +337,28 @@ public class VCCDTest extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem3);
 
+        jMenuItem8.setMnemonic('X');
+        jMenuItem8.setText("Export");
+        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                export(evt);
+            }
+        });
+        jMenu1.add(jMenuItem8);
+
+        jMenuItem12.setMnemonic('E');
+        jMenuItem12.setText("Export all");
+        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportAll(evt);
+            }
+        });
+        jMenu1.add(jMenuItem12);
+
         jMenuItem11.setText("Generate hash codes");
         jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem11ActionPerformed(evt);
+                generateHash(evt);
             }
         });
         jMenu1.add(jMenuItem11);
@@ -366,14 +412,6 @@ public class VCCDTest extends javax.swing.JFrame {
         });
         jMenu2.add(jMenuItem9);
 
-        jMenuItem8.setText("Export");
-        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                export(evt);
-            }
-        });
-        jMenu2.add(jMenuItem8);
-
         menuBar.add(jMenu2);
 
         jMenu3.setText("Help");
@@ -420,13 +458,14 @@ public class VCCDTest extends javax.swing.JFrame {
             }
             for(int i = 0; i < entries.size(); i++) {
                 model.addRow(new Object[] {hexFormat(entries.get(i).getKey()), attemptDecode(
-                    entries.get(i).getKey()), entries.get(i).getValue()});
+                                           entries.get(i).getKey()), entries.get(i).getValue()});
             }
             saveFile = files[0];
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_loadCaptions
+
     private File saveFile;
 
     private void save(boolean flag) {
@@ -465,7 +504,9 @@ public class VCCDTest extends javax.swing.JFrame {
             long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
             Object val = model.getValueAt(i, 1);
             String token = val instanceof String ? val.toString() : null;
-            hashmap.put((int) hash, token);
+            if(!hashmap.containsKey((int) hash)) {
+                hashmap.put((int) hash, new StringPair(token, CHAN_UNKNOWN));
+            }
             e.setKey(hash);
             e.setValue(model.getValueAt(i, 2).toString());
             entries.add(e);
@@ -503,7 +544,9 @@ public class VCCDTest extends javax.swing.JFrame {
             for(int i = 0; i < entries.size(); i++) {
                 int hash = entries.get(i).getKey();
                 String token = entries.get(i).getTrueKey();
-                hashmap.put(hash, token);
+                if(!hashmap.containsKey(hash)) {
+                    hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
+                }
                 model.addRow(new Object[] {hexFormat(entries.get(i).getKey()),
                                            entries.get(i).getTrueKey(), entries.get(i).getValue()});
             }
@@ -541,45 +584,45 @@ public class VCCDTest extends javax.swing.JFrame {
 
     private void formattingHelp(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattingHelp
         String message = "Main:\n"
-                         + "Avoid using spaces immediately after opening tags.\n"
-                         + "<clr:r,g,b>\n"
-                         + "  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.\n"
-                         + "  For example, <clr:255,100,100> would be red.\n"
-                         + "  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?\n"
+                             + "Avoid using spaces immediately after opening tags.\n"
+                             + "<clr:r,g,b>\n"
+                             + "  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.\n"
+                             + "  For example, <clr:255,100,100> would be red.\n"
+                             + "  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?\n"
                          + "<B>\n"
-                         + "  Toggles bold text for the next phrase.\n"
-                         + "<I>\n"
-                         + "  Toggles italicised text for the next phrase.\n"
-                         + "<U>\n"
-                         + "  Toggles underlined text for the next phrase.\n"
-                         + "<cr>\n"
-                         + "  Go to new line for next phrase.\n"
-                         + "Other:\n"
-                         + "<sfx>\n"
-                         + "  Marks a line as a sound effect that will only be displayed with full closed captioning.\n"
+                             + "  Toggles bold text for the next phrase.\n"
+                             + "<I>\n"
+                             + "  Toggles italicised text for the next phrase.\n"
+                             + "<U>\n"
+                             + "  Toggles underlined text for the next phrase.\n"
+                             + "<cr>\n"
+                             + "  Go to new line for next phrase.\n"
+                             + "Other:\n"
+                             + "<sfx>\n"
+                             + "  Marks a line as a sound effect that will only be displayed with full closed captioning.\n"
                          + "  If the user has cc_subtitles 1, it will not display these lines.\n"
-                         + "<delay:#>\n"
-                         + "  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can take a decimal value.\n"
+                             + "<delay:#>\n"
+                             + "  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can take a decimal value.\n"
                          + "\nUnknown:\n"
-                         + "<sameline>\n"
-                         + "  Don't go to new line for next phrase.\n"
-                         + "<linger:#> / <persist:#> / <len:#>\n"
-                         + "  Indicates how much longer than usual the caption should appear on the screen.\n"
-                         + "<position:where>\n"
-                         + "  I don't know how this one works, but from the sdk comments:\n"
-                         + "  Draw caption at special location ??? needed.\n"
-                         + "<norepeat:#>\n"
-                         + "  Sets how long until the caption can appear again. Useful for frequent sounds.\n"
-                         + "  See also: cc_sentencecaptionnorepeat\n"
-                         + "<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>\n"
-                         + "\n"
-                         + "closecaption 1 enables the captions\n"
-                         + "cc_subtitles 1 disables <sfx> captions\n"
-                         + "Captions last for 5 seconds + cc_linger_time\n"
-                         + "Captions are delayed by cc_predisplay_time seconds\n"
-                         + "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n"
+                             + "<sameline>\n"
+                             + "  Don't go to new line for next phrase.\n"
+                             + "<linger:#> / <persist:#> / <len:#>\n"
+                             + "  Indicates how much longer than usual the caption should appear on the screen.\n"
+                             + "<position:where>\n"
+                             + "  I don't know how this one works, but from the sdk comments:\n"
+                             + "  Draw caption at special location ??? needed.\n"
+                             + "<norepeat:#>\n"
+                             + "  Sets how long until the caption can appear again. Useful for frequent sounds.\n"
+                             + "  See also: cc_sentencecaptionnorepeat\n"
+                             + "<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>\n"
+                             + "\n"
+                             + "closecaption 1 enables the captions\n"
+                             + "cc_subtitles 1 disables <sfx> captions\n"
+                             + "Captions last for 5 seconds + cc_linger_time\n"
+                             + "Captions are delayed by cc_predisplay_time seconds\n"
+                             + "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n"
                          + "cc_random emits a random caption\n"
-                         + "";
+                             + "";
         JOptionPane pane = new JOptionPane(new JScrollPane(new JTextArea(message)),
                                            JOptionPane.INFORMATION_MESSAGE);
         JDialog dialog = pane.createDialog(null, "Formatting");
@@ -592,7 +635,7 @@ public class VCCDTest extends javax.swing.JFrame {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         for(int i = 0; i < model.getRowCount(); i++) {
             sb.append(model.getValueAt(i, 0)).append("\t").append(model.getValueAt(i, 2)).append(
-                    "\n");
+                "\n");
         }
         JTextArea pane = new JTextArea(sb.toString());
         Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
@@ -638,9 +681,31 @@ public class VCCDTest extends javax.swing.JFrame {
         save(true);
     }//GEN-LAST:event_saveCaptionsAs
 
-    private void jMenuItem11ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem11ActionPerformed
+    private void generateHash(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateHash
         generateHash();
-    }//GEN-LAST:event_jMenuItem11ActionPerformed
+    }//GEN-LAST:event_generateHash
+
+    private void exportAll(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAll
+        try {
+            NativeFileChooser fc = new NativeFileChooser();
+            fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG);
+            fc.setTitle("Export");
+            fc.addFilter(new ExtensionFilter("XML", ".xml"));
+            fc.setParent(this);
+
+            File[] fs = fc.choose();
+            if(fs == null) {
+                return;
+            }
+            saveFile = fs[0];
+
+            prefs.exportSubtree(new FileOutputStream(saveFile));
+        } catch(IOException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        } catch(BackingStoreException ex) {
+            LOG.log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_exportAll
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JScrollPane contentPane;
@@ -651,6 +716,7 @@ public class VCCDTest extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem10;
     private javax.swing.JMenuItem jMenuItem11;
+    private javax.swing.JMenuItem jMenuItem12;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
