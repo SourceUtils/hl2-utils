@@ -1,14 +1,12 @@
 package com.timepath.hl2;
 
 import com.timepath.DataUtils;
-import com.timepath.hl2.io.util.Element;
 import com.timepath.plaf.OS;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
 import com.timepath.steam.io.BVDF;
 import com.timepath.steam.io.Blob;
 import com.timepath.steam.io.VDF1;
-import com.timepath.steam.io.util.Property;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
@@ -17,12 +15,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.StringTokenizer;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SwingWorker;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
@@ -33,6 +32,8 @@ import javax.swing.tree.DefaultTreeModel;
  */
 @SuppressWarnings("serial")
 public class DataTest extends javax.swing.JFrame {
+
+    private static final Logger LOG = Logger.getLogger(DataTest.class.getName());
 
     /**
      * Creates new form VDFTest
@@ -51,7 +52,7 @@ public class DataTest extends javax.swing.JFrame {
                     File file = null;
                     if(OS.isLinux()) {
                         DataFlavor nixFileDataFlavor = new DataFlavor(
-                                "text/uri-list;class=java.lang.String");
+                            "text/uri-list;class=java.lang.String");
                         String data = (String) t.getTransferData(nixFileDataFlavor);
                         for(StringTokenizer st = new StringTokenizer(data, "\r\n"); st.hasMoreTokens();) {
                             String token = st.nextToken().trim();
@@ -94,6 +95,83 @@ public class DataTest extends javax.swing.JFrame {
         //</editor-fold>
     }
 
+    private void open(final File f) {
+        if(f == null) {
+            LOG.info("File is null");
+            return;
+        } else {
+            LOG.log(Level.INFO, "File is {0}", f);
+        }
+        final DefaultTreeModel model = ((DefaultTreeModel) jTree1.getModel());
+        final DefaultMutableTreeNode pseudo = new DefaultMutableTreeNode(f.getPath());
+        model.setRoot(pseudo);
+
+        new SwingWorker<DefaultMutableTreeNode, Void>() {
+            @Override
+            protected DefaultMutableTreeNode doInBackground() throws Exception {
+                DefaultMutableTreeNode n = null;
+                try {
+                    if(f.getName().toLowerCase().endsWith(".blob")) {
+                        Blob bin = new Blob();
+                        bin.readExternal(DataUtils.mapFile(f));
+                        n = bin.getRoot();
+                    } else if(f.getName().toLowerCase().matches("^.*(vdf|res)$")) {
+                        if(!VDF1.isBinary(f)) {
+                            VDF1 res = new VDF1();
+                            res.readExternal(new FileInputStream(f));
+                            n = res.getRoot();
+                        } else {
+                            BVDF bin = new BVDF();
+                            bin.readExternal(DataUtils.mapFile(f));
+                            n = bin.getRoot();
+                        }
+                    } else if(f.getName().toLowerCase().endsWith(".bin")) {
+                        BVDF bin = new BVDF();
+                        bin.readExternal(DataUtils.mapFile(f));
+                        n = bin.getRoot();
+                    } else {
+                        JOptionPane.showMessageDialog(DataTest.this,
+                                                      MessageFormat.format("{0} is not supported", f.getAbsolutePath()),
+                                                      "Invalid file", JOptionPane.ERROR_MESSAGE);
+                    }
+                } catch(StackOverflowError e) {
+                    LOG.warning("Stack Overflow");
+                } catch(Exception e) {
+                    e.printStackTrace();
+                }
+                return n;
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    DefaultMutableTreeNode n = get();
+                    if(n != null) {
+                        pseudo.add(n);
+                    }
+                    model.reload();
+//                    TreeUtils.expand(DataTest.this.jTree1);
+                } catch(InterruptedException ex) {
+                    Logger.getLogger(DataTest.class.getName()).log(Level.SEVERE, null, ex);
+                } catch(ExecutionException ex) {
+                    Logger.getLogger(DataTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }.execute();
+
+    }
+
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String... args) {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new DataTest().setVisible(true);
+            }
+        });
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -110,8 +188,6 @@ public class DataTest extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data viewer");
@@ -158,24 +234,6 @@ public class DataTest extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem3);
 
-        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem4.setText("AppUpdateStats");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateStats(evt);
-            }
-        });
-        jMenu1.add(jMenuItem4);
-
-        jMenuItem5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem5.setText("ClientRegistry");
-        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                clientRegistry(evt);
-            }
-        });
-        jMenu1.add(jMenuItem5);
-
         jMenuBar1.add(jMenu1);
 
         setJMenuBar(jMenuBar1);
@@ -203,117 +261,14 @@ public class DataTest extends javax.swing.JFrame {
         open(new File(SteamUtils.getSteam() + "/appcache/packageinfo.vdf"));
     }//GEN-LAST:event_packageInfo
 
-    private void updateStats(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateStats
-        open(new File(SteamUtils.getSteam() + "/AppUpdateStats.blob"));
-    }//GEN-LAST:event_updateStats
-
-    private void clientRegistry(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientRegistry
-        open(new File(SteamUtils.getSteam() + "/ClientRegistry.blob"));
-    }//GEN-LAST:event_clientRegistry
-
-    private void open(final File f) {
-        if(f == null) {
-            LOG.info("File is null");
-            return;
-        } else {
-            LOG.log(Level.INFO, "File is {0}", f);
-        }
-        final DefaultTreeModel model = ((DefaultTreeModel) jTree1.getModel());
-        final DefaultMutableTreeNode pseudo = new DefaultMutableTreeNode(f.getPath());
-        model.setRoot(pseudo);
-
-        new SwingWorker<DefaultMutableTreeNode, Void>() {
-            @Override
-            protected DefaultMutableTreeNode doInBackground() throws Exception {
-                DefaultMutableTreeNode n = null;
-                try {
-                    if(f.getName().toLowerCase().endsWith(".blob")) {
-                        Blob bin = new Blob();
-                        bin.readExternal(DataUtils.mapFile(f));
-                        n = bin.getRoot();
-                    } else if(f.getName().toLowerCase().endsWith(".vdf") || f.getName().toLowerCase().endsWith(
-                            ".res")) {
-                        if(f.getName().toLowerCase().endsWith(".res")) {
-                            VDF1 res = new VDF1();
-                            res.readExternal(new FileInputStream(f));
-                            n = res.getRoot();
-                            System.out.println(res.save());
-                        } else if(!VDF1.isBinary(f)) {
-                            VDF1 vdf = new VDF1();
-                            vdf.readExternal(new FileInputStream(f));
-                            n = vdf.getRoot();
-//                            addProperties(n);
-                        } else {
-                            BVDF bin = new BVDF();
-                            bin.readExternal(DataUtils.mapFile(f));
-                            n = bin.getRoot();
-                        }
-                    } else if(f.getName().toLowerCase().endsWith(".bin")) {
-                        BVDF bin = new BVDF();
-                        bin.readExternal(DataUtils.mapFile(f));
-                        n = bin.getRoot();
-                    }
-                } catch(StackOverflowError e) {
-                    LOG.warning("Stack Overflow");
-                } catch(Exception e) {
-                    e.printStackTrace();
-                }
-                return n;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    DefaultMutableTreeNode n = get();
-                    if(n != null) {
-                        pseudo.add(n);
-                    }
-                    model.reload();
-//                    TreeUtils.expand(DataTest.this.jTree1);
-                } catch(InterruptedException ex) {
-                    Logger.getLogger(DataTest.class.getName()).log(Level.SEVERE, null, ex);
-                } catch(ExecutionException ex) {
-                    Logger.getLogger(DataTest.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }.execute();
-
-    }
-
-    private void addProperties(DefaultMutableTreeNode tn) {
-        for(int i = 0; i < tn.getChildCount(); i++) {
-            addProperties((DefaultMutableTreeNode) tn.getChildAt(i));
-        }
-        if(tn.getUserObject() instanceof Element) {
-            ArrayList<Property> props = ((Element) tn.getUserObject()).getProps();
-            for(int i = 0; i < props.size(); i++) {
-                tn.add(new DefaultMutableTreeNode(props.get(i)));
-            }
-        }
-    }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String... args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new DataTest().setVisible(true);
-            }
-        });
-    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables
-
-    private static final Logger LOG = Logger.getLogger(DataTest.class.getName());
 
 }
