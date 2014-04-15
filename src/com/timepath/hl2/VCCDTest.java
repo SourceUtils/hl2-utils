@@ -155,7 +155,7 @@ public class VCCDTest extends javax.swing.JFrame {
                 try {
                     CRC32 crc = new CRC32();
                     DefaultMutableTreeNode top = new DefaultMutableTreeNode();
-                    ArrayList<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");
+                    List<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
                     for(int i = 0; i < caps.size(); i++) {
