@@ -4,6 +4,7 @@ import com.timepath.hl2.io.VTF;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.ftp.FTPFS;
+import com.timepath.vfs.fuse.FUSEFS;
 import com.timepath.vfs.http.HTTPFS;
 import java.awt.Image;
 import java.awt.image.RenderedImage;
@@ -88,6 +89,9 @@ public class ArchiveHost {
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
+            FUSEFS fuse = new FUSEFS("test");
+            fuse.copyFrom(files);
+            new Thread(fuse).start();
         } catch(FileNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
