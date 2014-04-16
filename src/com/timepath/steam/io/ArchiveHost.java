@@ -11,6 +11,7 @@ import java.awt.image.RenderedImage;
 import java.io.*;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -30,6 +31,8 @@ public class ArchiveHost {
         try {
             final ACF acf = ACF.fromManifest(appID);
             Collection<? extends SimpleVFile> files = acf.list();
+
+            final Semaphore available = new Semaphore(Runtime.getRuntime().availableProcessors() * 2, true);
             for(SimpleVFile f : files) {
                 for(final SimpleVFile found : f.find(".vtf")) {
                     SimpleVFile png = new SimpleVFile() {
@@ -50,13 +53,16 @@ public class ArchiveHost {
                         public InputStream stream() {
                             byte[] arr = data.get();
                             if(arr == null) {
+                                boolean release = false;
                                 try {
-                                    LOG.log(Level.INFO, "Streaming {0}", found);
+                                    available.acquire();
+                                    release = true;
+                                    LOG.log(Level.INFO, "Converting {0}...", found);
                                     final VTF v = VTF.load(found.stream());
                                     if(v == null) {
                                         return null;
                                     }
-                                    Image i = v.getImage(0); // v.mipCount - 1
+                                    Image i = v.getImage(Math.max(v.mipCount - 2, 0));
                                     if(i == null) {
                                         return null;
                                     }
@@ -66,6 +72,13 @@ public class ArchiveHost {
                                     data = new SoftReference<byte[]>(arr);
                                 } catch(IOException ex) {
                                     LOG.log(Level.SEVERE, null, ex);
+                                } catch(InterruptedException ex) {
+                                    LOG.log(Level.SEVERE, null, ex);
+                                } finally {
+                                    LOG.log(Level.INFO, "Converted {0}", found);
+                                    if(release) {
+                                        available.release();
+                                    }
                                 }
                             }
                             return new ByteArrayInputStream(arr);
