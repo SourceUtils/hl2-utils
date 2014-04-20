@@ -1,3 +1,5 @@
 /build/
 /dist/
 /nbproject/private/
+/*.so
+/hs_err_pid*.log
