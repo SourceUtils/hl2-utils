@@ -22,6 +22,8 @@ import javax.swing.tree.DefaultTreeModel;
 @SuppressWarnings("serial")
 public class DEMTest extends javax.swing.JFrame {
 
+    private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
+
     /** Creates new form DEMTest */
     public DEMTest() {
         initComponents();
@@ -79,6 +81,11 @@ public class DEMTest extends javax.swing.JFrame {
 
                 DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
 
+                Object nodeInfo = root.getUserObject();
+                if(nodeInfo instanceof Message) {
+                    hexEditor1.setData(((Message) nodeInfo).data);
+                }
+
                 for(Object entry : frame.meta) {
                     DefaultMutableTreeNode n = new DefaultMutableTreeNode(entry);
                     root.add(n);
@@ -88,7 +95,19 @@ public class DEMTest extends javax.swing.JFrame {
                 jTree1.setModel(new DefaultTreeModel(root));
             }
         });
+    }
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new DEMTest().setVisible(true);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -103,8 +122,11 @@ public class DEMTest extends javax.swing.JFrame {
         jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTree1 = new javax.swing.JTree();
+        hexEditor1 = new com.timepath.hex.HexEditor();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -113,8 +135,9 @@ public class DEMTest extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("netdecode");
 
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(0.5);
+        jSplitPane1.setDividerSize(0);
+        jSplitPane1.setResizeWeight(1.0);
+        jSplitPane1.setEnabled(false);
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -142,14 +165,27 @@ public class DEMTest extends javax.swing.JFrame {
         jTable1.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane2.setViewportView(jTable1);
 
-        jSplitPane1.setTopComponent(jScrollPane2);
+        jSplitPane1.setLeftComponent(jScrollPane2);
+
+        jSplitPane2.setDividerLocation(-1);
+        jSplitPane2.setDividerSize(0);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setEnabled(false);
+
+        jTabbedPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree1.setRootVisible(false);
         jScrollPane1.setViewportView(jTree1);
 
-        jSplitPane1.setRightComponent(jScrollPane1);
+        jTabbedPane1.addTab("Hierarchy", jScrollPane1);
+
+        jSplitPane2.setTopComponent(jTabbedPane1);
+        jSplitPane2.setRightComponent(hexEditor1);
+
+        jSplitPane1.setRightComponent(jSplitPane2);
 
         jMenu1.setText("File");
 
@@ -177,11 +213,11 @@ public class DEMTest extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 920, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 659, Short.MAX_VALUE)
         );
 
         pack();
@@ -193,42 +229,30 @@ public class DEMTest extends javax.swing.JFrame {
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
         try {
-            
+
             File[] fs = new NativeFileChooser()
                 .setTitle("Open DEM")
                 .setParent(this)
                 .setDirectory(new File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/."))
                 .addFilter(new ExtensionFilter("Demo files", "dem"))
                 .choose();
-            
+
             if(fs == null) {
                 return;
             }
-            
+
             HL2DEM d = HL2DEM.load(fs[0]);
             DefaultTableModel m = (DefaultTableModel) this.jTable1.getModel();
             for(Message f : d.getFrames()) {
-                m.addRow(new Object[] {f, f.tick, f.type, f.data});
+                m.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
         } catch(IOException ioe) {
             LOG.log(Level.SEVERE, null, ioe);
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new DEMTest().setVisible(true);
-            }
-        });
-    }
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private com.timepath.hex.HexEditor hexEditor1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
@@ -236,10 +260,10 @@ public class DEMTest extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTree jTree1;
     // End of variables declaration//GEN-END:variables
-
-    private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
 
 }
