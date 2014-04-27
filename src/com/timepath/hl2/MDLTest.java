@@ -17,6 +17,7 @@ import com.jme3.system.JmeCanvasContext;
 import com.jme3.texture.*;
 import com.jme3.util.BufferUtils;
 import com.timepath.hl2.io.VTF;
+import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.studiomodel.StudioModel;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.storage.ACF;
@@ -79,7 +80,8 @@ public class MDLTest extends SimpleApplication {
         attachCoordinateAxes(Vector3f.ZERO, 10, 4);
         rootNode.attachChild(modelNode);
 
-        loadModel("tf/models/player/heavy.mdl");
+//        loadModel("tf/models/player/heavy.mdl");
+        loadMap("tf/maps/ctf_2fort.bsp");
     }
 
     @Override
@@ -168,7 +170,7 @@ public class MDLTest extends SimpleApplication {
     protected void initInput() {
         flyCam.setDragToRotate(true);
         flyCam.setEnabled(false);
-
+        
         ChaseCamera chaseCam = new ChaseCamera(cam, rootNode, inputManager);
         chaseCam.setSmoothMotion(false);
         chaseCam.setRotationSpeed(3);
@@ -180,6 +182,33 @@ public class MDLTest extends SimpleApplication {
         chaseCam.setDefaultHorizontalRotation(FastMath.HALF_PI - FastMath.HALF_PI / 2);
         chaseCam.setDefaultDistance(100);
         chaseCam.setMaxDistance(300);
+        
+        chaseCam.setMaxDistance(30000);
+        cam.setFrustumFar(30000);
+        chaseCam.setZoomSensitivity(1000);
+    }
+
+    protected void loadMap(final String name) {
+        final Application application = MDLTest.this;
+        executor.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    final Spatial mdl = assetManager.loadModel(name);
+
+                    return application.enqueue(new Callable<Void>() {
+                        @Override
+                        public Void call() {
+                            modelNode.attachChild(mdl);
+                            return null;
+                        }
+                    }).get();
+                } catch(Exception ex) {
+                    LOG.log(Level.SEVERE, null, ex);
+                }
+                return null;
+            }
+        });
     }
 
     protected void loadModel(final String name) {
@@ -226,6 +255,7 @@ public class MDLTest extends SimpleApplication {
     protected void registerLoaders() {
         this.assetManager.registerLocator("/", ACFLocator.class);
         this.assetManager.registerLocator("/", FileLocator.class);
+        this.assetManager.registerLoader(BSPLoader.class, "bsp");
         this.assetManager.registerLoader(MDLLoader.class, "mdl");
         this.assetManager.registerLoader(VTFLoader.class, "vtf");
     }
@@ -248,11 +278,13 @@ public class MDLTest extends SimpleApplication {
             a = loading;
         }
 
+        @Override
         public void setRootPath(String path) {
             rootPath = path;
         }
 
-        @SuppressWarnings(value = "rawtypes")
+        @SuppressWarnings("rawtypes")
+        @Override
         public AssetInfo locate(AssetManager manager, AssetKey key) {
             if(a == null) {
                 throw new AssetLoadException(MessageFormat.format(
@@ -285,11 +317,51 @@ public class MDLTest extends SimpleApplication {
 
     }
 
+    public static class BSPLoader implements AssetLoader {
+
+        private static final Logger LOG = Logger.getLogger(BSPLoader.class.getName());
+
+        @Override
+        public Object load(AssetInfo info) throws IOException {
+            AssetManager am = info.getManager();
+            String name = info.getKey().getName();
+            LOG.log(Level.INFO, "Loading {0}...\n", name);
+
+            BSP m = BSP.load(info.openStream());
+
+            Mesh mesh = new Mesh();
+            
+            mesh.setMode(Mesh.Mode.Points);
+            mesh.setPointSize(4);
+            
+            FloatBuffer posBuf = m.getVertices();
+            if(posBuf != null) {
+                mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
+            }
+
+            mesh.setStatic();
+            mesh.updateBound();
+            mesh.updateCounts();
+
+            Geometry geom = new Geometry(name + "-geom", mesh);
+            geom.rotateUpTo(Vector3f.UNIT_Z.negate());
+            Material skin = new Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+            skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
+
+            skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
+            
+            geom.setMaterial(skin);
+            return geom;
+        }
+
+    }
+
     public static class MDLLoader implements AssetLoader {
 
         private static final Logger LOG = Logger.getLogger(MDLLoader.class.getName());
 
         @SuppressWarnings("rawtypes")
+        @Override
         public Object load(AssetInfo info) throws IOException {
             AssetManager am = info.getManager();
             String name = info.getKey().getName();
