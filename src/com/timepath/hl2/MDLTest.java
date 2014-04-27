@@ -170,7 +170,7 @@ public class MDLTest extends SimpleApplication {
     protected void initInput() {
         flyCam.setDragToRotate(true);
         flyCam.setEnabled(false);
-        
+
         ChaseCamera chaseCam = new ChaseCamera(cam, rootNode, inputManager);
         chaseCam.setSmoothMotion(false);
         chaseCam.setRotationSpeed(3);
@@ -182,10 +182,10 @@ public class MDLTest extends SimpleApplication {
         chaseCam.setDefaultHorizontalRotation(FastMath.HALF_PI - FastMath.HALF_PI / 2);
         chaseCam.setDefaultDistance(100);
         chaseCam.setMaxDistance(300);
-        
+
         chaseCam.setMaxDistance(30000);
         cam.setFrustumFar(30000);
-        chaseCam.setZoomSensitivity(1000);
+        chaseCam.setZoomSensitivity(250);
     }
 
     protected void loadMap(final String name) {
@@ -330,13 +330,18 @@ public class MDLTest extends SimpleApplication {
             BSP m = BSP.load(info.openStream());
 
             Mesh mesh = new Mesh();
-            
+
             mesh.setMode(Mesh.Mode.Points);
-            mesh.setPointSize(4);
-            
+            mesh.setPointSize(2);
+
             FloatBuffer posBuf = m.getVertices();
             if(posBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
+            }
+
+            IntBuffer idxBuf = m.getIndices();
+            if(idxBuf != null) {
+                mesh.setBuffer(VertexBuffer.Type.Index, 1, idxBuf);
             }
 
             mesh.setStatic();
@@ -349,7 +354,7 @@ public class MDLTest extends SimpleApplication {
             skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
 
             skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
-            
+
             geom.setMaterial(skin);
             return geom;
         }
