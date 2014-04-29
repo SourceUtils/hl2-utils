@@ -1,8 +1,8 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.VBF;
-import com.timepath.hl2.io.VBF.BitmapGlyph;
 import com.timepath.hl2.io.VTF;
+import com.timepath.hl2.io.font.VBF;
+import com.timepath.hl2.io.font.VBF.BitmapGlyph;
 import com.timepath.hl2.swing.VBFCanvas;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
@@ -14,6 +14,7 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
@@ -25,8 +26,6 @@ import javax.swing.tree.*;
 
 /**
  *
- * If one of the dimensions is 0, then do not use it to calculate the maxcharwidth/height
- *
  * @author TimePath
  */
 @SuppressWarnings("serial")
@@ -34,8 +33,9 @@ public class VBFTest extends javax.swing.JFrame {
 
     private static final Logger LOG = Logger.getLogger(VBFTest.class.getName());
 
-    public static void main(String... args) {
+    public static void main(String[] args) {
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new VBFTest().setVisible(true);
             }
@@ -169,7 +169,7 @@ public class VBFTest extends javax.swing.JFrame {
                                                           boolean hasFocus) {
                 return super.getTreeCellRendererComponent(tree, value, sel, expanded,
                                                           ((TreeNode) value).getParent() != null && ((TreeNode) value)
-                    .getParent() != tree.getModel().getRoot(),
+                                                          .getParent() != tree.getModel().getRoot(),
                                                           row, hasFocus);
             }
 
@@ -338,6 +338,7 @@ public class VBFTest extends javax.swing.JFrame {
 
         jMenuItem4.setText("Copy");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem4ActionPerformed(evt);
             }
@@ -365,6 +366,7 @@ public class VBFTest extends javax.swing.JFrame {
             }
         });
         jTree1.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            @Override
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 treeInteraction(evt);
             }
@@ -381,6 +383,7 @@ public class VBFTest extends javax.swing.JFrame {
             }
         });
         jTree2.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+            @Override
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
                 treeInteraction(evt);
             }
@@ -394,23 +397,19 @@ public class VBFTest extends javax.swing.JFrame {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Position"));
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
 
-        xSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
-            .valueOf(1)));
+        xSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         jPanel3.add(xSpinner);
 
-        ySpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
-            .valueOf(1)));
+        ySpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         jPanel3.add(ySpinner);
 
         jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Dimensions"));
         jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.LINE_AXIS));
 
-        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
-            .valueOf(1)));
+        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         jPanel5.add(widthSpinner);
 
-        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(Integer.valueOf(0), Integer.valueOf(0), null, Integer
-            .valueOf(1)));
+        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
         jPanel5.add(heightSpinner);
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
@@ -443,10 +442,10 @@ public class VBFTest extends javax.swing.JFrame {
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148,
-                              javax.swing.GroupLayout.PREFERRED_SIZE))
+                      .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                      .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148,
+                                    javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jSplitPane1.setLeftComponent(jPanel1);
@@ -475,6 +474,7 @@ public class VBFTest extends javax.swing.JFrame {
         jMenuItem1.setMnemonic('O');
         jMenuItem1.setText("Open");
         jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 open(evt);
             }
@@ -486,6 +486,7 @@ public class VBFTest extends javax.swing.JFrame {
         jMenuItem2.setMnemonic('S');
         jMenuItem2.setText("Save");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 save(evt);
             }
@@ -498,6 +499,7 @@ public class VBFTest extends javax.swing.JFrame {
 
         jMenuItem3.setText("Create glyph");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            @Override
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createGlyph(evt);
             }
@@ -525,7 +527,7 @@ public class VBFTest extends javax.swing.JFrame {
     private void insertGlyph(DefaultTreeModel model, BitmapGlyph glyph) {
         DefaultMutableTreeNode child = new DefaultMutableTreeNode(glyph);
         model.insertNodeInto(child, (MutableTreeNode) model.getRoot(), model.getChildCount(
-            model.getRoot()));
+                             model.getRoot()));
         insertCharacters(model, child, glyph.getIndex());
         model.reload();
     }
@@ -551,7 +553,7 @@ public class VBFTest extends javax.swing.JFrame {
         File vtf = new File(f + ".vtf");
 
         if(vbf.exists()) {
-            data = VBF.load(new FileInputStream(vbf));
+            data = new VBF(new FileInputStream(vbf));
             p.setVBF(data);
 
             DefaultTreeModel model = (DefaultTreeModel) this.jTree1.getModel();
@@ -635,7 +637,7 @@ public class VBFTest extends javax.swing.JFrame {
                 }
             }
 
-            data.save(f);
+            data.save(new FileOutputStream(f));
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
