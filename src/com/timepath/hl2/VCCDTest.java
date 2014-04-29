@@ -1,7 +1,7 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.VCCD;
-import com.timepath.hl2.io.VCCD.CaptionEntry;
+import com.timepath.hl2.io.captions.VCCD;
+import com.timepath.hl2.io.captions.VCCD.VCCDEntry;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
@@ -13,6 +13,7 @@ import com.timepath.utils.Trie;
 import com.timepath.vfs.SimpleVFile;
 import java.awt.*;
 import java.io.*;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
 import java.util.Map.Entry;
@@ -30,8 +31,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
 
 /**
- * http://hlssmod.net/he_code/utils/captioncompiler/captioncompiler.cpp
- * http://hlssmod.net/he_code/public/captioncompiler.h
  *
  * @author TimePath
  */
@@ -45,8 +44,7 @@ public class VCCDTest extends javax.swing.JFrame {
     public VCCDTest() {
         // Load known mappings from preferences
         try {
-            String[] children = prefs.childrenNames();
-            for(String channel : children) {
+            for(String channel : prefs.childrenNames()) {
                 for(String name : prefs.node(channel).keys()) {
                     int hash = prefs.getInt(name, -1);
                     LOG.log(Level.FINER, "{0} = {1}", new Object[] {name, hash});
@@ -63,25 +61,28 @@ public class VCCDTest extends javax.swing.JFrame {
         initComponents();
 
         jTextField3.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent e) {
-                updateCRC();
+                updateHash();
             }
 
+            @Override
             public void insertUpdate(DocumentEvent e) {
-                updateCRC();
+                updateHash();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent e) {
-                updateCRC();
+                updateHash();
             }
 
-            public void updateCRC() {
-                jTextField4.setText(hexFormat(VCCD.takeCRC32(jTextField3.getText())));
+            public void updateHash() {
+                jTextField4.setText(hexFormat(VCCD.hash(jTextField3.getText())));
             }
         });
     }
 
-    private final HashMap<Integer, StringPair> hashmap = new HashMap<Integer, StringPair>();
+    private final HashMap<Integer, StringPair> hashmap = new HashMap<>();
 
     private final Trie trie = new Trie();
 
@@ -99,11 +100,11 @@ public class VCCDTest extends javax.swing.JFrame {
     public static void main(String[] args) throws IOException {
         try {
             if(args.length > 0) {
-                ArrayList<CaptionEntry> in = VCCD.importFile(args[0]);
-                HashMap<Integer, StringPair> hashmap = new HashMap<Integer, StringPair>();
-                for(CaptionEntry i : in) { // learning
-                    Object crc = i.getKey();
-                    String token = i.getTrueKey();
+                List<VCCDEntry> in = VCCD.parse(new FileInputStream(args[0]));
+                HashMap<Integer, StringPair> hashmap = new HashMap<>();
+                for(VCCDEntry i : in) { // learning
+                    Object crc = i.getHash();
+                    String token = i.getKey();
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
                     hashmap.put((int) hash, new StringPair(token, CHAN_UNKNOWN));
                 }
@@ -116,6 +117,7 @@ public class VCCDTest extends javax.swing.JFrame {
         }
 
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 VCCDTest c = new VCCDTest();
                 c.setLocationRelativeTo(null);
@@ -141,6 +143,7 @@ public class VCCDTest extends javax.swing.JFrame {
     private void generateHash() {
         new Thread(new Runnable() {
 
+            @Override
             public void run() {
                 final JFrame frame = new JFrame("Generating hash codes...");
                 JProgressBar pb = new JProgressBar();
@@ -150,7 +153,7 @@ public class VCCDTest extends javax.swing.JFrame {
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
 
-                HashMap<Integer, StringPair> map = new HashMap<Integer, StringPair>();
+                HashMap<Integer, StringPair> map = new HashMap<>();
                 LOG.info("Generating hash codes ...");
                 try {
                     CRC32 crc = new CRC32();
@@ -182,7 +185,7 @@ public class VCCDTest extends javax.swing.JFrame {
                         map.put((int) crc.getValue(), new StringPair(str, channel));
                         crc.reset();
                     }
-                } catch(IOException ex) {
+                } catch(FileNotFoundException ex) {
                     LOG.log(Level.WARNING, "Error generating hash codes", ex);
                 }
 
@@ -443,7 +446,7 @@ public class VCCDTest extends javax.swing.JFrame {
             if(files == null) {
                 return;
             }
-            List<CaptionEntry> entries;
+            List<VCCDEntry> entries;
             try {
                 entries = VCCD.load(new FileInputStream(files[0]));
             } catch(FileNotFoundException ex) {
@@ -456,9 +459,9 @@ public class VCCDTest extends javax.swing.JFrame {
             for(int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(int i = 0; i < entries.size(); i++) {
-                model.addRow(new Object[] {hexFormat(entries.get(i).getKey()), attemptDecode(
-                                           entries.get(i).getKey()), entries.get(i).getValue()});
+            for(VCCDEntry entry : entries) {
+                model.addRow(
+                    new Object[] {hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue()});
             }
             saveFile = files[0];
         } catch(IOException ex) {
@@ -471,7 +474,6 @@ public class VCCDTest extends javax.swing.JFrame {
     private void save(boolean flag) {
         if(saveFile == null || flag) {
             try {
-                // save as
                 NativeFileChooser fc = new NativeFileChooser();
                 fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG);
                 fc.setTitle("Save (as closecaption_<language>.dat)");
@@ -493,27 +495,24 @@ public class VCCDTest extends javax.swing.JFrame {
             jTable1.getCellEditor().stopCellEditing();
         }
 
-        ArrayList<CaptionEntry> entries = new ArrayList<CaptionEntry>();
+        List<VCCDEntry> entries = new LinkedList<>();
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         for(int i = 0; i < model.getRowCount(); i++) {
-            CaptionEntry e = new VCCD.CaptionEntry();
             Object crc = model.getValueAt(i, 0);
             if(model.getValueAt(i, 1) != null && !model.getValueAt(i, 1).toString().isEmpty()) {
-                crc = hexFormat(VCCD.takeCRC32(model.getValueAt(i, 1).toString()));
+                crc = hexFormat(VCCD.hash(model.getValueAt(i, 1).toString()));
             }
-            long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
-            Object val = model.getValueAt(i, 1);
-            String token = val instanceof String ? val.toString() : null;
-            if(!hashmap.containsKey((int) hash)) {
-                hashmap.put((int) hash, new StringPair(token, CHAN_UNKNOWN));
+            int hash = (int) Long.parseLong(crc.toString().toLowerCase(), 16);
+            Object key = model.getValueAt(i, 1);
+            String token = key instanceof String ? key.toString() : null;
+            if(!hashmap.containsKey(hash)) {
+                hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
             }
-            e.setKey(hash);
-            e.setValue(model.getValueAt(i, 2).toString());
-            entries.add(e);
+            entries.add(new VCCDEntry(hash, model.getValueAt(i, 2).toString()));
         }
         persistHashmap(hashmap);
         try {
-            VCCD.save(entries, new FileOutputStream(saveFile.getAbsolutePath().toString()));
+            VCCD.save(entries, new FileOutputStream(saveFile));
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
@@ -534,21 +533,20 @@ public class VCCDTest extends javax.swing.JFrame {
             if(files == null) {
                 return;
             }
-            ArrayList<CaptionEntry> entries = VCCD.importFile(files[0].getAbsolutePath().toString());
+            List<VCCDEntry> entries = VCCD.parse(new FileInputStream(files[0]));
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
 
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
             for(int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(int i = 0; i < entries.size(); i++) {
-                int hash = entries.get(i).getKey();
-                String token = entries.get(i).getTrueKey();
+            for(VCCDEntry entrie : entries) {
+                int hash = entrie.getHash();
+                String token = entrie.getKey();
                 if(!hashmap.containsKey(hash)) {
                     hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
                 }
-                model.addRow(new Object[] {hexFormat(entries.get(i).getKey()),
-                                           entries.get(i).getTrueKey(), entries.get(i).getValue()});
+                model.addRow(new Object[] {hexFormat(entrie.getHash()), entrie.getKey(), entrie.getValue()});
             }
             persistHashmap(hashmap);
         } catch(IOException ex) {
@@ -625,7 +623,8 @@ public class VCCDTest extends javax.swing.JFrame {
                              + "";
         JOptionPane pane = new JOptionPane(new JScrollPane(new JTextArea(message)),
                                            JOptionPane.INFORMATION_MESSAGE);
-        JDialog dialog = pane.createDialog(null, "Formatting");
+        JDialog dialog = pane.createDialog(this, "Formatting");
+        dialog.setResizable(true);
         dialog.setModal(false);
         dialog.setVisible(true);
     }//GEN-LAST:event_formattingHelp
@@ -634,8 +633,7 @@ public class VCCDTest extends javax.swing.JFrame {
         StringBuilder sb = new StringBuilder(jTable1.getRowCount() * 100); // rough estimate
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         for(int i = 0; i < model.getRowCount(); i++) {
-            sb.append(model.getValueAt(i, 0)).append("\t").append(model.getValueAt(i, 2)).append(
-                "\n");
+            sb.append(MessageFormat.format("{0}\t{1}\n", model.getValueAt(i, 0), model.getValueAt(i, 2)));
         }
         JTextArea pane = new JTextArea(sb.toString());
         Dimension s = Toolkit.getDefaultToolkit().getScreenSize();
@@ -700,9 +698,7 @@ public class VCCDTest extends javax.swing.JFrame {
             saveFile = fs[0];
 
             prefs.exportSubtree(new FileOutputStream(saveFile));
-        } catch(IOException ex) {
-            LOG.log(Level.SEVERE, null, ex);
-        } catch(BackingStoreException ex) {
+        } catch(IOException | BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_exportAll
