@@ -16,7 +16,7 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.texture.*;
 import com.jme3.util.BufferUtils;
-import com.timepath.hl2.io.VTF;
+import com.timepath.hl2.io.image.VTF;
 import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.studiomodel.StudioModel;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
@@ -325,13 +325,15 @@ public class MDLTest extends SimpleApplication {
         public Object load(AssetInfo info) throws IOException {
             AssetManager am = info.getManager();
             String name = info.getKey().getName();
-            LOG.log(Level.INFO, "Loading {0}...\n", name);
+            LOG.log(Level.INFO, "Loading {0}...", name);
 
             BSP m = BSP.load(info.openStream());
 
+            LOG.log(Level.INFO, "Creating mesh...");
+            
             Mesh mesh = new Mesh();
 
-            mesh.setMode(Mesh.Mode.Points);
+            mesh.setMode(Mesh.Mode.Lines);
             mesh.setPointSize(2);
 
             FloatBuffer posBuf = m.getVertices();
@@ -341,7 +343,7 @@ public class MDLTest extends SimpleApplication {
 
             IntBuffer idxBuf = m.getIndices();
             if(idxBuf != null) {
-                mesh.setBuffer(VertexBuffer.Type.Index, 1, idxBuf);
+                mesh.setBuffer(VertexBuffer.Type.Index, 2, idxBuf);
             }
 
             mesh.setStatic();
@@ -356,6 +358,9 @@ public class MDLTest extends SimpleApplication {
             skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
 
             geom.setMaterial(skin);
+            
+            LOG.log(Level.INFO, "{0} loaded", name);
+            
             return geom;
         }
 
@@ -398,7 +403,7 @@ public class MDLTest extends SimpleApplication {
             }
             IntBuffer idxBuf = m.getIndices();
             if(idxBuf != null) {
-                mesh.setBuffer(VertexBuffer.Type.Index, 1, idxBuf);
+                mesh.setBuffer(VertexBuffer.Type.Index, 3, idxBuf);
             }
 
             mesh.setStatic();
@@ -431,7 +436,7 @@ public class MDLTest extends SimpleApplication {
             String name = info.getKey().getName();
             LOG.log(Level.INFO, "Loading {0}...\n", name);
             VTF v = VTF.load(info.openStream());
-            BufferedImage bimg = (BufferedImage) v.getImage(v.mipCount - 1);
+            BufferedImage bimg = (BufferedImage) v.getImage(v.getMipCount() - 1);
             ByteBuffer buf = BufferUtils.createByteBuffer(bimg.getWidth() * bimg.getHeight() * 4);
 
             for(int y = bimg.getHeight() - 1; y >= 0; y--) {

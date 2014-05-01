@@ -1,6 +1,6 @@
 package com.timepath.steam.io;
 
-import com.timepath.hl2.io.VTF;
+import com.timepath.hl2.io.image.VTF;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.ftp.FTPFS;
@@ -62,7 +62,7 @@ public class ArchiveHost {
                                     if(v == null) {
                                         return null;
                                     }
-                                    Image i = v.getImage(Math.max(v.mipCount - 2, 0));
+                                    Image i = v.getImage(Math.max(v.getMipCount() - 2, 0));
                                     if(i == null) {
                                         return null;
                                     }

@@ -1,7 +1,7 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.VTF;
-import com.timepath.hl2.io.VTF.Format;
+import com.timepath.hl2.io.image.ImageFormat;
+import com.timepath.hl2.io.image.VTF;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
@@ -9,6 +9,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -26,6 +27,7 @@ public class VTFTest {
 
     public static void main(String... args) {
         new Thread(new Runnable() {
+            @Override
             public void run() {
                 test();
             }
@@ -65,6 +67,7 @@ public class VTFTest {
                 bg = Color.PINK;
                 lod = new JSpinner();
                 lod.addChangeListener(new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent e) {
                         try {
                             createImage(v);
@@ -77,6 +80,7 @@ public class VTFTest {
                 this.add(lod, BorderLayout.WEST);
                 frame = new JSpinner();
                 frame.addChangeListener(new ChangeListener() {
+                    @Override
                     public void stateChanged(ChangeEvent e) {
                         try {
                             createImage(v);
@@ -99,6 +103,7 @@ public class VTFTest {
                 }
             }
 
+            @Override
             public void propertyChange(PropertyChangeEvent e) {
                 String propertyName = e.getPropertyName();
                 if(propertyName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
@@ -130,7 +135,7 @@ public class VTFTest {
                 }
                 v = VTF.load(new FileInputStream(selection));
                 if(v != null) {
-                    frame.setValue(v.frameFirst);
+                    frame.setValue(v.getFrameFirst());
                 }
                 createImage(v);
             }
@@ -139,9 +144,9 @@ public class VTFTest {
 
         class VtfFileFilter extends FileFilter {
 
-            private Format vtfFormat;
+            private ImageFormat vtfFormat;
 
-            VtfFileFilter(Format format) {
+            VtfFileFilter(ImageFormat format) {
                 this.vtfFormat = format;
             }
 
@@ -159,25 +164,88 @@ public class VTFTest {
                 if(v == null) {
                     return false;
                 }
-                if(vtfFormat == VTF.Format.IMAGE_FORMAT_NONE) {
+                if(vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) {
                     return true;
                 }
-                return (v.format == vtfFormat);
+                return (v.getFormat() == vtfFormat);
             }
 
             @Override
             public String getDescription() {
-                return "VTF (" + (vtfFormat != Format.IMAGE_FORMAT_NONE ? vtfFormat.name() : "All")
-                       + ")";
+                return "VTF (" + (vtfFormat != ImageFormat.IMAGE_FORMAT_UNKNOWN ? vtfFormat.name() : "All") + ")";
+            }
+
+        }
+
+        class AntiVtfFileFilter extends FileFilter {
+
+            private ImageFormat[] ignored;
+
+            private String name;
+
+            AntiVtfFileFilter(ImageFormat... formats) {
+                this(null, formats);
+            }
+
+            AntiVtfFileFilter(String name, ImageFormat... formats) {
+                this.name = name;
+                this.ignored = formats;
+            }
+
+            @Override
+            public boolean accept(File file) {
+                if(file.isDirectory()) {
+                    return true;
+                }
+                VTF v = null;
+                try {
+                    v = VTF.load(new FileInputStream(file));
+                } catch(IOException ex) {
+                    Logger.getLogger(VTFTest.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if(v == null) {
+                    return false;
+                }
+                for(ImageFormat f : ignored) {
+                    if(v.getFormat() == f) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            public String getDescription() {
+                if(name != null) {
+                    return name;
+                }
+                return "VTF (Not " + Arrays.toString(ignored) + ")";
             }
 
         }
 
         JFileChooser chooser = new JFileChooser();
-        FileFilter generic = new VtfFileFilter(Format.IMAGE_FORMAT_NONE);
+        FileFilter generic = new VtfFileFilter(ImageFormat.IMAGE_FORMAT_UNKNOWN);
         chooser.addChoosableFileFilter(generic);
-        chooser.addChoosableFileFilter(new VtfFileFilter(Format.IMAGE_FORMAT_DXT1));
-        chooser.addChoosableFileFilter(new VtfFileFilter(Format.IMAGE_FORMAT_DXT5));
+        chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1));
+        chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT5));
+        chooser.addChoosableFileFilter(new AntiVtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1,
+                                                             ImageFormat.IMAGE_FORMAT_DXT3,
+                                                             ImageFormat.IMAGE_FORMAT_DXT5
+        ));
+        chooser.addChoosableFileFilter(new AntiVtfFileFilter("RGB", ImageFormat.IMAGE_FORMAT_DXT1,
+                                                             ImageFormat.IMAGE_FORMAT_DXT3,
+                                                             ImageFormat.IMAGE_FORMAT_DXT5,
+                                                             ImageFormat.IMAGE_FORMAT_ABGR8888,
+                                                             ImageFormat.IMAGE_FORMAT_ARGB8888,
+                                                             ImageFormat.IMAGE_FORMAT_BGRA8888,
+                                                             ImageFormat.IMAGE_FORMAT_BGRA4444,
+                                                             ImageFormat.IMAGE_FORMAT_BGRA5551,
+                                                             ImageFormat.IMAGE_FORMAT_RGBA16161616,
+                                                             ImageFormat.IMAGE_FORMAT_RGBA16161616F,
+                                                             ImageFormat.IMAGE_FORMAT_RGBA32323232F,
+                                                             ImageFormat.IMAGE_FORMAT_RGBA8888
+        ));
         chooser.setFileFilter(generic);
         ImagePreviewPanel preview = new ImagePreviewPanel();
         chooser.setAccessory(preview);

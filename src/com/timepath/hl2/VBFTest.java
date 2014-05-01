@@ -1,8 +1,8 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.VTF;
 import com.timepath.hl2.io.font.VBF;
 import com.timepath.hl2.io.font.VBF.BitmapGlyph;
+import com.timepath.hl2.io.image.VTF;
 import com.timepath.hl2.swing.VBFCanvas;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
@@ -200,7 +200,7 @@ public class VBFTest extends javax.swing.JFrame {
                 old = current;
                 int wide = data.getWidth();
                 if(image != null) {
-                    wide = image.width;
+                    wide = image.getWidth();
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) widthSpinner.getModel()).setMaximum(
@@ -225,7 +225,7 @@ public class VBFTest extends javax.swing.JFrame {
                 old = current;
                 int wide = data.getWidth();
                 if(image != null) {
-                    wide = image.width;
+                    wide = image.getWidth();
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) xSpinner.getModel()).setMaximum(
@@ -250,7 +250,7 @@ public class VBFTest extends javax.swing.JFrame {
                 old = current;
                 int high = data.getHeight();
                 if(image != null) {
-                    high = image.height;
+                    high = image.getHeight();
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) heightSpinner.getModel()).setMaximum(
@@ -275,7 +275,7 @@ public class VBFTest extends javax.swing.JFrame {
                 old = current;
                 int high = data.getHeight();
                 if(image != null) {
-                    high = image.height;
+                    high = image.getHeight();
                 }
                 if(spinners) {
                     ((SpinnerNumberModel) ySpinner.getModel()).setMaximum(
