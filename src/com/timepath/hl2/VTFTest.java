@@ -63,7 +63,6 @@ public class VTFTest {
 
             ImagePreviewPanel() {
                 setPreferredSize(new Dimension(ACCSIZE, -1));
-                bg = getBackground();
                 bg = Color.PINK;
                 lod = new JSpinner();
                 lod.addChangeListener(new ChangeListener() {

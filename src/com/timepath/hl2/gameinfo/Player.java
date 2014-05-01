@@ -1,6 +1,7 @@
 package com.timepath.hl2.gameinfo;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -24,11 +25,11 @@ public class Player {
      * @param k Killer
      */
     static void exchangeInfo(Player v, Player k) {
-        ArrayList<Player> vAllies = new ArrayList<Player>(v.getAllies());
-        ArrayList<Player> vEnemies = new ArrayList<Player>(v.getEnemies());
+        List<Player> vAllies = new LinkedList<>(v.getAllies());
+        List<Player> vEnemies = new LinkedList<>(v.getEnemies());
 
-        ArrayList<Player> kAllies = new ArrayList<Player>(k.getAllies());
-        ArrayList<Player> kEnemies = new ArrayList<Player>(k.getEnemies());
+        List<Player> kAllies = new LinkedList<>(k.getAllies());
+        List<Player> kEnemies = new LinkedList<>(k.getEnemies());
 
         if(k.getAllies().contains(v) || v.getAllies().contains(k)) { // Traitor
             for(int i = 0; i < k.getAllies().size(); i++) {
@@ -76,9 +77,9 @@ public class Player {
         }
     }
 
-    private final ArrayList<Player> allies = new ArrayList<Player>();
+    private final List<Player> allies = new LinkedList<>();
 
-    private final ArrayList<Player> enemies = new ArrayList<Player>();
+    private final List<Player> enemies = new LinkedList<>();
 
     private String name;
 
@@ -86,11 +87,11 @@ public class Player {
         this.name = name;
     }
 
-    public void addAllies(ArrayList<Player> list) {
-        for(int i = 0; i < list.size(); i++) {
-            addAllyR(list.get(i));
-            for(int j = 0; j < getEnemies().size(); j++) {
-                getEnemies().get(j).addEnemyR(list.get(i));
+    public void addAllies(List<Player> list) {
+        for(Player ally : list) {
+            addAllyR(ally);
+            for(Player enemy : getEnemies()) {
+                enemy.addEnemyR(ally);
             }
         }
     }
@@ -113,11 +114,11 @@ public class Player {
         }
     }
 
-    public void addEnemies(ArrayList<Player> list) {
-        for(int i = 0; i < list.size(); i++) {
-            addEnemyR(list.get(i));
-            for(int j = 0; j < getAllies().size(); j++) {
-                getAllies().get(j).addEnemyR(list.get(i));
+    public void addEnemies(List<Player> enemies) {
+        for(Player list1 : enemies) {
+            addEnemyR(list1);
+            for(Player ally : getAllies()) {
+                ally.addEnemyR(list1);
             }
         }
     }
@@ -143,14 +144,14 @@ public class Player {
 
     /**
      * @return the allies
-     */public ArrayList<Player> getAllies() {
+     */public List<Player> getAllies() {
          return allies;
      }
 
     /**
      * @return the enemies
      */
-    public ArrayList<Player> getEnemies() {
+    public List<Player> getEnemies() {
         return enemies;
     }
 
@@ -176,7 +177,7 @@ public class Player {
         sb.append(getName());
         
         sb.append(" (e:{");
-        ArrayList<Player> myEnemies = getEnemies();
+        List<Player> myEnemies = getEnemies();
         for(int i = 0; i < getEnemies().size(); i++) {
             sb.append(myEnemies.get(i).getName());
             if(i + 1 < getEnemies().size()) {
@@ -184,7 +185,7 @@ public class Player {
             }
         }
         sb.append("}, a:{");
-        ArrayList<Player> myAllies = getAllies();
+        List<Player> myAllies = getAllies();
         for(int i = 0; i < getAllies().size(); i++) {
             sb.append(myAllies.get(i).getName());
             if(i + 1 < getAllies().size()) {

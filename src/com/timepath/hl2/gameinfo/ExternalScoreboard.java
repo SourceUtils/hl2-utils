@@ -2,7 +2,8 @@ package com.timepath.hl2.gameinfo;
 
 import com.timepath.hl2.ExternalConsole;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -20,7 +21,7 @@ public class ExternalScoreboard extends ExternalConsole {
         es.setVisible(true);
     }
 
-    private final ArrayList<Player> players = new ArrayList<Player>();
+    private final List<Player> players = new LinkedList<>();
 
     public ExternalScoreboard() {
         super();
@@ -28,14 +29,13 @@ public class ExternalScoreboard extends ExternalConsole {
     }
 
     private Player getPlayer(String name) {
-        for(int i = 0; i < players.size(); i++) {
-            Player p = players.get(i);
+        for(Player p : players) {
             if(p.getName().equals(name)) {
                 return p;
             }
         }
-        players.add(new Player(name));
-        Player p = getPlayer(name);
+        Player p = new Player(name);
+        players.add(p);
         return p;
     }
 
@@ -65,24 +65,24 @@ public class ExternalScoreboard extends ExternalConsole {
             if(s.contains(" killed ")) {
                 notify(s);
             }
-            if(s.endsWith(" suicided.")) {
-                // possible team/class switch
-            }
-            if(s.endsWith(" connected")) {
-            }
-            if(s.startsWith("Dropped") && s.contains("from server")) {
-            }
-            // names defended/captured 'capname' for team#
-            if(s.contains(" for team #")) {
-                // team 0 = spectator, team 2 = red, team 3 = blu
-            }
-            if(s.equals("Teams have been switched.")) {
-            }
+//            if(s.endsWith(" suicided.")) {
+//                // possible team/class switch
+//            }
+//            if(s.endsWith(" connected")) {
+//            }
+//            if(s.startsWith("Dropped") && s.contains("from server")) {
+//            }
+//            // names defended/captured 'capname' for team#
+//            if(s.contains(" for team #")) {
+//                // team 0 = spectator, team 2 = red, team 3 = blu
+//            }
+//            if(s.equals("Teams have been switched.")) {
+//            }
         }
 
         getOutput().append("\nPlayers:\n");
-        for(int i = 0; i < players.size(); i++) {
-            getOutput().append(players.get(i).toString() + "\n");
+        for(Player player : players) {
+            getOutput().append(player.toString() + "\n");
         }
 
         Player me = getPlayer("TimePath");

@@ -58,15 +58,15 @@ public class GameLauncher {
         String dir = ""; // TODO
 
         // Args are tokenized correctly at this point, set up env vars
-        HashMap<String, String> sysenv = new HashMap<String, String>();
+        Map<String, String> sysenv = new HashMap<>(System.getenv().size());
         sysenv.putAll(System.getenv());
         if(!sysenv.containsKey("TERM")) {
             sysenv.put("TERM", "xterm");
         }
         String[] env = new String[sysenv.size()];
-        ArrayList<String> vars = new ArrayList<String>();
-        for(String envName : sysenv.keySet()) {
-            String v = String.format("%s=%s", envName, sysenv.get(envName));
+        List<String> vars = new LinkedList<>();
+        for(Map.Entry<String, String> entry : sysenv.entrySet()) {
+            String v = String.format("%s=%s", entry.getKey(), entry.getValue());
             vars.add(v);
         }
         env = vars.toArray(env);
@@ -114,12 +114,11 @@ public class GameLauncher {
         DataNode sections = gm.get("Sections");
         DataNode conf = sections.get("CONFIG");
         DataNode g2 = conf.get("" + appID);
-        int type = Integer.parseInt(g2.get("contenttype").value.toString());
         String installdir = g2.get("installdir").value.toString();
         File dir = new File(SteamUtils.getSteamApps(), "common/" + installdir);
 
         DataNode l = g2.get("launch");
-        Map<String, File> launch = new HashMap<String, File>();
+        Map<String, File> launch = new HashMap<String, File>(l.getChildCount());
         for(int i = 0; i < l.getChildCount(); i++) {
             DataNode c = (DataNode) l.getChildAt(i);
             gameArgs = ((String) c.get("arguments").value).split(" ");
@@ -138,6 +137,7 @@ public class GameLauncher {
             case Linux:
                 get = "linux";
                 break;
+            default: return null;
         }
         return new Options(launch.get(get), gameArgs);
     }
@@ -254,7 +254,7 @@ public class GameLauncher {
 
         LOG.log(Level.INFO, "Listening on port {0}", truePort);
 
-        final ArrayList<String> queue = new ArrayList<String>();
+        final List<String> queue = new LinkedList<>();
 
         final AggregateOutputStream aggregate = new AggregateOutputStream() {
 

@@ -8,7 +8,6 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.swing.TreeUtils;
-import com.timepath.ui.swing.StringAutoCompleter;
 import com.timepath.utils.Trie;
 import com.timepath.vfs.SimpleVFile;
 import java.awt.*;
@@ -88,7 +87,7 @@ public class VCCDTest extends javax.swing.JFrame {
 
     private TableCellEditor getKeyEditor() {
         JTextField t = new JTextField();
-        new StringAutoCompleter(t, trie, 2);
+//        new StringAutoCompleter(t, trie, 2);
         return new DefaultCellEditor(t);
     }
 

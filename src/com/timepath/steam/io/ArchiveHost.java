@@ -37,7 +37,7 @@ public class ArchiveHost {
                 for(final SimpleVFile found : f.find(".vtf")) {
                     SimpleVFile png = new SimpleVFile() {
 
-                        private SoftReference<byte[]> data = new SoftReference<byte[]>(null);
+                        private SoftReference<byte[]> data = new SoftReference<>(null);
 
                         @Override
                         public String getName() {
@@ -62,17 +62,15 @@ public class ArchiveHost {
                                     if(v == null) {
                                         return null;
                                     }
-                                    Image i = v.getImage(Math.max(v.getMipCount() - 2, 0));
+                                    Image i = v.getImage(Math.min(1, v.getMipCount() - 1));
                                     if(i == null) {
                                         return null;
                                     }
                                     final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     ImageIO.write((RenderedImage) i, "png", baos);
                                     arr = baos.toByteArray();
-                                    data = new SoftReference<byte[]>(arr);
-                                } catch(IOException ex) {
-                                    LOG.log(Level.SEVERE, null, ex);
-                                } catch(InterruptedException ex) {
+                                    data = new SoftReference<>(arr);
+                                } catch(IOException | InterruptedException ex) {
                                     LOG.log(Level.SEVERE, null, ex);
                                 } finally {
                                     LOG.log(Level.INFO, "Converted {0}", found);

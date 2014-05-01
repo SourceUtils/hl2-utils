@@ -1,6 +1,7 @@
 package com.timepath.hl2.cvars;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -21,7 +22,7 @@ public class CVar {
 
     private String name;
 
-    private final ArrayList<String> tags = new ArrayList<String>();
+    private final List<String> tags = new LinkedList<>();
 
     /**
      * null if cmd
@@ -76,7 +77,7 @@ public class CVar {
         this.name = name;
     }
 
-    public ArrayList<String> getTags() {
+    public List<String> getTags() {
         return tags;
     }
 

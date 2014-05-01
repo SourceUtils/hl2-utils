@@ -75,7 +75,7 @@ public class Trie {
             LOG.info("Fom cache");
             return cache.get(path);
         }
-        ArrayList<String> results = new ArrayList<String>();
+        List<String> results = new ArrayList<String>();
         int i = 0;
         Character c = null;
         for(i = 0; i < s.length(); i++) {
@@ -89,15 +89,15 @@ public class Trie {
                 new Object[] {s.substring(0, i), n.keySet()});
 
         depth += 1;
-        ArrayList<TrieMapping> all = new ArrayList<TrieMapping>();
+        List<TrieMapping> all = new ArrayList<TrieMapping>();
         all.add(n);
-        ArrayList<TrieMapping> local = new ArrayList<TrieMapping>();
+        List<TrieMapping> local = new ArrayList<TrieMapping>();
         local.addAll(n.values());
         LOG.log(Level.INFO, "  all {0}", all);
         for(int j = 1; j < depth; j++) {
             LOG.log(Level.INFO, "Depth {0}", j);
             LOG.log(Level.INFO, "  local {0}", local);
-            ArrayList<TrieMapping> local2 = new ArrayList<TrieMapping>();
+            List<TrieMapping> local2 = new ArrayList<TrieMapping>();
             for(TrieMapping tm : local) {
                 if(tm == null) { // char mismatch
                     continue;

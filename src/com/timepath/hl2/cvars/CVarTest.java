@@ -33,8 +33,9 @@ public class CVarTest extends javax.swing.JFrame {
      */
     public CVarTest() {
         initComponents();
-        sorter = new TableRowSorter<TableModel>(jTable1.getModel());
+        sorter = new TableRowSorter<>(jTable1.getModel());
         Comparator<String> comparator = new Comparator<String>() {
+            @Override
             public int compare(String s1, String s2) {
                 return s1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(
                     s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
@@ -42,20 +43,23 @@ public class CVarTest extends javax.swing.JFrame {
         };
         sorter.setComparator(0, comparator);
 
-        List<RowSorter.SortKey> sortKeys = new ArrayList<RowSorter.SortKey>();
+        List<RowSorter.SortKey> sortKeys = new LinkedList<>();
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
 
         jTable1.setRowSorter(sorter);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
             public void changedUpdate(DocumentEvent de) {
                 filter();
             }
 
+            @Override
             public void insertUpdate(DocumentEvent de) {
                 filter();
             }
 
+            @Override
             public void removeUpdate(DocumentEvent de) {
                 filter();
             }
@@ -73,8 +77,7 @@ public class CVarTest extends javax.swing.JFrame {
                 if(!caseSensitiveCheckBox.isSelected()) {
                     str = "(?i)" + str;
                 }
-                RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, new int[] {0, 1, 2, 3,
-                                                                                         4, 5, 6});
+                RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, 0, 1, 2, 3, 4, 5, 6);
                 if(notCheckBox.isSelected()) {
                     rf = RowFilter.notFilter(rf);
                 }
@@ -432,7 +435,7 @@ public class CVarTest extends javax.swing.JFrame {
             Object[] chunks = new Object[] {var.getName(), var.getValue(),
                                             var.getDefaultValue(), var.getMinimum(),
                                             var.getMaximum(), Arrays.toString(
-                var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
+                                            var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
             ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();
@@ -479,7 +482,7 @@ public class CVarTest extends javax.swing.JFrame {
             Object[] chunks = new Object[] {var.getName(), var.getValue(),
                                             var.getDefaultValue(), var.getMinimum(),
                                             var.getMaximum(), Arrays.toString(
-                var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
+                                            var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
             ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();

@@ -16,8 +16,8 @@ import com.jme3.system.AppSettings;
 import com.jme3.system.JmeCanvasContext;
 import com.jme3.texture.*;
 import com.jme3.util.BufferUtils;
-import com.timepath.hl2.io.image.VTF;
 import com.timepath.hl2.io.bsp.BSP;
+import com.timepath.hl2.io.image.VTF;
 import com.timepath.hl2.io.studiomodel.StudioModel;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.storage.ACF;
@@ -38,11 +38,12 @@ import javax.swing.*;
 public class MDLTest extends SimpleApplication {
 
     private static final Logger LOG = Logger.getLogger(MDLTest.class.getName());
+    private static final Logger LOG_JME = Logger.getLogger("com.jme3");
 
-    protected static String FRAME_TITLE = "HLMV";
+    protected String FRAME_TITLE = "HLMV";
 
     public static void main(String... args) {
-        Logger.getLogger("com.jme3").setLevel(Level.WARNING);
+        LOG_JME.setLevel(Level.WARNING);
         SimpleApplication app = new MDLTest();
         app.setPauseOnLostFocus(false);
         app.setShowSettings(true);
@@ -68,7 +69,7 @@ public class MDLTest extends SimpleApplication {
 
     @Override
     public void simpleInitApp() {
-        Logger.getLogger("com.jme3").setLevel(Level.INFO);
+        LOG_JME.setLevel(Level.INFO);
 
         registerLoaders();
         this.setDisplayStatView(false);
@@ -436,7 +437,7 @@ public class MDLTest extends SimpleApplication {
             String name = info.getKey().getName();
             LOG.log(Level.INFO, "Loading {0}...\n", name);
             VTF v = VTF.load(info.openStream());
-            BufferedImage bimg = (BufferedImage) v.getImage(v.getMipCount() - 1);
+            BufferedImage bimg = (BufferedImage) v.getImage(0);
             ByteBuffer buf = BufferUtils.createByteBuffer(bimg.getWidth() * bimg.getHeight() * 4);
 
             for(int y = bimg.getHeight() - 1; y >= 0; y--) {

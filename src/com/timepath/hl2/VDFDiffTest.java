@@ -1,6 +1,5 @@
 package com.timepath.hl2;
 
-import com.timepath.Node;
 import com.timepath.steam.io.VDF2;
 import java.util.logging.Logger;
 
