@@ -7,12 +7,12 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.*;
@@ -131,6 +131,7 @@ public class DEMTest extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("netdecode");
@@ -167,7 +168,6 @@ public class DEMTest extends javax.swing.JFrame {
 
         jSplitPane1.setLeftComponent(jScrollPane2);
 
-        jSplitPane2.setDividerLocation(-1);
         jSplitPane2.setDividerSize(0);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
@@ -204,6 +204,14 @@ public class DEMTest extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem2);
+
+        jMenuItem3.setText("Dump commands");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
 
         jMenuBar1.add(jMenu1);
 
@@ -251,12 +259,29 @@ public class DEMTest extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        StringBuilder sb = new StringBuilder(0);
+        final TableModel dataMod = this.jTable1.getModel();
+        for(int row = 0; row < dataMod.getRowCount(); row++) {
+            Message f = (Message) dataMod.getValueAt(row, 0);
+            if(f.type == HL2DEM.MessageType.ConsoleCmd) {
+                for(Object s : f.meta) {
+                    sb.append(s).append('\n');
+                }
+            }
+        }
+        JScrollPane jsp = new JScrollPane(new JTextArea(sb.toString()));
+        jsp.setPreferredSize(new Dimension(500, 500));
+        JOptionPane.showMessageDialog(this, jsp);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private com.timepath.hex.HexEditor hexEditor1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSplitPane jSplitPane1;
