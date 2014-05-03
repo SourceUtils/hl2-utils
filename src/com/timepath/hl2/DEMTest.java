@@ -87,7 +87,18 @@ public class DEMTest extends javax.swing.JFrame {
                 }
 
                 for(Object entry : frame.meta) {
-                    DefaultMutableTreeNode n = new DefaultMutableTreeNode(entry);
+                    DefaultMutableTreeNode n = null;
+                    if(entry instanceof Iterable) {
+                        for(Object o : (Iterable<? extends Object>) entry) {
+                            if(n == null) {
+                                n = new DefaultMutableTreeNode(o);
+                            } else {
+                                n.add(new DefaultMutableTreeNode(o));
+                            }
+                        }
+                    } else {
+                        n = new DefaultMutableTreeNode(entry);
+                    }
                     root.add(n);
                 }
 
@@ -251,6 +262,7 @@ public class DEMTest extends javax.swing.JFrame {
 
             HL2DEM d = HL2DEM.load(fs[0]);
             DefaultTableModel m = (DefaultTableModel) this.jTable1.getModel();
+            m.setRowCount(0);
             for(Message f : d.getFrames()) {
                 m.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
