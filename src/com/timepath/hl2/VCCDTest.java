@@ -620,8 +620,9 @@ public class VCCDTest extends javax.swing.JFrame {
                              + "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n"
                          + "cc_random emits a random caption\n"
                              + "";
-        JOptionPane pane = new JOptionPane(new JScrollPane(new JTextArea(message)),
-                                           JOptionPane.INFORMATION_MESSAGE);
+        JScrollPane jsp = new JScrollPane(new JTextArea(message));
+        jsp.setPreferredSize(new Dimension(500, 500));
+        JOptionPane pane = new JOptionPane(jsp, JOptionPane.INFORMATION_MESSAGE);
         JDialog dialog = pane.createDialog(this, "Formatting");
         dialog.setResizable(true);
         dialog.setModal(false);
