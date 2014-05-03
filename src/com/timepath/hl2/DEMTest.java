@@ -41,7 +41,7 @@ public class DEMTest extends javax.swing.JFrame {
 
                 this.setBorder(null);
 
-                Message f = (Message) dataMod.getValueAt(row, 0);
+                Message f = (Message) dataMod.getValueAt(jTable1.convertRowIndexToModel(row), 0);
                 Color c;
                 switch(f.type) {
                     case Signon:
@@ -77,7 +77,7 @@ public class DEMTest extends javax.swing.JFrame {
                 if(row == -1) {
                     return;
                 }
-                Message frame = (Message) dataMod.getValueAt(row, 0);
+                Message frame = (Message) dataMod.getValueAt(jTable1.convertRowIndexToModel(row), 0);
 
                 DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
 
@@ -151,6 +151,7 @@ public class DEMTest extends javax.swing.JFrame {
         jSplitPane1.setResizeWeight(1.0);
         jSplitPane1.setEnabled(false);
 
+        jTable1.setAutoCreateRowSorter(true);
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
