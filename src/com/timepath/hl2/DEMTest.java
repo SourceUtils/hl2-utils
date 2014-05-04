@@ -8,6 +8,7 @@ import com.timepath.steam.SteamUtils;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
@@ -77,17 +78,24 @@ public class DEMTest extends javax.swing.JFrame {
                 }
                 Message frame = (Message) dataMod.getValueAt(jTable1.convertRowIndexToModel(row), 0);
 
-                DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
+                hexEditor1.setData(frame.data);
 
-                Object nodeInfo = root.getUserObject();
-                if(nodeInfo instanceof Message) {
-                    hexEditor1.setData(((Message) nodeInfo).data);
-                }
-
+                DefaultMutableTreeNode root = new DefaultMutableTreeNode();
                 recurse(frame.meta, root);
+                DefaultTreeModel tm = new DefaultTreeModel(root);
+                jTree1.setModel(tm);
 
-                jTree1.setRootVisible(true);
-                jTree1.setModel(new DefaultTreeModel(root));
+                // Expand all
+                int j = jTree1.getRowCount();
+                int i = 0;
+                while(i < j) {
+                    DefaultMutableTreeNode t = (DefaultMutableTreeNode) jTree1.getPathForRow(i).getLastPathComponent();
+                    if(t.getLevel() < 3) {
+                        jTree1.expandRow(i);
+                    }
+                    i++;
+                    j = jTree1.getRowCount();
+                }
             }
         });
     }
@@ -95,17 +103,24 @@ public class DEMTest extends javax.swing.JFrame {
     private void recurse(Iterable<? extends Object> i, DefaultMutableTreeNode root) {
         for(Object entry : i) {
             if(entry instanceof Pair) {
-                Pair p = ((Pair)entry);
-                if(p.getValue() instanceof Iterable) {
-                    DefaultMutableTreeNode n = new DefaultMutableTreeNode(p.getKey());
-                    recurse((Iterable<? extends Object>) p.getValue(), n);
-                    root.add(n);
-                } else {
-                    root.add(new DefaultMutableTreeNode(entry));
-                }
+                Pair p = ((Pair) entry);
+                expand(p, p.getKey(), p.getValue(), root);
+            } else if(entry instanceof Entry) {
+                Entry e = ((Entry) entry);
+                expand(e, e.getKey(), e.getValue(), root);
             } else {
                 root.add(new DefaultMutableTreeNode(entry));
             }
+        }
+    }
+
+    private void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
+        if(v instanceof Iterable) {
+            DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
+            root.add(n);
+            recurse((Iterable<? extends Object>) v, n);
+        } else {
+            root.add(new DefaultMutableTreeNode(entry));
         }
     }
 
@@ -191,6 +206,7 @@ public class DEMTest extends javax.swing.JFrame {
         javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("root");
         jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
         jTree1.setRootVisible(false);
+        jTree1.setShowsRootHandles(true);
         jScrollPane1.setViewportView(jTree1);
 
         jTabbedPane1.addTab("Hierarchy", jScrollPane1);
@@ -264,21 +280,54 @@ public class DEMTest extends javax.swing.JFrame {
             }
 
             HL2DEM d = HL2DEM.load(fs[0]);
-            DefaultTableModel m = (DefaultTableModel) this.jTable1.getModel();
-            m.setRowCount(0);
+            DefaultTableModel tableModel = (DefaultTableModel) this.jTable1.getModel();
+            tableModel.setRowCount(0);
             for(Message f : d.getFrames()) {
-                m.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
+                tableModel.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
-            JPanel p = new JPanel();
-            DefaultListModel listModel = new DefaultListModel();
+            DefaultListModel<Pair> listModel = new DefaultListModel<>();
             for(Message f : d.getFrames()) {
-                for(Object o : f.meta) {
-                    listModel.addElement(o.getClass() + " " + o);
+                for(Pair p : f.meta) {
+                    if(p.getKey() instanceof Message) {
+                        Message m = (Message) p.getKey();
+                        switch(m.type) {
+                            case Packet:
+                            case Signon:
+                                for(Pair<Object, Object> ents : m.meta) {
+                                    if(!(ents.getValue() instanceof Iterable)) {
+                                        break;
+                                    }
+                                    for(Object o : (Iterable) ents.getValue()) {
+                                        if(!(o instanceof Pair)) {
+                                            break;
+                                        }
+                                        Pair pair = (Pair) o;
+                                        if(!(pair.getKey() instanceof Packet)) {
+                                            break;
+                                        }
+                                        Packet pack = (Packet) pair.getKey();
+                                        switch(pack) {
+                                            case svc_GameEvent:
+                                            case svc_UserMessage:
+                                                listModel.addElement(pair);
+                                                break;
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
                 }
             }
-            JList l = new JList(listModel);
+            JPanel p = new JPanel();
+            JList<Pair> l = new JList<>(listModel);
             p.add(l);
-            this.jTabbedPane1.add("Events", new JScrollPane(p));
+            if(this.jTabbedPane1.getTabCount() > 1) {
+                this.jTabbedPane1.remove(1);
+            }
+            JScrollPane jsp = new JScrollPane(p);
+            jsp.getVerticalScrollBar().setUnitIncrement(16);
+            this.jTabbedPane1.add("Events", jsp);
         } catch(IOException ioe) {
             LOG.log(Level.SEVERE, null, ioe);
         }
@@ -290,8 +339,8 @@ public class DEMTest extends javax.swing.JFrame {
         for(int row = 0; row < dataMod.getRowCount(); row++) {
             Message f = (Message) dataMod.getValueAt(row, 0);
             if(f.type == MessageType.ConsoleCmd) {
-                for(Object s : f.meta) {
-                    sb.append(s).append('\n');
+                for(Pair p : f.meta) {
+                    sb.append(p.getValue()).append('\n');
                 }
             }
         }
