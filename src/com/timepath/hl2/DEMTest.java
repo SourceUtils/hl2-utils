@@ -1,7 +1,8 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.HL2DEM;
-import com.timepath.hl2.io.HL2DEM.Message;
+import com.timepath.hl2.io.demo.HL2DEM;
+import com.timepath.hl2.io.demo.Message;
+import com.timepath.hl2.io.demo.MessageType;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
@@ -199,6 +200,7 @@ public class DEMTest extends javax.swing.JFrame {
 
         jSplitPane1.setRightComponent(jSplitPane2);
 
+        jMenu1.setMnemonic('F');
         jMenu1.setText("File");
 
         jMenuItem1.setText("Open");
@@ -277,7 +279,7 @@ public class DEMTest extends javax.swing.JFrame {
         final TableModel dataMod = this.jTable1.getModel();
         for(int row = 0; row < dataMod.getRowCount(); row++) {
             Message f = (Message) dataMod.getValueAt(row, 0);
-            if(f.type == HL2DEM.MessageType.ConsoleCmd) {
+            if(f.type == MessageType.ConsoleCmd) {
                 for(Object s : f.meta) {
                     sb.append(s).append('\n');
                 }
