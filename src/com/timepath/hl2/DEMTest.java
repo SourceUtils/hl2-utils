@@ -1,14 +1,11 @@
 package com.timepath.hl2;
 
-import com.timepath.hl2.io.demo.HL2DEM;
-import com.timepath.hl2.io.demo.Message;
-import com.timepath.hl2.io.demo.MessageType;
+import com.timepath.Pair;
+import com.timepath.hl2.io.demo.*;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Dimension;
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -96,12 +93,18 @@ public class DEMTest extends javax.swing.JFrame {
     }
 
     private void recurse(Iterable<? extends Object> i, DefaultMutableTreeNode root) {
-        DefaultMutableTreeNode last = new DefaultMutableTreeNode("data");
         for(Object entry : i) {
-            if(entry instanceof Iterable) {
-                recurse((Iterable<? extends Object>) entry, last);
+            if(entry instanceof Pair) {
+                Pair p = ((Pair)entry);
+                if(p.getValue() instanceof Iterable) {
+                    DefaultMutableTreeNode n = new DefaultMutableTreeNode(p.getKey());
+                    recurse((Iterable<? extends Object>) p.getValue(), n);
+                    root.add(n);
+                } else {
+                    root.add(new DefaultMutableTreeNode(entry));
+                }
             } else {
-                root.add(last = new DefaultMutableTreeNode(entry));
+                root.add(new DefaultMutableTreeNode(entry));
             }
         }
     }
@@ -266,6 +269,16 @@ public class DEMTest extends javax.swing.JFrame {
             for(Message f : d.getFrames()) {
                 m.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
+            JPanel p = new JPanel();
+            DefaultListModel listModel = new DefaultListModel();
+            for(Message f : d.getFrames()) {
+                for(Object o : f.meta) {
+                    listModel.addElement(o.getClass() + " " + o);
+                }
+            }
+            JList l = new JList(listModel);
+            p.add(l);
+            this.jTabbedPane1.add("Events", new JScrollPane(p));
         } catch(IOException ioe) {
             LOG.log(Level.SEVERE, null, ioe);
         }
