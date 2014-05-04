@@ -87,26 +87,23 @@ public class DEMTest extends javax.swing.JFrame {
                     hexEditor1.setData(((Message) nodeInfo).data);
                 }
 
-                for(Object entry : frame.meta) {
-                    DefaultMutableTreeNode n = null;
-                    if(entry instanceof Iterable) {
-                        for(Object o : (Iterable<? extends Object>) entry) {
-                            if(n == null) {
-                                n = new DefaultMutableTreeNode(o);
-                            } else {
-                                n.add(new DefaultMutableTreeNode(o));
-                            }
-                        }
-                    } else {
-                        n = new DefaultMutableTreeNode(entry);
-                    }
-                    root.add(n);
-                }
+                recurse(frame.meta, root);
 
                 jTree1.setRootVisible(true);
                 jTree1.setModel(new DefaultTreeModel(root));
             }
         });
+    }
+
+    private void recurse(Iterable<? extends Object> i, DefaultMutableTreeNode root) {
+        DefaultMutableTreeNode last = new DefaultMutableTreeNode("data");
+        for(Object entry : i) {
+            if(entry instanceof Iterable) {
+                recurse((Iterable<? extends Object>) entry, last);
+            } else {
+                root.add(last = new DefaultMutableTreeNode(entry));
+            }
+        }
     }
 
     /**
