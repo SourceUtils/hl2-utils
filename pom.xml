@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.timepath</groupId>
+    <parent>
+        <groupId>com.timepath</groupId>
+        <artifactId>super</artifactId>
+        <version>1</version>
+    </parent>
     <artifactId>hl2-utils</artifactId>
-    <version>0.0-DEV</version>
+    <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     
-    <!-- Should locate pty4j -->
     <repositories>
         <repository>
             <id>jetbrains</id>
@@ -15,18 +18,30 @@
         </repository>
     </repositories>
     
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
-    
     <dependencies>
         <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
+            <groupId>lib</groupId>  
+            <artifactId>pty4j-0.3.jar</artifactId>
             <version>[0,)</version>
-            <type>jar</type>
+        </dependency>
+        <!-- pty4j should depend on this -->
+        <dependency>
+            <groupId>lib</groupId>  
+            <artifactId>purejavacomm.jar</artifactId>
+            <version>[0,)</version>
+        </dependency>
+        <!-- install this first -->
+        <dependency>
+            <groupId>com.jme3</groupId>  
+            <artifactId>jME3</artifactId>
+            <version>[0,)</version>
+            <type>pom</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>commons</artifactId>
+            <version>[0,)</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -43,35 +58,5 @@
             <artifactId>data-examiner</artifactId>
             <version>[0,)</version>
         </dependency>
-        
-        <dependency>
-            <groupId>com.pty4j</groupId>  
-            <artifactId>pty4j</artifactId>
-            <version>[0,)</version>
-        </dependency>
-        
-        <dependency>
-            <groupId>com.jme3</groupId>  
-            <artifactId>jME3</artifactId>
-            <version>[0,)</version>
-            <type>pom</type>
-        </dependency>
     </dependencies>
-    <build>
-        <sourceDirectory>${project.basedir}/src</sourceDirectory>
-        <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-                <configuration>
-                    <showDeprecation>true</showDeprecation>
-                    <compilerArgument>-Xlint:all</compilerArgument>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-   
-    
 </project>
