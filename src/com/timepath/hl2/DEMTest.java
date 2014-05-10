@@ -1,20 +1,35 @@
 package com.timepath.hl2;
 
 import com.timepath.Pair;
-import com.timepath.hl2.io.demo.*;
+import com.timepath.hl2.io.demo.HL2DEM;
+import com.timepath.hl2.io.demo.Message;
+import com.timepath.hl2.io.demo.MessageType;
+import com.timepath.hl2.io.demo.Packet;
 import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
+import javax.swing.DefaultListModel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
+import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.table.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 
@@ -23,7 +38,9 @@ public class DEMTest extends javax.swing.JFrame {
 
     private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
 
-    /** Creates new form DEMTest */
+    /**
+     * Creates new form DEMTest
+     */
     public DEMTest() {
         initComponents();
 
@@ -35,14 +52,14 @@ public class DEMTest extends javax.swing.JFrame {
         DefaultTableCellRenderer renderer = new DefaultTableCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
-                                                           boolean hasFocus, int row, int column) {
+                    boolean hasFocus, int row, int column) {
                 Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 this.setBorder(null);
 
                 Message f = (Message) dataMod.getValueAt(jTable1.convertRowIndexToModel(row), 0);
                 Color c;
-                switch(f.type) {
+                switch (f.type) {
                     case Signon:
                     case Packet:
                         c = Color.CYAN;
@@ -57,6 +74,9 @@ public class DEMTest extends javax.swing.JFrame {
                         c = Color.WHITE;
                         break;
                 }
+                if (f.incomplete) {
+                    c = Color.ORANGE;
+                }
                 cell.setBackground(isSelected ? cell.getBackground() : c);
 
                 return cell;
@@ -64,7 +84,7 @@ public class DEMTest extends javax.swing.JFrame {
         };
 
         this.jTable1.removeColumn(colMod.getColumn(0));
-        for(int i = 0; i < this.jTable1.getColumnCount(); i++) {
+        for (int i = 0; i < this.jTable1.getColumnCount(); i++) {
             colMod.getColumn(i).setCellRenderer(renderer);
         }
 
@@ -73,7 +93,7 @@ public class DEMTest extends javax.swing.JFrame {
             @Override
             public void valueChanged(ListSelectionEvent evt) {
                 int row = jTable1.getSelectedRow();
-                if(row == -1) {
+                if (row == -1) {
                     return;
                 }
                 Message frame = (Message) dataMod.getValueAt(jTable1.convertRowIndexToModel(row), 0);
@@ -88,9 +108,9 @@ public class DEMTest extends javax.swing.JFrame {
                 // Expand all
                 int j = jTree1.getRowCount();
                 int i = 0;
-                while(i < j) {
+                while (i < j) {
                     DefaultMutableTreeNode t = (DefaultMutableTreeNode) jTree1.getPathForRow(i).getLastPathComponent();
-                    if(t.getLevel() < 3) {
+                    if (t.getLevel() < 3) {
                         jTree1.expandRow(i);
                     }
                     i++;
@@ -101,11 +121,11 @@ public class DEMTest extends javax.swing.JFrame {
     }
 
     private void recurse(Iterable<? extends Object> i, DefaultMutableTreeNode root) {
-        for(Object entry : i) {
-            if(entry instanceof Pair) {
+        for (Object entry : i) {
+            if (entry instanceof Pair) {
                 Pair p = ((Pair) entry);
                 expand(p, p.getKey(), p.getValue(), root);
-            } else if(entry instanceof Entry) {
+            } else if (entry instanceof Entry) {
                 Entry e = ((Entry) entry);
                 expand(e, e.getKey(), e.getValue(), root);
             } else {
@@ -115,7 +135,7 @@ public class DEMTest extends javax.swing.JFrame {
     }
 
     private void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
-        if(v instanceof Iterable) {
+        if (v instanceof Iterable) {
             DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
             root.add(n);
             recurse((Iterable<? extends Object>) v, n);
@@ -137,10 +157,10 @@ public class DEMTest extends javax.swing.JFrame {
         });
     }
 
-    /** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -269,44 +289,44 @@ public class DEMTest extends javax.swing.JFrame {
         try {
 
             File[] fs = new NativeFileChooser()
-                .setTitle("Open DEM")
-                .setParent(this)
-                .setDirectory(new File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/."))
-                .addFilter(new ExtensionFilter("Demo files", "dem"))
-                .choose();
+                    .setTitle("Open DEM")
+                    .setParent(this)
+                    .setDirectory(new File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/."))
+                    .addFilter(new ExtensionFilter("Demo files", "dem"))
+                    .choose();
 
-            if(fs == null) {
+            if (fs == null) {
                 return;
             }
 
             HL2DEM d = HL2DEM.load(fs[0]);
             DefaultTableModel tableModel = (DefaultTableModel) this.jTable1.getModel();
             tableModel.setRowCount(0);
-            for(Message f : d.getFrames()) {
-                tableModel.addRow(new Object[] {f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
+            for (Message f : d.getFrames()) {
+                tableModel.addRow(new Object[]{f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
             DefaultListModel<Pair> listModel = new DefaultListModel<>();
-            for(Message f : d.getFrames()) {
-                for(Pair p : f.meta) {
-                    if(p.getKey() instanceof Message) {
+            for (Message f : d.getFrames()) {
+                for (Pair p : f.meta) {
+                    if (p.getKey() instanceof Message) {
                         Message m = (Message) p.getKey();
-                        switch(m.type) {
+                        switch (m.type) {
                             case Packet:
                             case Signon:
-                                for(Pair<Object, Object> ents : m.meta) {
-                                    if(!(ents.getValue() instanceof Iterable)) {
+                                for (Pair<Object, Object> ents : m.meta) {
+                                    if (!(ents.getValue() instanceof Iterable)) {
                                         break;
                                     }
-                                    for(Object o : (Iterable) ents.getValue()) {
-                                        if(!(o instanceof Pair)) {
+                                    for (Object o : (Iterable) ents.getValue()) {
+                                        if (!(o instanceof Pair)) {
                                             break;
                                         }
                                         Pair pair = (Pair) o;
-                                        if(!(pair.getKey() instanceof Packet)) {
+                                        if (!(pair.getKey() instanceof Packet)) {
                                             break;
                                         }
                                         Packet pack = (Packet) pair.getKey();
-                                        switch(pack) {
+                                        switch (pack) {
                                             case svc_GameEvent:
                                             case svc_UserMessage:
                                                 listModel.addElement(pair);
@@ -322,13 +342,13 @@ public class DEMTest extends javax.swing.JFrame {
             JPanel p = new JPanel();
             JList<Pair> l = new JList<>(listModel);
             p.add(l);
-            if(this.jTabbedPane1.getTabCount() > 1) {
+            if (this.jTabbedPane1.getTabCount() > 1) {
                 this.jTabbedPane1.remove(1);
             }
             JScrollPane jsp = new JScrollPane(p);
             jsp.getVerticalScrollBar().setUnitIncrement(16);
             this.jTabbedPane1.add("Events", jsp);
-        } catch(IOException ioe) {
+        } catch (IOException ioe) {
             LOG.log(Level.SEVERE, null, ioe);
         }
     }//GEN-LAST:event_jMenuItem1ActionPerformed
@@ -336,10 +356,10 @@ public class DEMTest extends javax.swing.JFrame {
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
         StringBuilder sb = new StringBuilder(0);
         final TableModel dataMod = this.jTable1.getModel();
-        for(int row = 0; row < dataMod.getRowCount(); row++) {
+        for (int row = 0; row < dataMod.getRowCount(); row++) {
             Message f = (Message) dataMod.getValueAt(row, 0);
-            if(f.type == MessageType.ConsoleCmd) {
-                for(Pair p : f.meta) {
+            if (f.type == MessageType.ConsoleCmd) {
+                for (Pair p : f.meta) {
                     sb.append(p.getValue()).append('\n');
                 }
             }
