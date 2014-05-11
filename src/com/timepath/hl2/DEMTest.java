@@ -183,9 +183,9 @@ public class DEMTest extends javax.swing.JFrame {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("netdecode");
 
-        jSplitPane1.setDividerSize(0);
         jSplitPane1.setResizeWeight(1.0);
-        jSplitPane1.setEnabled(false);
+        jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
 
         jTable1.setAutoCreateRowSorter(true);
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -216,10 +216,10 @@ public class DEMTest extends javax.swing.JFrame {
 
         jSplitPane1.setLeftComponent(jScrollPane2);
 
-        jSplitPane2.setDividerSize(0);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setEnabled(false);
+        jSplitPane2.setContinuousLayout(true);
+        jSplitPane2.setOneTouchExpandable(true);
 
         jTabbedPane1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
@@ -305,7 +305,10 @@ public class DEMTest extends javax.swing.JFrame {
             for (Message f : d.getFrames()) {
                 tableModel.addRow(new Object[]{f, f.tick, f.type, f.data == null ? null : f.data.capacity()});
             }
-            DefaultListModel<Pair> listModel = new DefaultListModel<>();
+            
+            DefaultListModel<Pair> listModelEvents = new DefaultListModel<>();
+            DefaultListModel<Pair> listModelMessages = new DefaultListModel<>();
+            
             for (Message f : d.getFrames()) {
                 for (Pair p : f.meta) {
                     if (p.getKey() instanceof Message) {
@@ -328,8 +331,10 @@ public class DEMTest extends javax.swing.JFrame {
                                         Packet pack = (Packet) pair.getKey();
                                         switch (pack) {
                                             case svc_GameEvent:
+                                                listModelEvents.addElement(pair);
+                                                break;
                                             case svc_UserMessage:
-                                                listModel.addElement(pair);
+                                                listModelMessages.addElement(pair);
                                                 break;
                                         }
                                     }
@@ -339,15 +344,22 @@ public class DEMTest extends javax.swing.JFrame {
                     }
                 }
             }
-            JPanel p = new JPanel();
-            JList<Pair> l = new JList<>(listModel);
-            p.add(l);
-            if (this.jTabbedPane1.getTabCount() > 1) {
+            
+            while (this.jTabbedPane1.getTabCount() > 1) {
                 this.jTabbedPane1.remove(1);
             }
+            
+            JPanel p = new JPanel();
+            p.add(new JList<>(listModelEvents));
             JScrollPane jsp = new JScrollPane(p);
             jsp.getVerticalScrollBar().setUnitIncrement(16);
             this.jTabbedPane1.add("Events", jsp);
+            
+            JPanel p2 = new JPanel();
+            p2.add(new JList<>(listModelMessages));
+            JScrollPane jsp2 = new JScrollPane(p2);
+            jsp2.getVerticalScrollBar().setUnitIncrement(16);
+            this.jTabbedPane1.add("Messages", jsp2);
         } catch (IOException ioe) {
             LOG.log(Level.SEVERE, null, ioe);
         }
