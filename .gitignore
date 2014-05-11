@@ -1,7 +1,6 @@
-/build/
-/dist/
-/nbproject/private/
+/target/
+/.idea/
+/*.iml
+
 /*.so
 /hs_err_pid*.log
-/target/
-/lib/jME3/target/
