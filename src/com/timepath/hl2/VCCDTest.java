@@ -1,52 +1,64 @@
 package com.timepath.hl2;
 
 import com.timepath.hl2.io.captions.VCCD;
-import com.timepath.hl2.io.captions.VCCD.VCCDEntry;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
-import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.swing.TreeUtils;
 import com.timepath.utils.Trie;
 import com.timepath.vfs.SimpleVFile;
-import java.awt.*;
-import java.io.*;
-import java.text.MessageFormat;
-import java.util.*;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.prefs.BackingStoreException;
-import java.util.prefs.Preferences;
-import java.util.zip.CRC32;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreeNode;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.*;
+import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
+import java.util.zip.CRC32;
 
 /**
- *
  * @author TimePath
  */
 @SuppressWarnings("serial")
-public class VCCDTest extends javax.swing.JFrame {
+class VCCDTest extends JFrame {
 
-    private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
+    private static final Logger                   LOG          = Logger.getLogger(VCCDTest.class.getName());
+    private static final Preferences              prefs        = Preferences.userRoot()
+                                                                            .node("timepath")
+                                                                            .node("hl2-caption-editor");
+    private static final String                   CHAN_UNKNOWN = "CHAN_UNKNOWN";
+    private final        Trie                     trie         = new Trie();
+    private final        Map<Integer, StringPair> hashmap      = new HashMap<>();
+    private File       saveFile;
+    private JTable     jTable1;
+    private JTextField jTextField3;
+    private JTextField jTextField4;
 
-    private static final Preferences prefs = Preferences.userRoot().node("timepath").node("hl2-caption-editor");
-
-    public VCCDTest() {
+    private VCCDTest() {
         // Load known mappings from preferences
         try {
             for(String channel : prefs.childrenNames()) {
                 for(String name : prefs.node(channel).keys()) {
                     int hash = prefs.getInt(name, -1);
-                    LOG.log(Level.FINER, "{0} = {1}", new Object[] {name, hash});
+                    LOG.log(Level.FINER, "{0} = {1}", new Object[] { name, hash });
                     if(hash != -1) {
                         hashmap.put(hash, new StringPair(name, channel));
                         trie.add(name);
@@ -56,15 +68,8 @@ public class VCCDTest extends javax.swing.JFrame {
         } catch(BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-
         initComponents();
-
         jTextField3.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateHash();
-            }
-
             @Override
             public void insertUpdate(DocumentEvent e) {
                 updateHash();
@@ -75,33 +80,29 @@ public class VCCDTest extends javax.swing.JFrame {
                 updateHash();
             }
 
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateHash();
+            }
+
             public void updateHash() {
                 jTextField4.setText(hexFormat(VCCD.hash(jTextField3.getText())));
             }
         });
     }
 
-    private final HashMap<Integer, StringPair> hashmap = new HashMap<>();
-
-    private final Trie trie = new Trie();
-
-    private TableCellEditor getKeyEditor() {
-        JTextField t = new JTextField();
-//        new StringAutoCompleter(t, trie, 2);
-        return new DefaultCellEditor(t);
-    }
-
     /**
-     * @param args the command line arguments
-     * <p/>
+     * @param args
+     *         the command line arguments
+     *
      * @throws java.io.IOException
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String... args) throws IOException {
         try {
             if(args.length > 0) {
-                List<VCCDEntry> in = VCCD.parse(new FileInputStream(args[0]));
-                HashMap<Integer, StringPair> hashmap = new HashMap<>();
-                for(VCCDEntry i : in) { // learning
+                List<VCCD.VCCDEntry> in = VCCD.parse(new FileInputStream(args[0]));
+                Map<Integer, StringPair> hashmap = new HashMap<>();
+                for(VCCD.VCCDEntry i : in) { // learning
                     Object crc = i.getHash();
                     String token = i.getKey();
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
@@ -114,8 +115,7 @@ public class VCCDTest extends javax.swing.JFrame {
         } catch(FileNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-
-        java.awt.EventQueue.invokeLater(new Runnable() {
+        EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 VCCDTest c = new VCCDTest();
@@ -124,35 +124,44 @@ public class VCCDTest extends javax.swing.JFrame {
             }
         });
     }
-    //<editor-fold defaultstate="collapsed" desc="Hash codes">
 
-    private static final String CHAN_UNKNOWN = "CHAN_UNKNOWN";
-
-    private static class StringPair {
-
-        String channel, name;
-
-        StringPair(String name, String channel) {
-            this.channel = channel;
-            this.name = name;
+    private static void persistHashmap(Map<Integer, StringPair> map) {
+        for(Map.Entry<Integer, StringPair> entry : map.entrySet()) {
+            Integer key = entry.getKey();
+            String value = entry.getValue().name;
+            if(( key == null ) || ( value == null )) {
+                continue;
+            }
+            prefs.node(entry.getValue().channel).putInt(value, key);
         }
+    }
 
+    private static String hexFormat(int in) {
+        String str = Integer.toHexString(in).toUpperCase();
+        while(str.length() < 8) {
+            str = '0' + str;
+        }
+        return str;
+    }
+
+    private static TableCellEditor getKeyEditor() {
+        JTextField t = new JTextField();
+        //        new StringAutoCompleter(t, trie, 2);
+        return new DefaultCellEditor(t);
     }
 
     private void generateHash() {
         new Thread(new Runnable() {
-
             @Override
             public void run() {
-                final JFrame frame = new JFrame("Generating hash codes...");
+                JFrame frame = new JFrame("Generating hash codes...");
                 JProgressBar pb = new JProgressBar();
                 pb.setIndeterminate(true);
                 frame.add(pb);
                 frame.setMinimumSize(new Dimension(300, 50));
                 frame.setLocationRelativeTo(null);
                 frame.setVisible(true);
-
-                HashMap<Integer, StringPair> map = new HashMap<>();
+                Map<Integer, StringPair> map = new HashMap<>();
                 LOG.info("Generating hash codes ...");
                 try {
                     CRC32 crc = new CRC32();
@@ -166,7 +175,6 @@ public class VCCDTest extends javax.swing.JFrame {
                         TreeUtils.moveChildren(e.getRoot(), top);
                         pb.setValue(i + 1);
                     }
-
                     String spl = "channel == ";
                     for(int i = 0; i < top.getChildCount(); i++) {
                         TreeNode node = top.getChildAt(i);
@@ -187,7 +195,6 @@ public class VCCDTest extends javax.swing.JFrame {
                 } catch(FileNotFoundException ex) {
                     LOG.log(Level.WARNING, "Error generating hash codes", ex);
                 }
-
                 hashmap.putAll(map);
                 persistHashmap(hashmap);
                 frame.dispose();
@@ -195,108 +202,75 @@ public class VCCDTest extends javax.swing.JFrame {
         }).start();
     }
 
-    private static void persistHashmap(HashMap<Integer, StringPair> map) {
-        for(Entry<Integer, StringPair> entry : map.entrySet()) {
-            Integer key = entry.getKey();
-            String value = entry.getValue().name;
-            if(key == null || value == null) {
-                continue;
-            }
-            prefs.node(entry.getValue().channel).putInt(value, key);
-        }
-    }
-
-    private static String hexFormat(int in) {
-        String str = Integer.toHexString(in).toUpperCase();
-        while(str.length() < 8) {
-            str = "0" + str;
-        }
-        return str;
-    }
-
     private String attemptDecode(int hash) {
         if(!hashmap.containsKey(hash)) {
-//            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
+            //            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
             return null;
         }
         return hashmap.get(hash).name;
     }
-    //</editor-fold>
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        hashPanel = new javax.swing.JPanel();
-        jTextField3 = new javax.swing.JTextField();
-        jTextField4 = new javax.swing.JTextField();
-        contentPane = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        menuBar = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
-        jMenuItem12 = new javax.swing.JMenuItem();
-        jMenuItem11 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem10 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem9 = new javax.swing.JMenuItem();
-        jMenu3 = new javax.swing.JMenu();
-        jMenuItem7 = new javax.swing.JMenuItem();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        JPanel hashPanel = new JPanel();
+        jTextField3 = new JTextField();
+        jTextField4 = new JTextField();
+        JScrollPane contentPane = new JScrollPane();
+        jTable1 = new JTable();
+        JMenuBar menuBar = new JMenuBar();
+        JMenu jMenu1 = new JMenu();
+        JMenuItem jMenuItem6 = new JMenuItem();
+        JMenuItem jMenuItem1 = new JMenuItem();
+        JMenuItem jMenuItem3 = new JMenuItem();
+        JMenuItem jMenuItem8 = new JMenuItem();
+        JMenuItem jMenuItem12 = new JMenuItem();
+        JMenuItem jMenuItem11 = new JMenuItem();
+        JMenuItem jMenuItem2 = new JMenuItem();
+        JMenuItem jMenuItem10 = new JMenuItem();
+        JMenu jMenu2 = new JMenu();
+        JMenuItem jMenuItem4 = new JMenuItem();
+        JMenuItem jMenuItem5 = new JMenuItem();
+        JMenuItem jMenuItem9 = new JMenuItem();
+        JMenu jMenu3 = new JMenu();
+        JMenuItem jMenuItem7 = new JMenuItem();
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Caption Editor");
-        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.Y_AXIS));
-
-        hashPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("CRC32"));
-        hashPanel.setMaximumSize(new java.awt.Dimension(2147483647, 83));
-        hashPanel.setLayout(new java.awt.BorderLayout());
-        hashPanel.add(jTextField3, java.awt.BorderLayout.PAGE_START);
-
+        getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        hashPanel.setBorder(BorderFactory.createTitledBorder("CRC32"));
+        hashPanel.setMaximumSize(new Dimension(2147483647, 83));
+        hashPanel.setLayout(new BorderLayout());
+        hashPanel.add(jTextField3, BorderLayout.PAGE_START);
         jTextField4.setEditable(false);
         jTextField4.setText("The CRC will appear here");
-        hashPanel.add(jTextField4, java.awt.BorderLayout.PAGE_END);
-
+        hashPanel.add(jTextField4, BorderLayout.PAGE_END);
         getContentPane().add(hashPanel);
-
         jTable1.setAutoCreateRowSorter(true);
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
+        jTable1.setModel(new DefaultTableModel(new Object[][] {
+        }, new String[] {
                 "CRC32", "Key", "Value"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Object.class, java.lang.String.class, java.lang.String.class
+        }
+        )
+        {
+            Class[] types = {
+                    Object.class, String.class, String.class
             };
-            boolean[] canEdit = new boolean [] {
-                false, true, true
+            boolean[] canEdit = {
+                    false, true, true
             };
 
+            @Override
             public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
+                return types[columnIndex];
             }
 
-            public boolean isCellEditable(int rowIndex, int columnIndex) {
-                return canEdit [columnIndex];
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return canEdit[column];
             }
         });
-        jTable1.setCursor(new java.awt.Cursor(java.awt.Cursor.DEFAULT_CURSOR));
+        jTable1.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jTable1.setRowHeight(24);
         contentPane.setViewportView(jTable1);
-        if (jTable1.getColumnModel().getColumnCount() > 0) {
+        if(jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setMinWidth(85);
             jTable1.getColumnModel().getColumn(0).setPreferredWidth(85);
             jTable1.getColumnModel().getColumn(0).setMaxWidth(85);
@@ -304,148 +278,138 @@ public class VCCDTest extends javax.swing.JFrame {
             jTable1.getColumnModel().getColumn(1).setCellEditor(getKeyEditor());
             jTable1.getColumnModel().getColumn(2).setPreferredWidth(160);
         }
-
         getContentPane().add(contentPane);
-
         jMenu1.setText("File");
-
-        jMenuItem6.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem6.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
         jMenuItem6.setMnemonic('N');
         jMenuItem6.setText("New");
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createNew(evt);
+        jMenuItem6.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                createNew(e);
             }
         });
         jMenu1.add(jMenuItem6);
-
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         jMenuItem1.setMnemonic('O');
         jMenuItem1.setText("Open");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadCaptions(evt);
+        jMenuItem1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                loadCaptions(e);
             }
         });
         jMenu1.add(jMenuItem1);
-
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK));
         jMenuItem3.setMnemonic('I');
         jMenuItem3.setText("Import");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                importCaptions(evt);
+        jMenuItem3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                importCaptions(e);
             }
         });
         jMenu1.add(jMenuItem3);
-
         jMenuItem8.setMnemonic('X');
         jMenuItem8.setText("Export");
-        jMenuItem8.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                export(evt);
+        jMenuItem8.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                export(e);
             }
         });
         jMenu1.add(jMenuItem8);
-
         jMenuItem12.setMnemonic('E');
         jMenuItem12.setText("Export all");
-        jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                exportAll(evt);
+        jMenuItem12.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                exportAll(e);
             }
         });
         jMenu1.add(jMenuItem12);
-
         jMenuItem11.setText("Generate hash codes");
-        jMenuItem11.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                generateHash(evt);
+        jMenuItem11.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                generateHash(e);
             }
         });
         jMenu1.add(jMenuItem11);
-
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
         jMenuItem2.setMnemonic('S');
         jMenuItem2.setText("Save");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveCaptions(evt);
+        jMenuItem2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveCaptions(e);
             }
         });
         jMenu1.add(jMenuItem2);
-
         jMenuItem10.setMnemonic('V');
         jMenuItem10.setText("Save As...");
-        jMenuItem10.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                saveCaptionsAs(evt);
+        jMenuItem10.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                saveCaptionsAs(e);
             }
         });
         jMenu1.add(jMenuItem10);
-
         menuBar.add(jMenu1);
-
         jMenu2.setText("Edit");
-
-        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_INSERT, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem4.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK));
         jMenuItem4.setText("Insert row");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                insertRow(evt);
+        jMenuItem4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                insertRow(e);
             }
         });
         jMenu2.add(jMenuItem4);
-
-        jMenuItem5.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_DELETE, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem5.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK));
         jMenuItem5.setText("Delete row");
-        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteRow(evt);
+        jMenuItem5.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                deleteRow(e);
             }
         });
         jMenu2.add(jMenuItem5);
-
         jMenuItem9.setText("Goto");
-        jMenuItem9.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                gotoRow(evt);
+        jMenuItem9.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                gotoRow(e);
             }
         });
         jMenu2.add(jMenuItem9);
-
         menuBar.add(jMenu2);
-
         jMenu3.setText("Help");
-
-        jMenuItem7.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
+        jMenuItem7.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
         jMenuItem7.setText("Formatting");
-        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                formattingHelp(evt);
+        jMenuItem7.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                formattingHelp(e);
             }
         });
         jMenu3.add(jMenuItem7);
-
         menuBar.add(jMenu3);
-
         setJMenuBar(menuBar);
-
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void loadCaptions(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadCaptions
+    private void loadCaptions(ActionEvent evt) {
         try {
             NativeFileChooser fc = new NativeFileChooser();
             fc.setTitle("Open");
-
-            fc.addFilter(new ExtensionFilter("VCCD Binary Files", ".dat"));
+            fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Binary Files", ".dat"));
             fc.setParent(this);
             File[] files = fc.choose();
             if(files == null) {
                 return;
             }
-            List<VCCDEntry> entries;
+            List<VCCD.VCCDEntry> entries;
             try {
                 entries = VCCD.load(new FileInputStream(files[0]));
             } catch(FileNotFoundException ex) {
@@ -453,32 +417,27 @@ public class VCCDTest extends javax.swing.JFrame {
                 return;
             }
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
-
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
             for(int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(VCCDEntry entry : entries) {
-                model.addRow(
-                    new Object[] {hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue()});
+            for(VCCD.VCCDEntry entry : entries) {
+                model.addRow(new Object[] { hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue() });
             }
             saveFile = files[0];
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_loadCaptions
-
-    private File saveFile;
+    }
 
     private void save(boolean flag) {
-        if(saveFile == null || flag) {
+        if(( saveFile == null ) || flag) {
             try {
                 NativeFileChooser fc = new NativeFileChooser();
                 fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG);
                 fc.setTitle("Save (as closecaption_<language>.dat)");
-                fc.addFilter(new ExtensionFilter("VCCD Binary Files", ".dat"));
+                fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Binary Files", ".dat"));
                 fc.setParent(this);
-
                 File[] fs = fc.choose();
                 if(fs == null) {
                     return;
@@ -489,25 +448,23 @@ public class VCCDTest extends javax.swing.JFrame {
                 return;
             }
         }
-
         if(jTable1.isEditing()) {
             jTable1.getCellEditor().stopCellEditing();
         }
-
-        List<VCCDEntry> entries = new LinkedList<>();
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        List<VCCD.VCCDEntry> entries = new LinkedList<>();
+        TableModel model = jTable1.getModel();
         for(int i = 0; i < model.getRowCount(); i++) {
             Object crc = model.getValueAt(i, 0);
-            if(model.getValueAt(i, 1) != null && !model.getValueAt(i, 1).toString().isEmpty()) {
+            if(( model.getValueAt(i, 1) != null ) && !model.getValueAt(i, 1).toString().isEmpty()) {
                 crc = hexFormat(VCCD.hash(model.getValueAt(i, 1).toString()));
             }
             int hash = (int) Long.parseLong(crc.toString().toLowerCase(), 16);
             Object key = model.getValueAt(i, 1);
-            String token = key instanceof String ? key.toString() : null;
+            String token = ( key instanceof String ) ? key.toString() : null;
             if(!hashmap.containsKey(hash)) {
                 hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
             }
-            entries.add(new VCCDEntry(hash, model.getValueAt(i, 2).toString()));
+            entries.add(new VCCD.VCCDEntry(hash, model.getValueAt(i, 2).toString()));
         }
         persistHashmap(hashmap);
         try {
@@ -517,51 +474,49 @@ public class VCCDTest extends javax.swing.JFrame {
         }
     }
 
-    private void saveCaptions(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveCaptions
+    private void saveCaptions(ActionEvent evt) {
         save(false);
-    }//GEN-LAST:event_saveCaptions
+    }
 
-    private void importCaptions(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_importCaptions
+    private void importCaptions(ActionEvent evt) {
         try {
             NativeFileChooser fc = new NativeFileChooser();
             fc.setTitle("Import");
             fc.setParent(this);
-            fc.addFilter(new ExtensionFilter("VCCD Source Files", ".txt"));
-
+            fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Source Files", ".txt"));
             File[] files = fc.choose();
             if(files == null) {
                 return;
             }
-            List<VCCDEntry> entries = VCCD.parse(new FileInputStream(files[0]));
+            List<VCCD.VCCDEntry> entries = VCCD.parse(new FileInputStream(files[0]));
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
-
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
             for(int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(VCCDEntry entrie : entries) {
+            for(VCCD.VCCDEntry entrie : entries) {
                 int hash = entrie.getHash();
                 String token = entrie.getKey();
                 if(!hashmap.containsKey(hash)) {
                     hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
                 }
-                model.addRow(new Object[] {hexFormat(entrie.getHash()), entrie.getKey(), entrie.getValue()});
+                model.addRow(new Object[] { hexFormat(entrie.getHash()), entrie.getKey(), entrie.getValue() });
             }
             persistHashmap(hashmap);
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_importCaptions
+    }
 
-    private void insertRow(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_insertRow
+    private void insertRow(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.addRow(new Object[] {0, "", ""});
-    }//GEN-LAST:event_insertRow
+        model.addRow(new Object[] { 0, "", "" });
+    }
 
-    private void deleteRow(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteRow
+    private void deleteRow(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         int newRow = Math.min(jTable1.getSelectedRow(), jTable1.getRowCount() - 1);
-        if(jTable1.getSelectedRow() == jTable1.getRowCount() - 1) {
+        if(jTable1.getSelectedRow() == ( jTable1.getRowCount() - 1 )) {
             newRow = jTable1.getRowCount() - 2;
         }
         LOG.log(Level.FINER, "New row: {0}", newRow);
@@ -569,57 +524,42 @@ public class VCCDTest extends javax.swing.JFrame {
         if(jTable1.getRowCount() > 0) {
             jTable1.setRowSelectionInterval(newRow, newRow);
         }
-    }//GEN-LAST:event_deleteRow
+    }
 
-    private void createNew(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createNew
+    private void createNew(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         for(int i = model.getRowCount() - 1; i >= 0; i--) {
             model.removeRow(i);
         }
-        model.addRow(new Object[] {0, "", ""});
-    }//GEN-LAST:event_createNew
+        model.addRow(new Object[] { 0, "", "" });
+    }
 
-    private void formattingHelp(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formattingHelp
-        String message = "Main:\n"
-                             + "Avoid using spaces immediately after opening tags.\n"
-                             + "<clr:r,g,b>\n"
-                             + "  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.\n"
-                             + "  For example, <clr:255,100,100> would be red.\n"
-                             + "  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?\n"
-                         + "<B>\n"
-                             + "  Toggles bold text for the next phrase.\n"
-                             + "<I>\n"
-                             + "  Toggles italicised text for the next phrase.\n"
-                             + "<U>\n"
-                             + "  Toggles underlined text for the next phrase.\n"
-                             + "<cr>\n"
-                             + "  Go to new line for next phrase.\n"
-                             + "Other:\n"
-                             + "<sfx>\n"
-                             + "  Marks a line as a sound effect that will only be displayed with full closed captioning.\n"
-                         + "  If the user has cc_subtitles 1, it will not display these lines.\n"
-                             + "<delay:#>\n"
-                             + "  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can take a decimal value.\n"
-                         + "\nUnknown:\n"
-                             + "<sameline>\n"
-                             + "  Don't go to new line for next phrase.\n"
-                             + "<linger:#> / <persist:#> / <len:#>\n"
-                             + "  Indicates how much longer than usual the caption should appear on the screen.\n"
-                             + "<position:where>\n"
-                             + "  I don't know how this one works, but from the sdk comments:\n"
-                             + "  Draw caption at special location ??? needed.\n"
-                             + "<norepeat:#>\n"
-                             + "  Sets how long until the caption can appear again. Useful for frequent sounds.\n"
-                             + "  See also: cc_sentencecaptionnorepeat\n"
-                             + "<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>\n"
-                             + "\n"
-                             + "closecaption 1 enables the captions\n"
-                             + "cc_subtitles 1 disables <sfx> captions\n"
-                             + "Captions last for 5 seconds + cc_linger_time\n"
-                             + "Captions are delayed by cc_predisplay_time seconds\n"
-                             + "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n"
-                         + "cc_random emits a random caption\n"
-                             + "";
+    private void formattingHelp(ActionEvent evt) {
+        String message = "Main:\n" + "Avoid using spaces immediately after opening tags.\n" + "<clr:r,g,b>\n" +
+                         "  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.\n" +
+                         "  For example, <clr:255,100,100> would be red.\n" +
+                         "  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?\n" +
+                         "<B>\n" + "  Toggles bold text for the next phrase.\n" + "<I>\n" +
+                         "  Toggles italicised text for the next phrase.\n" + "<U>\n" +
+                         "  Toggles underlined text for the next phrase.\n" + "<cr>\n" + "  Go to new line for next phrase.\n" +
+                         "Other:\n" + "<sfx>\n" +
+                         "  Marks a line as a sound effect that will only be displayed with full closed captioning.\n" +
+                         "  If the user has cc_subtitles 1, it will not display these lines.\n" + "<delay:#>\n" +
+                         "  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can " +
+                         "take a decimal value.\n" +
+                         "\nUnknown:\n" + "<sameline>\n" + "  Don't go to new line for next phrase.\n" +
+                         "<linger:#> / <persist:#> / <len:#>\n" +
+                         "  Indicates how much longer than usual the caption should appear on the screen.\n" +
+                         "<position:where>\n" + "  I don't know how this one works, but from the sdk comments:\n" +
+                         "  Draw caption at special location ??? needed.\n" + "<norepeat:#>\n" +
+                         "  Sets how long until the caption can appear again. Useful for frequent sounds.\n" +
+                         "  See also: cc_sentencecaptionnorepeat\n" +
+                         "<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>\n" + '\n' +
+                         "closecaption 1 enables the captions\n" + "cc_subtitles 1 disables <sfx> captions\n" +
+                         "Captions last for 5 seconds + cc_linger_time\n" +
+                         "Captions are delayed by cc_predisplay_time seconds\n" +
+                         "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n" +
+                         "cc_random emits a random caption\n" + "";
         JScrollPane jsp = new JScrollPane(new JTextArea(message));
         jsp.setPreferredSize(new Dimension(500, 500));
         JOptionPane pane = new JOptionPane(jsp, JOptionPane.INFORMATION_MESSAGE);
@@ -627,11 +567,11 @@ public class VCCDTest extends javax.swing.JFrame {
         dialog.setResizable(true);
         dialog.setModal(false);
         dialog.setVisible(true);
-    }//GEN-LAST:event_formattingHelp
+    }
 
-    private void export(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_export
+    private void export(ActionEvent evt) {
         StringBuilder sb = new StringBuilder(jTable1.getRowCount() * 100); // rough estimate
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
+        TableModel model = jTable1.getModel();
         for(int i = 0; i < model.getRowCount(); i++) {
             sb.append(MessageFormat.format("{0}\t{1}\n", model.getValueAt(i, 0), model.getValueAt(i, 2)));
         }
@@ -643,9 +583,9 @@ public class VCCDTest extends javax.swing.JFrame {
         pane.setOpaque(false);
         pane.setBackground(new Color(0, 0, 0, 0));
         JScrollPane jsp = new JScrollPane(pane);
-        jsp.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         JOptionPane.showMessageDialog(this, jsp, "Hash List", JOptionPane.INFORMATION_MESSAGE);
-    }//GEN-LAST:event_export
+    }
 
     private int showInputDialog() {
         String inputValue = JOptionPane.showInputDialog("Enter row", jTable1.getSelectedRow() + 1);
@@ -663,7 +603,7 @@ public class VCCDTest extends javax.swing.JFrame {
         return intValue;
     }
 
-    private void gotoRow(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gotoRow
+    private void gotoRow(ActionEvent evt) {
         int row = showInputDialog();
         if(row < 0) {
             return;
@@ -673,58 +613,41 @@ public class VCCDTest extends javax.swing.JFrame {
         }
         jTable1.setRowSelectionInterval(row, row);
         jTable1.scrollRectToVisible(jTable1.getCellRect(row, 0, true));
-    }//GEN-LAST:event_gotoRow
+    }
 
-    private void saveCaptionsAs(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveCaptionsAs
+    private void saveCaptionsAs(ActionEvent evt) {
         save(true);
-    }//GEN-LAST:event_saveCaptionsAs
+    }
 
-    private void generateHash(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_generateHash
+    private void generateHash(ActionEvent evt) {
         generateHash();
-    }//GEN-LAST:event_generateHash
+    }
 
-    private void exportAll(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportAll
+    private void exportAll(ActionEvent evt) {
         try {
             NativeFileChooser fc = new NativeFileChooser();
             fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG);
             fc.setTitle("Export");
-            fc.addFilter(new ExtensionFilter("XML", ".xml"));
+            fc.addFilter(new BaseFileChooser.ExtensionFilter("XML", ".xml"));
             fc.setParent(this);
-
             File[] fs = fc.choose();
             if(fs == null) {
                 return;
             }
             saveFile = fs[0];
-
             prefs.exportSubtree(new FileOutputStream(saveFile));
         } catch(IOException | BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_exportAll
+    }
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane contentPane;
-    private javax.swing.JPanel hashPanel;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem10;
-    private javax.swing.JMenuItem jMenuItem11;
-    private javax.swing.JMenuItem jMenuItem12;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
-    private javax.swing.JMenuItem jMenuItem9;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField3;
-    private javax.swing.JTextField jTextField4;
-    private javax.swing.JMenuBar menuBar;
-    // End of variables declaration//GEN-END:variables
+    private static class StringPair {
 
+        String channel, name;
+
+        StringPair(String name, String channel) {
+            this.channel = channel;
+            this.name = name;
+        }
+    }
 }

@@ -2,66 +2,93 @@ package com.timepath.hl2.cvars;
 
 import com.timepath.hl2.ExternalConsole;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import java.awt.Color;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
+import com.timepath.swing.StatusBar;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.util.*;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
- *
  * @author TimePath
  */
 @SuppressWarnings("serial")
-public class CVarTest extends javax.swing.JFrame {
+class CVarTest extends JFrame {
+
+    private static final Logger LOG = Logger.getLogger(CVarTest.class.getName());
+    private final TableRowSorter<TableModel> sorter;
+    private       JCheckBox                  caseSensitiveCheckBox;
+    private       JLabel                     jLabel1;
+    private       JLabel                     jLabel5;
+    private       JTable                     jTable1;
+    private       JTextField                 jTextField1;
+    private       JCheckBox                  notCheckBox;
+    private       JCheckBox                  regexCheckBox;
 
     /**
      * Creates new form CVarTest
      */
-    public CVarTest() {
+    private CVarTest() {
         initComponents();
         sorter = new TableRowSorter<>(jTable1.getModel());
         Comparator<String> comparator = new Comparator<String>() {
             @Override
-            public int compare(String s1, String s2) {
-                return s1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(
-                    s2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
+            public int compare(String o1, String o2) {
+                return o1.replaceFirst("\\+", "")
+                         .replaceFirst("-", "")
+                         .toLowerCase()
+                         .compareTo(o2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
             }
         };
         sorter.setComparator(0, comparator);
-
         List<RowSorter.SortKey> sortKeys = new LinkedList<>();
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
-
         jTable1.setRowSorter(sorter);
         jTextField1.getDocument().addDocumentListener(new DocumentListener() {
             @Override
-            public void changedUpdate(DocumentEvent de) {
+            public void insertUpdate(DocumentEvent e) {
                 filter();
             }
 
             @Override
-            public void insertUpdate(DocumentEvent de) {
+            public void removeUpdate(DocumentEvent e) {
                 filter();
             }
 
             @Override
-            public void removeUpdate(DocumentEvent de) {
+            public void changedUpdate(DocumentEvent e) {
                 filter();
+            }
+        });
+    }
+
+    /**
+     * @param args
+     *         the command line arguments
+     */
+    public static void main(String... args) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new CVarTest().setVisible(true);
             }
         });
     }
@@ -70,7 +97,9 @@ public class CVarTest extends javax.swing.JFrame {
         jLabel1.setText(Integer.toString(sorter.getModelRowCount()));
         try {
             String str = jTextField1.getText();
-            if(str.length() > 0) {
+            if(str.isEmpty()) {
+                sorter.setRowFilter(null);
+            } else {
                 if(!regexCheckBox.isSelected()) {
                     str = Pattern.quote(str);
                 }
@@ -82,8 +111,6 @@ public class CVarTest extends javax.swing.JFrame {
                     rf = RowFilter.notFilter(rf);
                 }
                 sorter.setRowFilter(rf);
-            } else {
-                sorter.setRowFilter(null);
             }
             jLabel5.setText(Integer.toString(sorter.getViewRowCount()));
             jTextField1.setForeground(Color.BLACK);
@@ -92,217 +119,207 @@ public class CVarTest extends javax.swing.JFrame {
         }
     }
 
-    private final TableRowSorter<TableModel> sorter;
-
-    /**
-     * This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jTable1 = new javax.swing.JTable();
-        statusBar1 = new com.timepath.swing.StatusBar();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JToolBar.Separator();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jPanel1 = new javax.swing.JPanel();
-        jTextField1 = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
-        regexCheckBox = new javax.swing.JCheckBox();
-        caseSensitiveCheckBox = new javax.swing.JCheckBox();
-        notCheckBox = new javax.swing.JCheckBox();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jMenuItem6 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem3 = new javax.swing.JMenuItem();
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        JScrollPane jScrollPane1 = new JScrollPane();
+        jTable1 = new JTable();
+        StatusBar statusBar1 = new StatusBar();
+        JLabel jLabel2 = new JLabel();
+        jLabel1 = new JLabel();
+        JToolBar.Separator jSeparator1 = new JToolBar.Separator();
+        JLabel jLabel4 = new JLabel();
+        jLabel5 = new JLabel();
+        JPanel jPanel1 = new JPanel();
+        jTextField1 = new JTextField();
+        JLabel jLabel3 = new JLabel();
+        regexCheckBox = new JCheckBox();
+        caseSensitiveCheckBox = new JCheckBox();
+        notCheckBox = new JCheckBox();
+        JMenuBar jMenuBar1 = new JMenuBar();
+        JMenu jMenu1 = new JMenu();
+        JMenuItem jMenuItem1 = new JMenuItem();
+        JMenuItem jMenuItem4 = new JMenuItem();
+        JMenuItem jMenuItem6 = new JMenuItem();
+        JMenuItem jMenuItem5 = new JMenuItem();
+        JMenuItem jMenuItem7 = new JMenuItem();
+        JMenu jMenu2 = new JMenu();
+        JMenuItem jMenuItem2 = new JMenuItem();
+        JMenuItem jMenuItem3 = new JMenuItem();
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("CVar listing");
-
-        jTable1.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
+        jTable1.setModel(new DefaultTableModel(new Object[][] {
+        }, new String[] {
                 "Name", "Value", "Default", "Min", "Max", "Tags", "Description"
-            }
+        }
         ));
         jScrollPane1.setViewportView(jTable1);
-
         statusBar1.setRollover(true);
-
         jLabel2.setText(" Total convars/concommands: ");
         statusBar1.add(jLabel2);
-
         jLabel1.setText("0");
         statusBar1.add(jLabel1);
         statusBar1.add(jSeparator1);
-
         jLabel4.setText("Showing: ");
         statusBar1.add(jLabel4);
-
         jLabel5.setText("0");
         statusBar1.add(jLabel5);
-
         jLabel3.setText("Find:");
-
         regexCheckBox.setMnemonic('R');
         regexCheckBox.setText("Regular Expression");
-        regexCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                regexCheckBoxActionPerformed(evt);
+        regexCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                regexCheckBoxActionPerformed(e);
             }
         });
-
         caseSensitiveCheckBox.setMnemonic('M');
         caseSensitiveCheckBox.setText("Match Case");
-        caseSensitiveCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                caseSensitiveCheckBoxActionPerformed(evt);
+        caseSensitiveCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                caseSensitiveCheckBoxActionPerformed(e);
             }
         });
-
         notCheckBox.setMnemonic('M');
         notCheckBox.setText("Not");
-        notCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                notCheckBoxActionPerformed(evt);
+        notCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                notCheckBoxActionPerformed(e);
             }
         });
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel3)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(notCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(caseSensitiveCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(regexCheckBox))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
-                    .addComponent(regexCheckBox)
-                    .addComponent(caseSensitiveCheckBox)
-                    .addComponent(notCheckBox))
-                .addGap(0, 0, 0))
-        );
-
+        jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                      .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                             .addContainerGap()
+                                                                             .addComponent(jLabel3)
+                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                      .RELATED)
+                                                                             .addComponent(jTextField1)
+                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                      .RELATED)
+                                                                             .addComponent(notCheckBox)
+                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                      .RELATED)
+                                                                             .addComponent(caseSensitiveCheckBox)
+                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                      .RELATED)
+                                                                             .addComponent(regexCheckBox))
+                                        );
+        jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                    .addGroup(jPanel1Layout.createSequentialGroup()
+                                                                           .addGap(0, 0, 0)
+                                                                           .addGroup(jPanel1Layout.createParallelGroup
+                                                                                   (GroupLayout.Alignment.BASELINE)
+                                                                                                  .addComponent(jTextField1,
+                                                                                                                GroupLayout
+                                                                                                                        .PREFERRED_SIZE,
+                                                                                                                GroupLayout
+                                                                                                                        .DEFAULT_SIZE,
+                                                                                                                GroupLayout
+                                                                                                                        .PREFERRED_SIZE
+                                                                                                               )
+                                                                                                  .addComponent(jLabel3)
+                                                                                                  .addComponent(regexCheckBox)
+                                                                                                  .addComponent(
+                                                                                                          caseSensitiveCheckBox)
+                                                                                                  .addComponent(notCheckBox))
+                                                                           .addGap(0, 0, 0))
+                                      );
         jMenu1.setText("File");
-
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         jMenuItem1.setText("Open");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+        jMenuItem1.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem1ActionPerformed(e);
             }
         });
         jMenu1.add(jMenuItem1);
-
         jMenuItem4.setText("Get cvarlist");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+        jMenuItem4.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem4ActionPerformed(e);
             }
         });
         jMenu1.add(jMenuItem4);
-
         jMenuItem6.setText("Get differences");
-        jMenuItem6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem6ActionPerformed(evt);
+        jMenuItem6.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem6ActionPerformed(e);
             }
         });
         jMenu1.add(jMenuItem6);
-
         jMenuItem5.setText("Reset cvars");
-        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem5ActionPerformed(evt);
+        jMenuItem5.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem5ActionPerformed(e);
             }
         });
         jMenu1.add(jMenuItem5);
-
         jMenuItem7.setText("Clear");
-        jMenuItem7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem7ActionPerformed(evt);
+        jMenuItem7.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem7ActionPerformed(e);
             }
         });
         jMenu1.add(jMenuItem7);
-
         jMenuBar1.add(jMenu1);
-
         jMenu2.setText("Edit");
-
         jMenuItem2.setText("Copy names");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
+        jMenuItem2.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem2ActionPerformed(e);
             }
         });
         jMenu2.add(jMenuItem2);
-
         jMenuItem3.setText("Copy markdown");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem3ActionPerformed(evt);
+        jMenuItem3.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem3ActionPerformed(e);
             }
         });
         jMenu2.add(jMenuItem3);
-
         jMenuBar1.add(jMenu2);
-
         setJMenuBar(jMenuBar1);
-
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(statusBar1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 908, Short.MAX_VALUE)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                .addGap(0, 0, 0)
-                .addComponent(statusBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
+        layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                        .addComponent(statusBar1,
+                                                      GroupLayout.DEFAULT_SIZE,
+                                                      GroupLayout.DEFAULT_SIZE,
+                                                      Short.MAX_VALUE)
+                                        .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 908, Short.MAX_VALUE)
+                                        .addComponent(jPanel1,
+                                                      GroupLayout.DEFAULT_SIZE,
+                                                      GroupLayout.DEFAULT_SIZE,
+                                                      Short.MAX_VALUE)
+                                 );
+        layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                      .addGroup(layout.createSequentialGroup()
+                                                      .addComponent(jPanel1,
+                                                                    GroupLayout.PREFERRED_SIZE,
+                                                                    GroupLayout.DEFAULT_SIZE,
+                                                                    GroupLayout.PREFERRED_SIZE)
+                                                      .addGap(0, 0, 0)
+                                                      .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                                                      .addGap(0, 0, 0)
+                                                      .addComponent(statusBar1,
+                                                                    GroupLayout.PREFERRED_SIZE,
+                                                                    25,
+                                                                    GroupLayout.PREFERRED_SIZE))
+                               );
         pack();
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
     private Map<String, CVar> analyze(Scanner scanner) {
-        Map<String, CVar> map = CVarList.analyzeList(scanner,
-                                                     new HashMap<String, CVar>());
+        Map<String, CVar> map = CVarList.analyzeList(scanner, new HashMap<String, CVar>());
         DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
         String[] columns = new String[p.getColumnCount()];
         for(int i = 0; i < columns.length; i++) {
@@ -311,9 +328,9 @@ public class CVarTest extends javax.swing.JFrame {
         return map;
     }
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void jMenuItem1ActionPerformed(ActionEvent evt) {
         try {
-            final File f[] = new NativeFileChooser().setTitle("Select cvarlist").choose();
+            final File[] f = new NativeFileChooser().setTitle("Select cvarlist").choose();
             if(f != null) {
                 SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
                     @Override
@@ -321,15 +338,17 @@ public class CVarTest extends javax.swing.JFrame {
                         RandomAccessFile rf = new RandomAccessFile(f[0].getPath(), "r");
                         Scanner scanner = new Scanner(rf.getChannel());
                         Map<String, CVar> map = analyze(scanner);
-                        for(Entry<String, CVar> entry : map.entrySet()) {
+                        for(Map.Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
-                            this.publish(new Object[] {
-                                var.getName(), var.getValue(),
-                                var.getDefaultValue(), var.getMinimum(),
-                                var.getMaximum(),
-                                Arrays.toString(
-                                var.getTags().toArray(new String[var.getTags().size()])),
-                                var.getDesc()});
+                            publish(new Object[] {
+                                    var.getName(),
+                                    var.getValue(),
+                                    var.getDefaultValue(),
+                                    var.getMinimum(),
+                                    var.getMaximum(),
+                                    Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
+                                    var.getDesc()
+                            });
                         }
                         return null;
                     }
@@ -337,7 +356,7 @@ public class CVarTest extends javax.swing.JFrame {
                     @Override
                     protected void process(List<Object[]> chunks) {
                         for(Object[] row : chunks) {
-                            ((DefaultTableModel) jTable1.getModel()).addRow(row);
+                            ( (DefaultTableModel) jTable1.getModel() ).addRow(row);
                         }
                         filter();
                     }
@@ -347,44 +366,45 @@ public class CVarTest extends javax.swing.JFrame {
         } catch(IOException ex) {
             Logger.getLogger(CVarTest.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }//GEN-LAST:event_jMenuItem1ActionPerformed
+    }
 
-    private void regexCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_regexCheckBoxActionPerformed
+    private void regexCheckBoxActionPerformed(ActionEvent evt) {
         filter();
-    }//GEN-LAST:event_regexCheckBoxActionPerformed
+    }
 
-    private void caseSensitiveCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_caseSensitiveCheckBoxActionPerformed
+    private void caseSensitiveCheckBoxActionPerformed(ActionEvent evt) {
         filter();
-    }//GEN-LAST:event_caseSensitiveCheckBoxActionPerformed
+    }
 
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    private void jMenuItem2ActionPerformed(ActionEvent evt) {
         StringBuilder sb = new StringBuilder();
-        int row;
         for(int i = 0; i < jTable1.getModel().getRowCount(); i++) {
-            row = jTable1.convertRowIndexToModel(i);
-            sb.append(jTable1.getModel().getValueAt(row, 0)).append("\n");
+            int row = jTable1.convertRowIndexToModel(i);
+            sb.append(jTable1.getModel().getValueAt(row, 0)).append('\n');
         }
         StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
+    }
 
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    private void jMenuItem3ActionPerformed(ActionEvent evt) {
         TableModel m = jTable1.getModel();
         StringBuilder sb = new StringBuilder();
         String tab = "|";
-        String line = "\n";
-        int row, col, rows = m.getRowCount(), cols = m.getColumnCount();
+        int col;
+        int rows = m.getRowCount();
+        int cols = m.getColumnCount();
         for(int i = 0; i < cols; i++) {
             col = jTable1.convertColumnIndexToModel(i);
             sb.append(tab).append(m.getColumnName(col));
         }
+        String line = "\n";
         sb.append(tab).append(line);
         for(int i = 0; i < cols; i++) {
             sb.append(tab).append("--");
         }
         sb.append(tab).append(line);
         for(int i = 0; i < rows; i++) {
-            row = jTable1.convertRowIndexToModel(i);
+            int row = jTable1.convertRowIndexToModel(i);
             for(int j = 0; j < cols; j++) {
                 col = jTable1.convertColumnIndexToModel(j);
                 Object obj = m.getValueAt(row, col);
@@ -392,30 +412,30 @@ public class CVarTest extends javax.swing.JFrame {
                     obj = "[" + obj + "](/r/tf2scripthelp/wiki/" + obj + "#todo \"TODO\")";
                 }
                 sb.append(tab);
-                if(obj == null) {
-                } else if(obj instanceof Object[]) {
-                    Object[] arr = (Object[]) obj;
-                    sb.append(arr[0]);
-                    for(int k = 1; k < arr.length; k++) {
-                        sb.append(", ").append(arr[k]);
+                if(obj != null) {
+                    if(obj instanceof Object[]) {
+                        Object[] arr = (Object[]) obj;
+                        sb.append(arr[0]);
+                        for(int k = 1; k < arr.length; k++) {
+                            sb.append(", ").append(arr[k]);
+                        }
+                    } else {
+                        sb.append(obj);
                     }
-                } else {
-                    sb.append(obj);
                 }
             }
             sb.append(tab).append(line);
         }
         StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-    }//GEN-LAST:event_jMenuItem3ActionPerformed
+    }
 
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+    private void jMenuItem4ActionPerformed(ActionEvent evt) {
         clear();
         String ret = null;
         int limit = 5;
-        for(int i = 0;; i++) {
-            String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--",
-                                               "--end of cvarlist--");
+        for(int i = 0; ; i++) {
+            String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--", "--end of cvarlist--");
             if(temp.equals(ret)) {
                 break;
             }
@@ -425,72 +445,78 @@ public class CVarTest extends javax.swing.JFrame {
             }
             ret = temp;
         }
-
         StringSelection selection = new StringSelection(ret);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-
         Map<String, CVar> map = analyze(new Scanner(ret));
-        for(Entry<String, CVar> entry : map.entrySet()) {
+        for(Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
-            Object[] chunks = new Object[] {var.getName(), var.getValue(),
-                                            var.getDefaultValue(), var.getMinimum(),
-                                            var.getMaximum(), Arrays.toString(
-                                            var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
-            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+            Object[] chunks = {
+                    var.getName(),
+                    var.getValue(),
+                    var.getDefaultValue(),
+                    var.getMinimum(),
+                    var.getMaximum(),
+                    Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
+                    var.getDesc()
+            };
+            ( (DefaultTableModel) jTable1.getModel() ).addRow(chunks);
         }
         filter();
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
+    }
 
-    private void notCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_notCheckBoxActionPerformed
+    private void notCheckBoxActionPerformed(ActionEvent evt) {
         filter();
-    }//GEN-LAST:event_notCheckBoxActionPerformed
+    }
 
-    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+    private void jMenuItem5ActionPerformed(ActionEvent evt) {
         StringBuilder sb = new StringBuilder();
         sb.append("sv_cheats 1\n");
         ExternalConsole.exec("sv_cheats 1", null);
         TableModel m = jTable1.getModel();
-        int row, rows = m.getRowCount();
+        int rows = m.getRowCount();
         for(int i = 0; i < rows; i++) {
-            row = jTable1.convertRowIndexToModel(i);
+            int row = jTable1.convertRowIndexToModel(i);
             int j = 2;
             Object name = m.getValueAt(row, jTable1.convertColumnIndexToModel(0));
-            if(name.toString().equals("sv_cheats")) {
+            if("sv_cheats".equals(name.toString())) {
                 continue;
             }
             Object val = m.getValueAt(row, jTable1.convertColumnIndexToModel(2));
             if(val != null) {
-                String strVal = "\"" + val.toString() + "\"";
-                sb.append(name.toString()).append(" ").append(strVal).append("\n");
-                ExternalConsole.exec(name.toString() + " " + strVal, null);
+                String strVal = "\"" + val + '"';
+                sb.append(name).append(' ').append(strVal).append('\n');
+                ExternalConsole.exec(name + " " + strVal, null);
             }
         }
         sb.append("sv_cheats 0\n");
         ExternalConsole.exec("sv_cheats 0", null);
-
         StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-    }//GEN-LAST:event_jMenuItem5ActionPerformed
+    }
 
-    private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem6ActionPerformed
+    private void jMenuItem6ActionPerformed(ActionEvent evt) {
         clear();
-        String ret = ExternalConsole.exec("differences; echo --end of differences--",
-                                          "--end of differences--");
+        String ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--");
         Map<String, CVar> map = analyze(new Scanner(ret));
-        for(Entry<String, CVar> entry : map.entrySet()) {
+        for(Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
-            Object[] chunks = new Object[] {var.getName(), var.getValue(),
-                                            var.getDefaultValue(), var.getMinimum(),
-                                            var.getMaximum(), Arrays.toString(
-                                            var.getTags().toArray(new String[var.getTags().size()])), var.getDesc()};
-            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+            Object[] chunks = {
+                    var.getName(),
+                    var.getValue(),
+                    var.getDefaultValue(),
+                    var.getMinimum(),
+                    var.getMaximum(),
+                    Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
+                    var.getDesc()
+            };
+            ( (DefaultTableModel) jTable1.getModel() ).addRow(chunks);
         }
         filter();
-    }//GEN-LAST:event_jMenuItem6ActionPerformed
+    }
 
-    private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem7ActionPerformed
+    private void jMenuItem7ActionPerformed(ActionEvent evt) {
         clear();
-    }//GEN-LAST:event_jMenuItem7ActionPerformed
+    }
 
     private void clear() {
         DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
@@ -500,44 +526,4 @@ public class CVarTest extends javax.swing.JFrame {
         }
         filter();
     }
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String... args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                new CVarTest().setVisible(true);
-            }
-        });
-    }
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox caseSensitiveCheckBox;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
-    private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JToolBar.Separator jSeparator1;
-    private javax.swing.JTable jTable1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JCheckBox notCheckBox;
-    private javax.swing.JCheckBox regexCheckBox;
-    private com.timepath.swing.StatusBar statusBar1;
-    // End of variables declaration//GEN-END:variables
-
-    private static final Logger LOG = Logger.getLogger(CVarTest.class.getName());
-
 }

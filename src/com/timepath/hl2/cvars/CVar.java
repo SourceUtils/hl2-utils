@@ -1,41 +1,27 @@
 package com.timepath.hl2.cvars;
 
+import java.util.Collection;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.logging.Logger;
 
 /**
- *
  * @author TimePath
  */
-public class CVar {
+class CVar {
 
-    private static final Logger LOG = Logger.getLogger(CVar.class.getName());
-
+    private static final Logger             LOG  = Logger.getLogger(CVar.class.getName());
+    private final        Collection<String> tags = new LinkedList<>();
     private Object defaultValue;
-
     private String desc;
-
     private Object maximum;
-
     private Object minimum;
-
     private String name;
-
-    private final List<String> tags = new LinkedList<>();
-
     /**
      * null if cmd
      */
     private Object value;
 
-    @Override
-    public boolean equals(Object obj) {
-        if(obj instanceof CVar) {
-            return toString().equals(obj.toString());
-        }
-        return false;
-    }
+    CVar() {}
 
     public Object getDefaultValue() {
         return defaultValue;
@@ -77,7 +63,7 @@ public class CVar {
         this.name = name;
     }
 
-    public List<String> getTags() {
+    public Collection<String> getTags() {
         return tags;
     }
 
@@ -92,14 +78,22 @@ public class CVar {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + (this.defaultValue != null ? this.defaultValue.hashCode() : 0);
-        hash = 97 * hash + (this.desc != null ? this.desc.hashCode() : 0);
-        hash = 97 * hash + (this.maximum != null ? this.maximum.hashCode() : 0);
-        hash = 97 * hash + (this.minimum != null ? this.minimum.hashCode() : 0);
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + (this.tags != null ? this.tags.hashCode() : 0);
-        hash = 97 * hash + (this.value != null ? this.value.hashCode() : 0);
+        hash = 97 * hash + ( ( defaultValue != null ) ? defaultValue.hashCode() : 0 );
+        hash = 97 * hash + ( ( desc != null ) ? desc.hashCode() : 0 );
+        hash = 97 * hash + ( ( maximum != null ) ? maximum.hashCode() : 0 );
+        hash = 97 * hash + ( ( minimum != null ) ? minimum.hashCode() : 0 );
+        hash = 97 * hash + ( ( name != null ) ? name.hashCode() : 0 );
+        hash = 97 * hash + ( ( tags != null ) ? tags.hashCode() : 0 );
+        hash = 97 * hash + ( ( value != null ) ? value.hashCode() : 0 );
         return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof CVar) {
+            return toString().equals(obj.toString());
+        }
+        return false;
     }
 
     @Override
@@ -107,10 +101,9 @@ public class CVar {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append(" : ").append(value).append(" : ");
         for(String tag : tags) {
-            sb.append(", ").append("\"").append(tag).append("\"");
+            sb.append(", ").append('"').append(tag).append('"');
         }
         sb.append(" : ").append(desc);
         return sb.toString();
     }
-
 }

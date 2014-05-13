@@ -1,47 +1,32 @@
 package com.timepath.ui.swing;
 
 import com.timepath.utils.Trie;
-import com.timepath.utils.Trie.TrieMapping;
+
+import javax.swing.text.JTextComponent;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
-import javax.swing.text.JTextComponent;
 
 /**
- *
  * @author TimePath
  */
 public class StringAutoCompleter extends AutoCompleter {
 
     private static final Logger LOG = Logger.getLogger(StringAutoCompleter.class.getName());
-
-    private boolean cached = false;
-
-    private final int depth;
-
+    private final int     depth;
+    private final Trie    trie;
+    private       boolean cached;
     private String last = "";
+    private Trie.TrieMapping n;
 
-    private TrieMapping n;
-
-    private final Trie trie;
-
-    public StringAutoCompleter(JTextComponent comp, Trie trie, int depth) {
+    private StringAutoCompleter(JTextComponent comp, Trie trie, int depth) {
         super(comp);
         this.trie = trie;
-        this.n = trie.root;
+        n = trie.root;
         this.depth = depth;
     }
 
-    protected void acceptedListItem(String selected) {
-        if(selected == null) {
-            return;
-        }
-        
-        textComponent.setCaretPosition(0);
-        textComponent.setText(selected);
-        textComponent.setCaretPosition(selected.length());
-    }
-
+    @Override
     protected boolean updateListData() {
         String text = textComponent.getText().toLowerCase();
         if(last.equals(text)) {
@@ -49,15 +34,14 @@ public class StringAutoCompleter extends AutoCompleter {
         }
         cached = false;
         last = text;
-        if(text.length() == 0) {
+        if(text.isEmpty()) {
             return false;
         }
         n = trie.node(text.substring(0, text.length() - 1));
         if(n == null) {
             n = trie.root;
         }
-
-        List<String> strings = trie.get(text.charAt(text.length() - 1) + "", depth, n);
+        List<String> strings = trie.get(String.valueOf(text.charAt(text.length() - 1)), depth, n);
         if(strings == null) {
             return false;
         }
@@ -75,4 +59,13 @@ public class StringAutoCompleter extends AutoCompleter {
         return true;
     }
 
+    @Override
+    protected void acceptedListItem(String selected) {
+        if(selected == null) {
+            return;
+        }
+        textComponent.setCaretPosition(0);
+        textComponent.setText(selected);
+        textComponent.setCaretPosition(selected.length());
+    }
 }

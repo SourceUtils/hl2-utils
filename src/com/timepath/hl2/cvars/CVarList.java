@@ -13,23 +13,25 @@ import java.util.regex.Pattern;
  *
  * @author TimePath
  */
-public class CVarList {
+class CVarList {
 
     private static final Logger LOG = Logger.getLogger(CVarList.class.getName());
 
+    private CVarList() {
+    }
+
     public static Map<String, CVar> analyzeList(Scanner scanner, Map<String, CVar> map) {
         CVar c = null;
-        Pattern cvarlist = Pattern.compile(
-            "([\\S]*)[\\s]*:[\\s]*([\\S]*)[\\s]*:[^\\\"]*(.*)[\\s]*:[\\s]*(.*)");
-        Pattern tag = Pattern.compile("\\\"([^\\\"]*)\\\"");
-        Pattern kv = Pattern.compile("\\\"([^\"]*)\\\"[\\s]*=[\\s]*\\\"([^\"]*)\\\"[\\s]*(.*)");
+        Pattern cvarlist = Pattern.compile("([\\S]*)[\\s]*:[\\s]*([\\S]*)[\\s]*:[^\"]*(.*)[\\s]*:[\\s]*(.*)");
+        Pattern tag = Pattern.compile("\"([^\"]*)\"");
+        Pattern kv = Pattern.compile("\"([^\"]*)\"[\\s]*=[\\s]*\"([^\"]*)\"[\\s]*(.*)");
         Pattern desc = Pattern.compile("^(?: - | )(.*)");
         Pattern defaultValue = Pattern.compile("\\([^\"]*\"(.*)\"[^\"]*\\)");
         Pattern minValue = Pattern.compile("(?:min\\.\\s)(.*?)(?:\\s|$)");
         Pattern maxValue = Pattern.compile("(?:max\\.\\s)(.*?)(?:\\s|$)");
         while(scanner.hasNext()) {
             String line = scanner.nextLine();
-            if(line.trim().length() == 0) {
+            if(line.trim().isEmpty()) {
                 continue;
             }
             LOG.fine(line);
@@ -37,7 +39,7 @@ public class CVarList {
             Matcher kvMatcher = kv.matcher(line);
             Matcher descMatcher = desc.matcher(line);
             if(kvMatcher.find()) {
-//                    LOG.info("KV match");
+                //                    LOG.info("KV match");
                 String name = kvMatcher.group(1);
                 Object value = kvMatcher.group(2);
                 if(!map.containsKey(name)) {
@@ -48,7 +50,7 @@ public class CVarList {
                     c = map.get(name);
                 }
                 String extra = kvMatcher.group(3);
-                if(extra.length() > 0) {
+                if(!extra.isEmpty()) {
                     Matcher defaultMatcher = defaultValue.matcher(extra);
                     if(defaultMatcher.find()) {
                         c.setDefaultValue(defaultMatcher.group(1));
@@ -63,7 +65,7 @@ public class CVarList {
                     }
                 }
             } else if(cvarlistMatcher.find()) {
-//                    LOG.info("cvarlist match");
+                //                    LOG.info("cvarlist match");
                 c = new CVar();
                 c.setName(cvarlistMatcher.group(1));
                 c.setValue(cvarlistMatcher.group(2));
@@ -73,7 +75,7 @@ public class CVarList {
                 }
                 c.setDesc(cvarlistMatcher.group(4));
             } else if(descMatcher.find()) {
-//                    LOG.info("Additional info match");
+                //                    LOG.info("Additional info match");
                 if(c == null) {
                     LOG.warning("Data before a cvar");
                     continue;
@@ -96,8 +98,4 @@ public class CVarList {
         }
         return map;
     }
-
-    private CVarList() {
-    }
-
 }

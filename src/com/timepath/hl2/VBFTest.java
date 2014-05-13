@@ -1,15 +1,19 @@
 package com.timepath.hl2;
 
 import com.timepath.hl2.io.font.VBF;
-import com.timepath.hl2.io.font.VBF.BitmapGlyph;
 import com.timepath.hl2.io.image.VTF;
 import com.timepath.hl2.swing.VBFCanvas;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
-import com.timepath.plaf.x.filechooser.BaseFileChooser.ExtensionFilter;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import java.awt.Component;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import com.timepath.swing.ReorderableJTree;
+
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.File;
@@ -19,102 +23,41 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.*;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.tree.*;
 
 /**
- *
  * @author TimePath
  */
 @SuppressWarnings("serial")
-public class VBFTest extends javax.swing.JFrame {
+class VBFTest extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(VBFTest.class.getName());
-
-    public static void main(String[] args) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new VBFTest().setVisible(true);
-            }
-        });
-    }
-
-    private com.timepath.hl2.swing.VBFCanvas canvas;
-
-    private BitmapGlyph currentGlyph;
-
-    private VBF data;
-
-    private javax.swing.JSpinner heightSpinner;
-
-    private VTF image;
-
-    private javax.swing.JMenu jMenu1;
-
-    private javax.swing.JMenu jMenu2;
-
-    private javax.swing.JMenuBar jMenuBar1;
-
-    private javax.swing.JMenuItem jMenuItem1;
-
-    private javax.swing.JMenuItem jMenuItem2;
-
-    private javax.swing.JMenuItem jMenuItem3;
-
-    private javax.swing.JMenuItem jMenuItem4;
-
-    private javax.swing.JPanel jPanel1;
-
-    private javax.swing.JPanel jPanel2;
-
-    private javax.swing.JPanel jPanel3;
-
-    private javax.swing.JPanel jPanel5;
-
-    private javax.swing.JPopupMenu jPopupMenu1;
-
-    private javax.swing.JScrollPane jScrollPane1;
-
-    private javax.swing.JScrollPane jScrollPane2;
-
-    private javax.swing.JScrollPane jScrollPane3;
-
-    private javax.swing.JSplitPane jSplitPane1;
-
-    private javax.swing.JSplitPane jSplitPane2;
-
-    private com.timepath.swing.ReorderableJTree jTree1;
-
-    private com.timepath.swing.ReorderableJTree jTree2;
-
-    private char toCopy;
-
-    private javax.swing.JSpinner widthSpinner;
-
-    private javax.swing.JSpinner xSpinner;
-
-    private javax.swing.JSpinner ySpinner;
+    private VBFCanvas        canvas;
+    private VBF.BitmapGlyph  currentGlyph;
+    private VBF              data;
+    private JSpinner         heightSpinner;
+    private VTF              image;
+    private JPopupMenu       jPopupMenu1;
+    private ReorderableJTree jTree1;
+    private ReorderableJTree jTree2;
+    private char             toCopy;
+    private JSpinner         widthSpinner;
+    private JSpinner         xSpinner;
+    private JSpinner         ySpinner;
 
     /**
      * Creates new form VBFTest
      */
-    public VBFTest() {
+    private VBFTest() {
         initComponents();
-
-        this.addWindowListener(new WindowAdapter() {
+        addWindowListener(new WindowAdapter() {
             @Override
-            public void windowClosing(WindowEvent we) {
-                int choice = JOptionPane.showInternalConfirmDialog(VBFTest.this.getContentPane(),
-                                                                   "Do you want to save?");
+            public void windowClosing(WindowEvent e) {
+                int choice = JOptionPane.showInternalConfirmDialog(getContentPane(), "Do you want to save?");
                 if(choice == JOptionPane.NO_OPTION) {
-                    VBFTest.this.dispose();
+                    dispose();
                 }
             }
         });
-
         canvas.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -124,14 +67,14 @@ public class VBFTest extends javax.swing.JFrame {
                 }
                 jTree1.setSelectionRow(-1);
                 jTree2.setSelectionRow(-1);
-                BitmapGlyph seek = canvas.getSelected();
+                VBF.BitmapGlyph seek = canvas.getSelected();
                 if(seek == null) {
                     return;
                 }
                 for(int i = 0; i < which.getModel().getChildCount(which.getModel().getRoot()); i++) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) which.getModel().getChild(
-                        which.getModel().getRoot(), i);
-                    if(((BitmapGlyph) node.getUserObject()) == seek) {
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) which.getModel()
+                                                                                .getChild(which.getModel().getRoot(), i);
+                    if(node.getUserObject() == seek) {
                         which.setSelectionRow(node.getParent().getIndex(node) + 1);
                         break;
                     }
@@ -150,7 +93,6 @@ public class VBFTest extends javax.swing.JFrame {
                 heightSpinner.setValue(r.height);
             }
         });
-
         jTree2.setModel(jTree1.getModel());
         jTree1.setMinDragLevel(2);
         jTree1.setMinDropLevel(1);
@@ -164,130 +106,138 @@ public class VBFTest extends javax.swing.JFrame {
             private static final long serialVersionUID = 1L;
 
             @Override
-            public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel,
-                                                          boolean expanded, boolean leaf, int row,
-                                                          boolean hasFocus) {
-                return super.getTreeCellRendererComponent(tree, value, sel, expanded,
-                                                          ((TreeNode) value).getParent() != null && ((TreeNode) value)
-                                                          .getParent() != tree.getModel().getRoot(),
-                                                          row, hasFocus);
+            public Component getTreeCellRendererComponent(JTree tree,
+                                                          Object value,
+                                                          boolean sel,
+                                                          boolean expanded,
+                                                          boolean leaf,
+                                                          int row,
+                                                          boolean hasFocus)
+            {
+                return super.getTreeCellRendererComponent(tree,
+                                                          value,
+                                                          sel,
+                                                          expanded,
+                                                          ( ( (TreeNode) value ).getParent() != null ) &&
+                                                          !( (TreeNode) value ).getParent().equals(tree.getModel().getRoot()),
+                                                          row,
+                                                          hasFocus
+                                                         );
             }
 
             public TreeCellRenderer init() {
-                this.setLeafIcon(null);
+                setLeafIcon(null);
                 return this;
             }
         }.init();
         jTree1.setCellRenderer(renderer);
         jTree2.setCellRenderer(renderer);
         final boolean spinners = false;
-        //<editor-fold defaultstate="collapsed" desc="Spinners">
-
         xSpinner.addChangeListener(new ChangeListener() {
-            private int old = 0;
+            private int old;
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(data == null || currentGlyph == null) {
+                if(( data == null ) || ( currentGlyph == null )) {
                     xSpinner.setValue(0);
                     return;
                 }
-                int current = ((Number) xSpinner.getValue()).intValue();
+                int current = ( (Number) xSpinner.getValue() ).intValue();
                 currentGlyph.getBounds().x = current;
-                doRepaint(Math.min(old, current), ((Number) ySpinner.getValue()).intValue(),
-                          Math.max(old, current) + ((Number) widthSpinner.getValue()).intValue(),
-                          ((Number) heightSpinner.getValue()).intValue());
+                doRepaint(Math.min(old, current),
+                          ( (Number) ySpinner.getValue() ).intValue(),
+                          Math.max(old, current) + ( (Number) widthSpinner.getValue() ).intValue(),
+                          ( (Number) heightSpinner.getValue() ).intValue());
                 old = current;
-                int wide = data.getWidth();
-                if(image != null) {
-                    wide = image.getWidth();
-                }
+                int wide = ( image != null ) ? image.getWidth() : data.getWidth();
                 if(spinners) {
-                    ((SpinnerNumberModel) widthSpinner.getModel()).setMaximum(
-                        wide - ((Number) xSpinner.getValue()).intValue());
+                    ( (SpinnerNumberModel) widthSpinner.getModel() ).setMaximum(
+                            wide - ( (Number) xSpinner.getValue() ).intValue());
                 }
             }
         });
         widthSpinner.addChangeListener(new ChangeListener() {
-            private int old = 0;
+            private int old;
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(data == null || currentGlyph == null) {
+                if(( data == null ) || ( currentGlyph == null )) {
                     widthSpinner.setValue(0);
                     return;
                 }
-                int current = ((Number) widthSpinner.getValue()).intValue();
+                int current = ( (Number) widthSpinner.getValue() ).intValue();
                 currentGlyph.getBounds().width = current;
-                doRepaint(((Number) xSpinner.getValue()).intValue(),
-                          ((Number) ySpinner.getValue()).intValue(), Math.max(old, current),
-                          ((Number) heightSpinner.getValue()).intValue());
+                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
+                          ( (Number) ySpinner.getValue() ).intValue(),
+                          Math.max(old, current),
+                          ( (Number) heightSpinner.getValue() ).intValue());
                 old = current;
-                int wide = data.getWidth();
-                if(image != null) {
-                    wide = image.getWidth();
-                }
+                int wide = ( image != null ) ? image.getWidth() : data.getWidth();
                 if(spinners) {
-                    ((SpinnerNumberModel) xSpinner.getModel()).setMaximum(
-                        wide - ((Number) widthSpinner.getValue()).intValue());
+                    ( (SpinnerNumberModel) xSpinner.getModel() ).setMaximum(
+                            wide - ( (Number) widthSpinner.getValue() ).intValue());
                 }
             }
         });
         ySpinner.addChangeListener(new ChangeListener() {
-            private int old = 0;
+            private int old;
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(data == null || currentGlyph == null) {
+                if(( data == null ) || ( currentGlyph == null )) {
                     ySpinner.setValue(0);
                     return;
                 }
-                int current = ((Number) ySpinner.getValue()).intValue();
+                int current = ( (Number) ySpinner.getValue() ).intValue();
                 currentGlyph.getBounds().y = current;
-                doRepaint(((Number) xSpinner.getValue()).intValue(), Math.min(old, current),
-                          ((Number) widthSpinner.getValue()).intValue(),
-                          Math.max(old, current) + ((Number) heightSpinner.getValue()).intValue());
+                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
+                          Math.min(old, current),
+                          ( (Number) widthSpinner.getValue() ).intValue(),
+                          Math.max(old, current) + ( (Number) heightSpinner.getValue() ).intValue());
                 old = current;
-                int high = data.getHeight();
-                if(image != null) {
-                    high = image.getHeight();
-                }
+                int high = ( image != null ) ? image.getHeight() : data.getHeight();
                 if(spinners) {
-                    ((SpinnerNumberModel) heightSpinner.getModel()).setMaximum(
-                        high - ((Number) ySpinner.getValue()).intValue());
+                    ( (SpinnerNumberModel) heightSpinner.getModel() ).setMaximum(
+                            high - ( (Number) ySpinner.getValue() ).intValue());
                 }
             }
         });
         heightSpinner.addChangeListener(new ChangeListener() {
-            private int old = 0;
+            private int old;
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(data == null || currentGlyph == null) {
+                if(( data == null ) || ( currentGlyph == null )) {
                     heightSpinner.setValue(0);
                     return;
                 }
-                int current = ((Number) heightSpinner.getValue()).intValue();
+                int current = ( (Number) heightSpinner.getValue() ).intValue();
                 currentGlyph.getBounds().height = current;
-                doRepaint(((Number) xSpinner.getValue()).intValue(),
-                          ((Number) ySpinner.getValue()).intValue(),
-                          ((Number) widthSpinner.getValue()).intValue(), Math.max(old, current));
+                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
+                          ( (Number) ySpinner.getValue() ).intValue(),
+                          ( (Number) widthSpinner.getValue() ).intValue(),
+                          Math.max(old, current));
                 old = current;
-                int high = data.getHeight();
-                if(image != null) {
-                    high = image.getHeight();
-                }
+                int high = ( image != null ) ? image.getHeight() : data.getHeight();
                 if(spinners) {
-                    ((SpinnerNumberModel) ySpinner.getModel()).setMaximum(
-                        high - ((Number) heightSpinner.getValue()).intValue());
+                    ( (SpinnerNumberModel) ySpinner.getModel() ).setMaximum(
+                            high - ( (Number) heightSpinner.getValue() ).intValue());
                 }
             }
         });
-        //</editor-fold>
     }
 
-    private void createGlyph(java.awt.event.ActionEvent evt) {
-        BitmapGlyph g = new BitmapGlyph();
+    public static void main(String... args) {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new VBFTest().setVisible(true);
+            }
+        });
+    }
+
+    private void createGlyph(ActionEvent evt) {
+        VBF.BitmapGlyph g = new VBF.BitmapGlyph();
         if(data == null) {
             data = new VBF();
             canvas.setVBF(data);
@@ -298,272 +248,246 @@ public class VBFTest extends javax.swing.JFrame {
                 break;
             }
             if(i == data.getGlyphs().size()) {
-                g.setIndex((byte) (i + 1));
+                g.setIndex((byte) ( i + 1 ));
             }
         }
         data.getGlyphs().add(g);
-        this.insertGlyph((DefaultTreeModel) jTree1.getModel(), g);
+        insertGlyph((DefaultTreeModel) jTree1.getModel(), g);
     }
 
     private void doRepaint(int x, int y, int w, int h) {
-        this.canvas.repaint();//x, y, h, h);
+        canvas.repaint();//x, y, h, h);
     }
 
     private void initComponents() {
-
-        jPopupMenu1 = new javax.swing.JPopupMenu();
-        jMenuItem4 = new javax.swing.JMenuItem();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel1 = new javax.swing.JPanel();
-        jSplitPane2 = new javax.swing.JSplitPane();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        jTree1 = new com.timepath.swing.ReorderableJTree();
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jTree2 = new com.timepath.swing.ReorderableJTree();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        xSpinner = new javax.swing.JSpinner();
-        ySpinner = new javax.swing.JSpinner();
-        jPanel5 = new javax.swing.JPanel();
-        widthSpinner = new javax.swing.JSpinner();
-        heightSpinner = new javax.swing.JSpinner();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        canvas = new com.timepath.hl2.swing.VBFCanvas();
-        jMenuBar1 = new javax.swing.JMenuBar();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
-        jMenuItem3 = new javax.swing.JMenuItem();
-
+        jPopupMenu1 = new JPopupMenu();
+        JMenuItem jMenuItem4 = new JMenuItem();
+        JSplitPane jSplitPane1 = new JSplitPane();
+        JPanel jPanel1 = new JPanel();
+        JSplitPane jSplitPane2 = new JSplitPane();
+        JScrollPane jScrollPane2 = new JScrollPane();
+        jTree1 = new ReorderableJTree();
+        JScrollPane jScrollPane3 = new JScrollPane();
+        jTree2 = new ReorderableJTree();
+        JPanel jPanel2 = new JPanel();
+        JPanel jPanel3 = new JPanel();
+        xSpinner = new JSpinner();
+        ySpinner = new JSpinner();
+        JPanel jPanel5 = new JPanel();
+        widthSpinner = new JSpinner();
+        heightSpinner = new JSpinner();
+        JScrollPane jScrollPane1 = new JScrollPane();
+        canvas = new VBFCanvas();
+        JMenuBar jMenuBar1 = new JMenuBar();
+        JMenu jMenu1 = new JMenu();
+        JMenuItem jMenuItem1 = new JMenuItem();
+        JMenuItem jMenuItem2 = new JMenuItem();
+        JMenu jMenu2 = new JMenu();
+        JMenuItem jMenuItem3 = new JMenuItem();
         jMenuItem4.setText("Copy");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem4.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+            public void actionPerformed(ActionEvent e) {
+                jMenuItem4ActionPerformed(e);
             }
         });
         jPopupMenu1.add(jMenuItem4);
-
-        setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         setTitle("Bitmap Font Editor");
-        setPreferredSize(new java.awt.Dimension(640, 480));
-
+        setPreferredSize(new Dimension(640, 480));
         jSplitPane1.setDividerLocation(250);
         jSplitPane1.setContinuousLayout(true);
-        jSplitPane1.setPreferredSize(new java.awt.Dimension(360, 403));
-
+        jSplitPane1.setPreferredSize(new Dimension(360, 403));
         jSplitPane2.setDividerSize(2);
         jSplitPane2.setResizeWeight(0.5);
         jSplitPane2.setEnabled(false);
-
-        javax.swing.tree.DefaultMutableTreeNode treeNode1 = new javax.swing.tree.DefaultMutableTreeNode("Glyphs");
-        jTree1.setModel(new javax.swing.tree.DefaultTreeModel(treeNode1));
-        jTree1.addMouseListener(new java.awt.event.MouseAdapter() {
+        DefaultMutableTreeNode treeNode1 = new DefaultMutableTreeNode("Glyphs");
+        jTree1.setModel(new DefaultTreeModel(treeNode1));
+        jTree1.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTree1MouseClicked(evt);
+            public void mouseClicked(MouseEvent e) {
+                jTree1MouseClicked(e);
             }
         });
-        jTree1.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+        jTree1.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                treeInteraction(evt);
+            public void valueChanged(TreeSelectionEvent e) {
+                treeInteraction(e);
             }
         });
         jScrollPane2.setViewportView(jTree1);
-
         jSplitPane2.setLeftComponent(jScrollPane2);
-
         jTree2.setModel(jTree1.getModel());
-        jTree2.addMouseListener(new java.awt.event.MouseAdapter() {
+        jTree2.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jTree2MouseClicked(evt);
+            public void mouseClicked(MouseEvent e) {
+                jTree2MouseClicked(e);
             }
         });
-        jTree2.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+        jTree2.addTreeSelectionListener(new TreeSelectionListener() {
             @Override
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                treeInteraction(evt);
+            public void valueChanged(TreeSelectionEvent e) {
+                treeInteraction(e);
             }
         });
         jScrollPane3.setViewportView(jTree2);
-
         jSplitPane2.setRightComponent(jScrollPane3);
-
-        jPanel2.setPreferredSize(new java.awt.Dimension(200, 195));
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Position"));
-        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
-
-        xSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        jPanel2.setPreferredSize(new Dimension(200, 195));
+        jPanel3.setBorder(BorderFactory.createTitledBorder("Position"));
+        jPanel3.setLayout(new BoxLayout(jPanel3, BoxLayout.LINE_AXIS));
+        xSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
         jPanel3.add(xSpinner);
-
-        ySpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        ySpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
         jPanel3.add(ySpinner);
-
-        jPanel5.setBorder(javax.swing.BorderFactory.createTitledBorder("Dimensions"));
-        jPanel5.setLayout(new javax.swing.BoxLayout(jPanel5, javax.swing.BoxLayout.LINE_AXIS));
-
-        widthSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        jPanel5.setBorder(BorderFactory.createTitledBorder("Dimensions"));
+        jPanel5.setLayout(new BoxLayout(jPanel5, BoxLayout.LINE_AXIS));
+        widthSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
         jPanel5.add(widthSpinner);
-
-        heightSpinner.setModel(new javax.swing.SpinnerNumberModel(0, 0, null, 1));
+        heightSpinner.setModel(new SpinnerNumberModel(0, 0, null, 1));
         jPanel5.add(heightSpinner);
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel5, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE,
-                          javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(jPanel3, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE,
-                          javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
-                              javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel5, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE,
-                              javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                      .addComponent(jPanel5,
+                                                                    GroupLayout.Alignment.TRAILING,
+                                                                    GroupLayout.DEFAULT_SIZE,
+                                                                    GroupLayout.DEFAULT_SIZE,
+                                                                    Short.MAX_VALUE)
+                                                      .addComponent(jPanel3,
+                                                                    GroupLayout.Alignment.TRAILING,
+                                                                    GroupLayout.DEFAULT_SIZE,
+                                                                    GroupLayout.DEFAULT_SIZE,
+                                                                    Short.MAX_VALUE)
+                                        );
+        jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                    .addGroup(jPanel2Layout.createSequentialGroup()
+                                                                           .addComponent(jPanel3,
+                                                                                         GroupLayout.PREFERRED_SIZE,
+                                                                                         GroupLayout.DEFAULT_SIZE,
+                                                                                         GroupLayout.PREFERRED_SIZE)
+                                                                           .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                    .RELATED)
+                                                                           .addComponent(jPanel5,
+                                                                                         GroupLayout.PREFERRED_SIZE,
+                                                                                         GroupLayout.DEFAULT_SIZE,
+                                                                                         GroupLayout.PREFERRED_SIZE)
+                                                                           .addGap(0, 0, Short.MAX_VALUE))
+                                      );
+        GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-            .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                      .addComponent(jSplitPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
-                      .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                      .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, 148,
-                                    javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
+        jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                      .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                                                      .addComponent(jSplitPane2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                                        );
+        jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                    .addGroup(GroupLayout.Alignment.TRAILING,
+                                                              jPanel1Layout.createSequentialGroup()
+                                                                           .addComponent(jSplitPane2,
+                                                                                         GroupLayout.DEFAULT_SIZE,
+                                                                                         301,
+                                                                                         Short.MAX_VALUE)
+                                                                           .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                                                                    .RELATED)
+                                                                           .addComponent(jPanel2,
+                                                                                         GroupLayout.PREFERRED_SIZE,
+                                                                                         148,
+                                                                                         GroupLayout.PREFERRED_SIZE)
+                                                             )
+                                      );
         jSplitPane1.setLeftComponent(jPanel1);
-
-        javax.swing.GroupLayout canvasLayout = new javax.swing.GroupLayout(canvas);
+        GroupLayout canvasLayout = new GroupLayout(canvas);
         canvas.setLayout(canvasLayout);
-        canvasLayout.setHorizontalGroup(
-            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 373, Short.MAX_VALUE)
-        );
-        canvasLayout.setVerticalGroup(
-            canvasLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 449, Short.MAX_VALUE)
-        );
-
+        canvasLayout.setHorizontalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                    .addGap(0, 373, Short.MAX_VALUE)
+                                       );
+        canvasLayout.setVerticalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                                                  .addGap(0, 449, Short.MAX_VALUE)
+                                     );
         jScrollPane1.setViewportView(canvas);
-
         jSplitPane1.setRightComponent(jScrollPane1);
-
-        getContentPane().add(jSplitPane1, java.awt.BorderLayout.CENTER);
-
+        getContentPane().add(jSplitPane1, BorderLayout.CENTER);
         jMenu1.setText("File");
-
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O,
-                                                                     java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         jMenuItem1.setMnemonic('O');
         jMenuItem1.setText("Open");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem1.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                open(evt);
+            public void actionPerformed(ActionEvent e) {
+                open(e);
             }
         });
         jMenu1.add(jMenuItem1);
-
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S,
-                                                                     java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
         jMenuItem2.setMnemonic('S');
         jMenuItem2.setText("Save");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem2.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                save(evt);
+            public void actionPerformed(ActionEvent e) {
+                save(e);
             }
         });
         jMenu1.add(jMenuItem2);
-
         jMenuBar1.add(jMenu1);
-
         jMenu2.setText("Edit");
-
         jMenuItem3.setText("Create glyph");
-        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+        jMenuItem3.addActionListener(new ActionListener() {
             @Override
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createGlyph(evt);
+            public void actionPerformed(ActionEvent e) {
+                createGlyph(e);
             }
         });
         jMenu2.add(jMenuItem3);
-
         jMenuBar1.add(jMenu2);
-
         setJMenuBar(jMenuBar1);
-
         pack();
     }
 
-    private void insertCharacters(DefaultTreeModel model, DefaultMutableTreeNode child, int g) {
+    private void insertCharacters(DefaultTreeModel model, MutableTreeNode child, int g) {
         for(int i = 0; i < data.getTable().length; i++) {
             int glyphIndex = data.getTable()[i];
             if(glyphIndex != g) {
                 continue;
             }
-            DefaultMutableTreeNode sub = new DefaultMutableTreeNode(new DisplayableCharacter(i));
+            MutableTreeNode sub = new DefaultMutableTreeNode(new DisplayableCharacter(i));
             model.insertNodeInto(sub, child, model.getChildCount(child));
         }
     }
 
-    private void insertGlyph(DefaultTreeModel model, BitmapGlyph glyph) {
-        DefaultMutableTreeNode child = new DefaultMutableTreeNode(glyph);
-        model.insertNodeInto(child, (MutableTreeNode) model.getRoot(), model.getChildCount(
-                             model.getRoot()));
+    private void insertGlyph(DefaultTreeModel model, VBF.BitmapGlyph glyph) {
+        MutableTreeNode child = new DefaultMutableTreeNode(glyph);
+        model.insertNodeInto(child, (MutableTreeNode) model.getRoot(), model.getChildCount(model.getRoot()));
         insertCharacters(model, child, glyph.getIndex());
         model.reload();
     }
 
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {
+    private void jMenuItem4ActionPerformed(ActionEvent evt) {
         StringSelection selection = new StringSelection(String.valueOf(toCopy));
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }
 
-    private void jTree1MouseClicked(java.awt.event.MouseEvent evt) {
+    private void jTree1MouseClicked(MouseEvent evt) {
         mouseClicked(evt);
     }
 
-    private void jTree2MouseClicked(java.awt.event.MouseEvent evt) {
+    private void jTree2MouseClicked(MouseEvent evt) {
         mouseClicked(evt);
     }
 
-    private void load(String f) throws IOException {
-        LOG.log(Level.INFO, "Loading {0}", f);
-        VBFCanvas p = this.canvas;
-
-        File vbf = new File(f + ".vbf");
-        File vtf = new File(f + ".vtf");
-
+    private void load(String s) throws IOException {
+        LOG.log(Level.INFO, "Loading {0}", s);
+        VBFCanvas p = canvas;
+        File vbf = new File(s + ".vbf");
+        File vtf = new File(s + ".vtf");
         if(vbf.exists()) {
             data = new VBF(new FileInputStream(vbf));
             p.setVBF(data);
-
-            DefaultTreeModel model = (DefaultTreeModel) this.jTree1.getModel();
+            DefaultTreeModel model = (DefaultTreeModel) jTree1.getModel();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
             root.removeAllChildren();
-            for(BitmapGlyph g : data.getGlyphs()) {
+            for(VBF.BitmapGlyph g : data.getGlyphs()) {
                 insertGlyph(model, g);
             }
         }
-
         if(vtf.exists()) {
             image = VTF.load(new FileInputStream(vtf));
             p.setVTF(image);
@@ -573,94 +497,95 @@ public class VBFTest extends javax.swing.JFrame {
 
     private void mouseClicked(MouseEvent evt) {
         if(SwingUtilities.isRightMouseButton(evt)) {
-            JTree jTree = ((JTree) evt.getComponent());
+            JTree jTree = (JTree) evt.getComponent();
             TreePath clicked = jTree.getPathForLocation(evt.getX(), evt.getY());
             if(clicked == null) {
                 return;
             }
-            if(jTree.getSelectionPaths() == null || !Arrays.asList(jTree.getSelectionPaths()).contains(
-                clicked)) {
+            if(( jTree.getSelectionPaths() == null ) || !Arrays.asList(jTree.getSelectionPaths()).contains(clicked)) {
                 jTree.setSelectionPath(clicked);
             }
             for(TreePath p : jTree.getSelectionPaths()) {
-                if(!(p.getLastPathComponent() instanceof DefaultMutableTreeNode)) {
+                if(!( p.getLastPathComponent() instanceof DefaultMutableTreeNode )) {
                     return;
                 }
-                Object userObject = ((DefaultMutableTreeNode) p.getLastPathComponent()).getUserObject();
+                Object userObject = ( (DefaultMutableTreeNode) p.getLastPathComponent() ).getUserObject();
                 if(userObject instanceof DisplayableCharacter) {
-                    toCopy = ((DisplayableCharacter) userObject).getC();
+                    toCopy = ( (DisplayableCharacter) userObject ).getC();
                     jPopupMenu1.show(jTree, evt.getX(), evt.getY());
                 }
             }
         }
     }
 
-    private void open(java.awt.event.ActionEvent evt) {
+    private void open(ActionEvent evt) {
         try {
-            File[] fs = new NativeFileChooser().setParent(this).setTitle("Select vbf").addFilter(
-                new ExtensionFilter("Valve Bitmap Font", ".vbf")).addFilter(new ExtensionFilter(
-                        "Valve Texture File", ".vtf")).choose();
+            File[] fs = new NativeFileChooser().setParent(this)
+                                               .setTitle("Select vbf")
+                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
+                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Texture File", ".vtf"))
+                                               .choose();
             if(fs == null) {
                 return;
             }
-            File f = fs[0];
-            load(f.getPath().replace(".vbf", "").replace(".vtf", ""));
+            File file = fs[0];
+            load(file.getPath().replace(".vbf", "").replace(".vtf", ""));
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    private void save(java.awt.event.ActionEvent evt) {
+    private void save(ActionEvent evt) {
         try {
-            File[] fs = new NativeFileChooser().setParent(this).setTitle("Select save location").addFilter(
-                new ExtensionFilter("Valve Bitmap Font", ".vbf")).setDialogType(
-                    BaseFileChooser.DialogType.SAVE_DIALOG).choose();
+            File[] fs = new NativeFileChooser().setParent(this)
+                                               .setTitle("Select save location")
+                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
+                                               .setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG)
+                                               .choose();
             if(fs == null) {
                 return;
             }
-            File f = fs[0];
-
-            DefaultTreeModel model = (DefaultTreeModel) this.jTree1.getModel();
-            MutableTreeNode root = (MutableTreeNode) model.getRoot();
+            File file = fs[0];
+            TreeModel model = jTree1.getModel();
+            TreeNode root = (TreeNode) model.getRoot();
             for(int i = 0; i < root.getChildCount(); i++) {
-                DefaultMutableTreeNode m = (DefaultMutableTreeNode) root.getChildAt(i);
-                BitmapGlyph g = (BitmapGlyph) m.getUserObject();
-                for(int x = 0; x < m.getChildCount(); x++) {
-                    DefaultMutableTreeNode character = (DefaultMutableTreeNode) m.getChildAt(x);
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
+                VBF.BitmapGlyph g = (VBF.BitmapGlyph) node.getUserObject();
+                for(int x = 0; x < node.getChildCount(); x++) {
+                    DefaultMutableTreeNode character = (DefaultMutableTreeNode) node.getChildAt(x);
                     Object obj = character.getUserObject();
                     if(obj instanceof DisplayableCharacter) {
-                        this.data.getTable()[((DisplayableCharacter) obj).getC()] = g.getIndex();
+                        data.getTable()[( (DisplayableCharacter) obj ).getC()] = g.getIndex();
                     } else if(obj instanceof DefaultMutableTreeNode) { // XXX: hack
-                        this.data.getTable()[((DisplayableCharacter) (((DefaultMutableTreeNode) obj).getUserObject()))
-                            .getC()] = g.getIndex();
+                        data.getTable()[( (DisplayableCharacter) ( (DefaultMutableTreeNode) obj ).getUserObject() ).getC()]
+                                = g.getIndex();
                     }
                 }
             }
-
-            data.save(new FileOutputStream(f));
+            data.save(new FileOutputStream(file));
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
-    private void treeInteraction(javax.swing.event.TreeSelectionEvent evt) {
+    private void treeInteraction(TreeSelectionEvent evt) {
         TreePath selection = evt.getNewLeadSelectionPath();
         if(selection == null) {
             return;
         }
-        JTree other = evt.getSource() == jTree1 ? jTree2 : evt.getSource() == jTree2 ? jTree1 : null;
+        JTree other = ( evt.getSource() == jTree1 ) ? jTree2 : ( ( evt.getSource() == jTree2 ) ? jTree1 : null );
         if(other != null) {
             other.setSelectionRow(-1);
         }
         Object node = selection.getLastPathComponent();
-        if(!(node instanceof DefaultMutableTreeNode)) {
+        if(!( node instanceof DefaultMutableTreeNode )) {
             return;
         }
-        Object obj = ((DefaultMutableTreeNode) node).getUserObject();
-        if(!(obj instanceof BitmapGlyph)) {
+        Object obj = ( (DefaultMutableTreeNode) node ).getUserObject();
+        if(!( obj instanceof VBF.BitmapGlyph )) {
             return;
         }
-        currentGlyph = (BitmapGlyph) obj;
+        currentGlyph = (VBF.BitmapGlyph) obj;
         canvas.select(currentGlyph);
         if(currentGlyph.getBounds() == null) {
             currentGlyph.setBounds(new Rectangle());
@@ -677,7 +602,7 @@ public class VBFTest extends javax.swing.JFrame {
         private final char c;
 
         DisplayableCharacter(int i) {
-            this.c = (char) i;
+            c = (char) i;
         }
 
         public char getC() {
@@ -687,14 +612,12 @@ public class VBFTest extends javax.swing.JFrame {
         @Override
         public String toString() {
             Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-            boolean printable = ((!Character.isISOControl(c)) && c != KeyEvent.CHAR_UNDEFINED && block != null && block
-                                                                                                                  != Character.UnicodeBlock.SPECIALS);
-            if(!printable) {
-                return "0x" + (c <= 0xF ? "0" : "") + Integer.toHexString(c).toUpperCase();
+            boolean unprintable = Character.isISOControl(c) || ( c == KeyEvent.CHAR_UNDEFINED ) || ( block == null ) ||
+                                  block.equals(Character.UnicodeBlock.SPECIALS);
+            if(unprintable) {
+                return "0x" + ( ( c <= 0xF ) ? "0" : "" ) + Integer.toHexString(c).toUpperCase();
             }
             return Character.toString(c);
         }
-
     }
-
 }

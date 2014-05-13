@@ -1,29 +1,27 @@
 package com.timepath.ui.swing;
 
-import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- *
  * @author TimePath
  */
 @SuppressWarnings("serial")
-public abstract class AutoCompleter {
+abstract class AutoCompleter {
 
-    private static final String COMPLETION = "AUTOCOMPLETION";
-
-    private static final Logger LOG = Logger.getLogger(AutoCompleter.class.getName());
-
-    //<editor-fold defaultstate="collapsed" desc="Actions">
-    private static final Action acceptAction = new AbstractAction() {
+    private static final String         COMPLETION   = "AUTOCOMPLETION";
+    private static final ActionListener acceptAction = new AbstractAction() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
@@ -31,8 +29,8 @@ public abstract class AutoCompleter {
             completer.acceptedListItem(completer.getList().getSelectedValue());
         }
     };
-
-    private static final Action hideAction = new AbstractAction() {
+    private static final ActionListener hideAction   = new AbstractAction() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
@@ -41,8 +39,8 @@ public abstract class AutoCompleter {
             }
         }
     };
-
-    private static final Action showAction = new AbstractAction() {
+    private static final ActionListener showAction   = new AbstractAction() {
+        @Override
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
@@ -53,36 +51,30 @@ public abstract class AutoCompleter {
             }
         }
     };
-
-    private static Action shift(final int val) {
-        return new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                JComponent tf = (JComponent) e.getSource();
-                AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-                if(tf.isEnabled()) {
-                    if(completer.getPopup().isVisible()) {
-                        completer.shiftSelection(val);
-                    }
-                }
-            }
-        };
-    }
-    //</editor-fold>
-
-    private final DocumentListener documentListener = new DocumentListener() {
-        public void changedUpdate(DocumentEvent e) {
+    private static final Logger         LOG          = Logger.getLogger(AutoCompleter.class.getName());
+    final                JList<String>  list         = new JList<String>() {
+        {
+            setFocusable(false);
+            setRequestFocusEnabled(false);
         }
-        
+    };
+    final JTextComponent textComponent;
+    private final DocumentListener documentListener = new DocumentListener() {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             showPopup();
         }
-        
+
+        @Override
         public void removeUpdate(DocumentEvent e) {
             showPopup();
         }
-    };
 
-    private final JPopupMenu popup = new JPopupMenu() {
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+        }
+    };
+    private final JPopupMenu       popup            = new JPopupMenu() {
         {
             JScrollPane scroll = new JScrollPane(getList()) {
                 {
@@ -95,31 +87,15 @@ public abstract class AutoCompleter {
             add(scroll);
         }
     };
+    private final int              rowCount         = 10;
 
-    private final int rowCount = 10;
-
-    protected final JList<String> list = new JList<String>() {
-        {
-            setFocusable(false);
-            setRequestFocusEnabled(false);
-        }
-    };
-
-    protected final JTextComponent textComponent;
-
-    public AutoCompleter(final JTextComponent jtc) {
-        this.textComponent = jtc;
+    AutoCompleter(JTextComponent jtc) {
+        textComponent = jtc;
         jtc.putClientProperty(COMPLETION, this);
-
         jtc.getDocument().addDocumentListener(documentListener);
-
-        jtc.registerKeyboardAction(shift(-1),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-                                   JComponent.WHEN_FOCUSED);
-        jtc.registerKeyboardAction(shift(1),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-                                   JComponent.WHEN_FOCUSED);
-        jtc.registerKeyboardAction(shift(-(rowCount - 1)),
+        jtc.registerKeyboardAction(shift(-1), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
+        jtc.registerKeyboardAction(shift(1), KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), JComponent.WHEN_FOCUSED);
+        jtc.registerKeyboardAction(shift(-( rowCount - 1 )),
                                    KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
                                    JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(shift(rowCount - 1),
@@ -128,81 +104,92 @@ public abstract class AutoCompleter {
         jtc.registerKeyboardAction(shift(Integer.MIN_VALUE),
                                    KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
                                    JComponent.WHEN_FOCUSED);
-        jtc.registerKeyboardAction(shift(Integer.MAX_VALUE),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_END, 0),
-                                   JComponent.WHEN_FOCUSED);
+        jtc.registerKeyboardAction(shift(Integer.MAX_VALUE), KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(showAction,
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, KeyEvent.CTRL_DOWN_MASK),
+                                   KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK),
                                    JComponent.WHEN_FOCUSED);
-        jtc.registerKeyboardAction(hideAction,
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                                   JComponent.WHEN_FOCUSED);
+        jtc.registerKeyboardAction(hideAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
     }
 
-    /**
-     * @return the list
-     */
-    public JList<String> getList() {
-        return list;
+    private static ActionListener shift(final int val) {
+        return new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                JComponent tf = (JComponent) e.getSource();
+                AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+                if(tf.isEnabled()) {
+                    if(completer.getPopup().isVisible()) {
+                        completer.shiftSelection(val);
+                    }
+                }
+            }
+        };
     }
 
     /**
      * @return the popup
      */
-    public JPopupMenu getPopup() {
+    JPopupMenu getPopup() {
         return popup;
     }
 
+    /**
+     * Move the list selection within its boundaries
+     *
+     * @param val
+     */
+    void shiftSelection(int val) {
+        int si = list.getSelectedIndex() + val;
+        si = Math.min(Math.max(0, si), list.getModel().getSize() - 1);
+        list.setSelectedIndex(si);
+        list.ensureIndexIsVisible(si);
+    }
+
+    public int getRowCount() {
+        return rowCount;
+    }
+
+    /**
+     * @return the list
+     */
+    JList<String> getList() {
+        return list;
+    }
+
     private void showPopup() {
-        getPopup().setVisible(false);
-        if(textComponent.isEnabled() && updateListData() && getList().getModel().getSize() != 0) {
+        popup.setVisible(false);
+        if(textComponent.isEnabled() && updateListData() && ( list.getModel().getSize() != 0 )) {
             textComponent.getDocument().addDocumentListener(documentListener);
             textComponent.registerKeyboardAction(acceptAction,
                                                  KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                                                  JComponent.WHEN_FOCUSED);
-            int size = getList().getModel().getSize();
-            getList().setVisibleRowCount(size < rowCount ? size : rowCount);
-
+            int size = list.getModel().getSize();
+            list.setVisibleRowCount(( size < rowCount ) ? size : rowCount);
             int xPos = 0;
             try {
-                int pos = Math.min(textComponent.getCaret().getDot(),
-                                   textComponent.getCaret().getMark());
+                int pos = Math.min(textComponent.getCaret().getDot(), textComponent.getCaret().getMark());
                 xPos = textComponent.getUI().modelToView(textComponent, pos).x;
             } catch(BadLocationException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            getPopup().show(textComponent, xPos, textComponent.getHeight());
+            popup.show(textComponent, xPos, textComponent.getHeight());
         } else {
-            getPopup().setVisible(false);
+            popup.setVisible(false);
         }
         textComponent.requestFocus();
     }
 
     /**
-     * user has selected some item in the list, update textfield accordingly
-     * <p/>
-     * @param selected
-     */
-    protected abstract void acceptedListItem(String selected);
-    
-    /**
-     * Move the list selection within its boundaries
-     * <p>
-     * @param val
-     */
-    protected void shiftSelection(int val) {
-        int si = getList().getSelectedIndex() + val;
-        si = Math.min(Math.max(0, si), getList().getModel().getSize() - 1);
-        getList().setSelectedIndex(si);
-        getList().ensureIndexIsVisible(si);
-    }
-    
-    
-    /**
      * update list model depending on the data in textfield
-     * <p/>
+     *
      * @return whether to display the list
      */
     protected abstract boolean updateListData();
 
+    /**
+     * user has selected some item in the list, update textfield accordingly
+     *
+     * @param selected
+     */
+    protected abstract void acceptedListItem(String selected);
 }
