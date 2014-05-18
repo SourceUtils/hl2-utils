@@ -23,13 +23,13 @@
         <dependency>
             <groupId>lib</groupId>
             <artifactId>pty4j-0.3.jar</artifactId>
-            <version>[0,)</version>
+            <version>135.999</version>
         </dependency>
         <!-- pty4j should depend on this -->
         <dependency>
             <groupId>lib</groupId>
             <artifactId>purejavacomm.jar</artifactId>
-            <version>[0,)</version>
+            <version>135.999</version>
         </dependency>
         <!-- install this first -->
         <dependency>
