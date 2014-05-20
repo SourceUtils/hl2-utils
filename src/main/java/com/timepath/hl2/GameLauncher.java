@@ -5,7 +5,7 @@ import com.timepath.DataUtils;
 import com.timepath.io.AggregateOutputStream;
 import com.timepath.plaf.OS;
 import com.timepath.steam.SteamUtils;
-import com.timepath.steam.io.BVDF;
+import com.timepath.steam.io.bvdf.BVDF;
 import com.timepath.steam.io.VDF1;
 import com.timepath.steam.io.util.VDFNode1;
 
