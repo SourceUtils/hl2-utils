@@ -49,7 +49,7 @@ class ArchiveHost {
                         }
 
                         @Override
-                        public InputStream stream() {
+                        public InputStream openStream() {
                             byte[] arr = data.get();
                             if(arr == null) {
                                 boolean release = false;
@@ -57,7 +57,7 @@ class ArchiveHost {
                                     available.acquire();
                                     release = true;
                                     LOG.log(Level.INFO, "Converting {0}...", found);
-                                    VTF v = VTF.load(found.stream());
+                                    VTF v = VTF.load(found.openStream());
                                     if(v == null) {
                                         return null;
                                     }
@@ -86,20 +86,20 @@ class ArchiveHost {
             }
             try {
                 HTTPFS http = new HTTPFS();
-                http.copyFrom(files);
+                http.addAll(files);
                 new Thread(http).start();
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             try {
                 FTPFS ftp = new FTPFS();
-                ftp.copyFrom(files);
+                ftp.addAll(files);
                 new Thread(ftp).start();
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             FUSEFS fuse = new FUSEFS("test");
-            fuse.copyFrom(files);
+            fuse.addAll(files);
             new Thread(fuse).start();
         } catch(FileNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);

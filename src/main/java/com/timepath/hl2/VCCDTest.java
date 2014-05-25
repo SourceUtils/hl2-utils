@@ -171,7 +171,7 @@ class VCCDTest extends JFrame {
                     pb.setIndeterminate(false);
                     for(int i = 0; i < caps.size(); i++) {
                         VDF1 e = new VDF1();
-                        e.readExternal(caps.get(i).stream());
+                        e.readExternal(caps.get(i).openStream());
                         TreeUtils.moveChildren(e.getRoot(), top);
                         pb.setValue(i + 1);
                     }

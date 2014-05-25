@@ -310,7 +310,7 @@ class MDLTest extends SimpleApplication {
 
             @Override
             public InputStream openStream() {
-                return source.stream();
+                return source.openStream();
             }
         }
     }
