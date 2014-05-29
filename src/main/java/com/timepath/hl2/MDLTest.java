@@ -291,7 +291,7 @@ class MDLTest extends SimpleApplication {
                                                                   appID));
             }
             String search = rootPath + VFile.SEPARATOR + key.getName();
-            SimpleVFile found = a.get(search);
+            SimpleVFile found = a.query(search);
             if(found == null) {
                 throw new AssetNotFoundException(MessageFormat.format("{0} not found", search));
             }
