@@ -5,9 +5,9 @@ import com.timepath.DataUtils;
 import com.timepath.io.AggregateOutputStream;
 import com.timepath.plaf.OS;
 import com.timepath.steam.SteamUtils;
+import com.timepath.steam.io.VDF;
+import com.timepath.steam.io.VDFNode;
 import com.timepath.steam.io.bvdf.BVDF;
-import com.timepath.steam.io.VDF1;
-import com.timepath.steam.io.util.VDFNode1;
 
 import javax.swing.*;
 import java.awt.*;
@@ -162,11 +162,10 @@ class GameLauncher {
         BVDF.DataNode root = bin.getRoot();
         BVDF.DataNode gm = root.get(String.valueOf(appID));
         BVDF.DataNode sections = gm.get("Sections");
-        BVDF.DataNode conf = sections.get("CONFIG");
-        BVDF.DataNode g2 = conf.get(String.valueOf(appID));
-        String installdir = g2.get("installdir").value.toString();
+        BVDF.DataNode conf = sections.get("CONFIG").get("config");
+        String installdir = conf.get("installdir").value.toString();
         File dir = new File(SteamUtils.getSteamApps(), "common/" + installdir);
-        BVDF.DataNode l = g2.get("launch");
+        BVDF.DataNode l = conf.get("launch");
         Map<String, File> launch = new HashMap<>(l.getChildCount());
         String[] gameArgs = null;
         for(int i = 0; i < l.getChildCount(); i++) {
@@ -202,28 +201,19 @@ class GameLauncher {
     private static String getUserOpts(int appID) {
         try {
             File f = new File(SteamUtils.getUserData(), "config/localconfig.vdf");
-            VDF1 v = new VDF1();
-            v.readExternal(new FileInputStream(f));
-            VDFNode1 game = v.getRoot()
-                             .get("UserLocalConfigStore")
-                             .get("Software")
-                             .get("Valve")
-                             .get("Steam")
-                             .get("apps")
-                             .get(String.valueOf(appID));
+            VDFNode game = VDF.load(f).get("UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID);
             if(game == null) {
                 return null;
             }
-            VDFNode1 launch = game.get("LaunchOptions");
-            if(launch == null) {
+            String str = (String) game.getValue("LaunchOptions");
+            if(str == null) {
                 return null;
             }
-            String str = launch.getValue();
             if(!str.contains("%command%")) {
                 str = "%command% " + str;
             }
             return str;
-        } catch(FileNotFoundException ex) {
+        } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         return null;

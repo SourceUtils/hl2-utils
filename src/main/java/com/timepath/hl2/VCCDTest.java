@@ -3,9 +3,9 @@ package com.timepath.hl2;
 import com.timepath.hl2.io.captions.VCCD;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
-import com.timepath.steam.io.VDF1;
+import com.timepath.steam.io.VDF;
+import com.timepath.steam.io.VDFNode;
 import com.timepath.steam.io.storage.ACF;
-import com.timepath.swing.TreeUtils;
 import com.timepath.utils.Trie;
 import com.timepath.vfs.SimpleVFile;
 
@@ -15,8 +15,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreeNode;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -165,34 +163,24 @@ class VCCDTest extends JFrame {
                 LOG.info("Generating hash codes ...");
                 try {
                     CRC32 crc = new CRC32();
-                    DefaultMutableTreeNode top = new DefaultMutableTreeNode();
                     List<SimpleVFile> caps = ACF.fromManifest(440).find("game_sounds");
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
-                    for(int i = 0; i < caps.size(); i++) {
-                        VDF1 e = new VDF1();
-                        e.readExternal(caps.get(i).openStream());
-                        TreeUtils.moveChildren(e.getRoot(), top);
-                        pb.setValue(i + 1);
-                    }
-                    String spl = "channel == ";
-                    for(int i = 0; i < top.getChildCount(); i++) {
-                        TreeNode node = top.getChildAt(i);
-                        String str = node.toString();
-                        str = str.replaceAll("\"", "").toLowerCase();
-                        String channel = CHAN_UNKNOWN;
-                        for(int j = 0; j < node.getChildCount(); j++) {
-                            String prop = node.getChildAt(j).toString();
-                            if(prop.startsWith(spl)) {
-                                channel = prop.split(spl)[1];
-                            }
+                    int i = 0;
+                    for(SimpleVFile f : caps) {
+                        LOG.log(Level.INFO, "Parsing {0}", f);
+                        VDFNode root = VDF.load(f.openStream());
+                        for(VDFNode node : root.getNodes()) {
+                            String str = (String) node.getCustom();
+                            String channel = (String) node.getValue("channel", CHAN_UNKNOWN);
+                            LOG.log(Level.FINER, str);
+                            crc.reset();
+                            crc.update(str.getBytes());
+                            map.put((int) crc.getValue(), new StringPair(str, channel));
                         }
-                        LOG.log(Level.FINER, str);
-                        crc.update(str.getBytes());
-                        map.put((int) crc.getValue(), new StringPair(str, channel));
-                        crc.reset();
+                        pb.setValue(++i);
                     }
-                } catch(FileNotFoundException ex) {
+                } catch(IOException ex) {
                     LOG.log(Level.WARNING, "Error generating hash codes", ex);
                 }
                 hashmap.putAll(map);

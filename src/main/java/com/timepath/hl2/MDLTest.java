@@ -35,7 +35,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -272,7 +271,7 @@ class MDLTest extends SimpleApplication {
             ACF loading = null;
             try {
                 loading = ACF.fromManifest(appID);
-            } catch(FileNotFoundException ex) {
+            } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             a = loading;

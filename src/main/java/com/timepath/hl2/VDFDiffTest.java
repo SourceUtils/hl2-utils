@@ -1,6 +1,6 @@
 package com.timepath.hl2;
 
-import com.timepath.steam.io.VDF2;
+import com.timepath.steam.io.VDFNode;
 
 import java.util.logging.Logger;
 
@@ -25,7 +25,7 @@ class VDFDiffTest {
          * "Same" {}
          * }
          */
-        VDF2 n1 = new VDF2("A");
+        VDFNode n1 = new VDFNode("A");
         /**
          * "VDF" {
          * "Modified" {
@@ -37,21 +37,21 @@ class VDFDiffTest {
          * "Same" {}
          * }
          */
-        VDF2 n2 = new VDF2("B");
-        VDF2 tmp = new VDF2("Modified");
-        tmp.addAllProperties(new VDF2.VDFProperty("Same", "yes"),
-                             new VDF2.VDFProperty("Similar", "one"),
-                             new VDF2.VDFProperty("Removed", "yes"));
+        VDFNode n2 = new VDFNode("B");
+        VDFNode tmp = new VDFNode("Modified");
+        tmp.addAllProperties(new VDFNode.VDFProperty("Same", "yes"),
+                             new VDFNode.VDFProperty("Similar", "one"),
+                             new VDFNode.VDFProperty("Removed", "yes"));
         n1.addNode(tmp);
-        n1.addNode(new VDF2("Removed"));
-        n1.addNode(new VDF2("Same"));
-        VDF2 tmp2 = new VDF2("Modified");
-        tmp2.addAllProperties(new VDF2.VDFProperty("Same", "yes"),
-                              new VDF2.VDFProperty("Similar", "two"),
-                              new VDF2.VDFProperty("Added", "yes"));
+        n1.addNode(new VDFNode("Removed"));
+        n1.addNode(new VDFNode("Same"));
+        VDFNode tmp2 = new VDFNode("Modified");
+        tmp2.addAllProperties(new VDFNode.VDFProperty("Same", "yes"),
+                              new VDFNode.VDFProperty("Similar", "two"),
+                              new VDFNode.VDFProperty("Added", "yes"));
         n2.addNode(tmp2);
-        n2.addNode(new VDF2("New"));
-        n2.addNode(new VDF2("Same"));
+        n2.addNode(new VDFNode("New"));
+        n2.addNode(new VDFNode("Same"));
         n1.rdiff2(n2);
         //        Node.debugDiff(n1.rdiff(n2));
     }

@@ -101,7 +101,7 @@ class ArchiveHost {
             FUSEFS fuse = new FUSEFS("test");
             fuse.addAll(files);
             new Thread(fuse).start();
-        } catch(FileNotFoundException ex) {
+        } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         SwingUtilities.invokeLater(new Runnable() {
