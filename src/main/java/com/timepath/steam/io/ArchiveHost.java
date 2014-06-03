@@ -1,8 +1,11 @@
 package com.timepath.steam.io;
 
+import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.image.VTF;
 import com.timepath.steam.io.storage.ACF;
+import com.timepath.steam.io.storage.Files;
 import com.timepath.vfs.SimpleVFile;
+import com.timepath.vfs.SimpleVFile.MissingFileHandler;
 import com.timepath.vfs.ftp.FTPFS;
 import com.timepath.vfs.fuse.FUSEFS;
 import com.timepath.vfs.http.HTTPFS;
@@ -11,10 +14,12 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.RenderedImage;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.util.Collection;
-import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,18 +34,19 @@ class ArchiveHost {
 
     public static void main(String... args) {
         try {
-            int appID = 440;
-            ACF acf = ACF.fromManifest(appID);
-            Collection<? extends SimpleVFile> files = acf.list();
-            final Semaphore available = new Semaphore(Runtime.getRuntime().availableProcessors() * 2, true);
-            for(SimpleVFile file : files) {
-                for(final SimpleVFile found : file.find(".vtf")) {
-                    SimpleVFile png = new SimpleVFile() {
+            Class.forName(BSP.class.getName());
+            Files.registerMissingFileHandler(new MissingFileHandler() {
+                @Override
+                public SimpleVFile handle(final SimpleVFile parent, final String name) {
+                    if(!name.endsWith(".png")) return null;
+                    final SimpleVFile vtf = parent.get(name.replace(".png", ".vtf"));
+                    if(vtf == null) return null;
+                    return new SimpleVFile() {
                         private SoftReference<byte[]> data = new SoftReference<>(null);
 
                         @Override
                         public String getName() {
-                            return found.getName().replace(".vtf", ".png");
+                            return name;
                         }
 
                         @Override
@@ -52,12 +58,9 @@ class ArchiveHost {
                         public InputStream openStream() {
                             byte[] arr = data.get();
                             if(arr == null) {
-                                boolean release = false;
                                 try {
-                                    available.acquire();
-                                    release = true;
-                                    LOG.log(Level.INFO, "Converting {0}...", found);
-                                    VTF v = VTF.load(found.openStream());
+                                    LOG.log(Level.INFO, "Converting {0}...", vtf);
+                                    VTF v = VTF.load(vtf.openStream());
                                     if(v == null) {
                                         return null;
                                     }
@@ -69,21 +72,20 @@ class ArchiveHost {
                                     ImageIO.write((RenderedImage) image, "png", baos);
                                     arr = baos.toByteArray();
                                     data = new SoftReference<>(arr);
-                                } catch(IOException | InterruptedException ex) {
-                                    LOG.log(Level.SEVERE, null, ex);
+                                } catch(IOException e) {
+                                    LOG.log(Level.SEVERE, null, e);
                                 } finally {
-                                    LOG.log(Level.INFO, "Converted {0}", found);
-                                    if(release) {
-                                        available.release();
-                                    }
+                                    LOG.log(Level.INFO, "Converted {0}", vtf);
                                 }
                             }
                             return new ByteArrayInputStream(arr);
                         }
                     };
-                    found.getParent().add(png);
                 }
-            }
+            });
+            int appID = 440;
+            ACF acf = ACF.fromManifest(appID);
+            Collection<? extends SimpleVFile> files = acf.list();
             try {
                 HTTPFS http = new HTTPFS();
                 http.addAll(files);
@@ -101,7 +103,7 @@ class ArchiveHost {
             FUSEFS fuse = new FUSEFS("test");
             fuse.addAll(files);
             new Thread(fuse).start();
-        } catch(IOException ex) {
+        } catch(ClassNotFoundException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         SwingUtilities.invokeLater(new Runnable() {
