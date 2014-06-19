@@ -1,0 +1,10 @@
+description = ''
+dependencies {
+  compile 'lib:pty4j-0.3.jar:135.999'
+  compile 'lib:purejavacomm.jar:135.999'
+  compile 'log4j:log4j:1.2.17'
+  compile 'com.google.guava:guava:17.0'
+  compile 'com.jme3:jME3:3.0-SNAPSHOT'
+  compile project(':data-examiner')
+  compile project(':hl2-toolkit')
+}
