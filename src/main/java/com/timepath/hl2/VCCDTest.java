@@ -246,14 +246,6 @@ class VCCDTest extends JFrame {
                 }
             });
         }});
-        jMenu1.add(new JMenuItem("Export all") {{
-            addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    exportAll(e);
-                }
-            });
-        }});
         jMenu1.add(new JMenuItem("Generate hash codes") {{
             addActionListener(new ActionListener() {
                 @Override
