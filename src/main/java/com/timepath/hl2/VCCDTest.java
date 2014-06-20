@@ -8,6 +8,7 @@ import com.timepath.steam.io.VDFNode;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.utils.Trie;
 import com.timepath.vfs.SimpleVFile;
+import org.apache.commons.io.IOUtils;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -198,52 +199,147 @@ class VCCDTest extends JFrame {
         return hashmap.get(hash).name;
     }
 
-    private void initComponents() {
-        JPanel hashPanel = new JPanel();
-        jTextField3 = new JTextField();
-        jTextField4 = new JTextField();
-        JScrollPane contentPane = new JScrollPane();
-        jTable1 = new JTable();
+    private void initMenu() {
         JMenuBar menuBar = new JMenuBar();
-        JMenu jMenu1 = new JMenu();
-        JMenuItem jMenuItem6 = new JMenuItem();
-        JMenuItem jMenuItem1 = new JMenuItem();
-        JMenuItem jMenuItem3 = new JMenuItem();
-        JMenuItem jMenuItem8 = new JMenuItem();
-        JMenuItem jMenuItem12 = new JMenuItem();
-        JMenuItem jMenuItem11 = new JMenuItem();
-        JMenuItem jMenuItem2 = new JMenuItem();
-        JMenuItem jMenuItem10 = new JMenuItem();
-        JMenu jMenu2 = new JMenu();
-        JMenuItem jMenuItem4 = new JMenuItem();
-        JMenuItem jMenuItem5 = new JMenuItem();
-        JMenuItem jMenuItem9 = new JMenuItem();
-        JMenu jMenu3 = new JMenu();
-        JMenuItem jMenuItem7 = new JMenuItem();
+        JMenu jMenu1 = new JMenu("File");
+        jMenu1.add(new JMenuItem("New", 'N') {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    createNew(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Open", 'O') {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    loadCaptions(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Import", 'I') {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    importCaptions(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Export", 'X') {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    export(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Export all", 'E') {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    exportAll(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Export all") {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    exportAll(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Generate hash codes") {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    generateHash(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Save", 'S') {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    saveCaptions(e);
+                }
+            });
+        }});
+        jMenu1.add(new JMenuItem("Save As...", 'V') {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    saveCaptionsAs(e);
+                }
+            });
+        }});
+        menuBar.add(jMenu1);
+        JMenu jMenu2 = new JMenu("Edit");
+        jMenu2.add(new JMenuItem("Insert row") {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    insertRow(e);
+                }
+            });
+        }});
+        jMenu2.add(new JMenuItem("Delete row") {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    deleteRow(e);
+                }
+            });
+        }});
+        jMenu2.add(new JMenuItem("Goto") {{
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    gotoRow(e);
+                }
+            });
+        }});
+        menuBar.add(jMenu2);
+        JMenu jMenu3 = new JMenu("Help");
+        jMenu3.add(new JMenuItem("Formatting") {{
+            setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
+            addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    formattingHelp(e);
+                }
+            });
+        }});
+        menuBar.add(jMenu3);
+        setJMenuBar(menuBar);
+    }
+
+    private void initComponents() {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Caption Editor");
         getContentPane().setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
-        hashPanel.setBorder(BorderFactory.createTitledBorder("CRC32"));
-        hashPanel.setMaximumSize(new Dimension(2147483647, 83));
-        hashPanel.setLayout(new BorderLayout());
-        hashPanel.add(jTextField3, BorderLayout.PAGE_START);
-        jTextField4.setEditable(false);
-        jTextField4.setText("The CRC will appear here");
-        hashPanel.add(jTextField4, BorderLayout.PAGE_END);
-        getContentPane().add(hashPanel);
+        getContentPane().add(new JPanel() {{
+            setBorder(BorderFactory.createTitledBorder("CRC32"));
+            setMaximumSize(new Dimension(2147483647, 83));
+            setLayout(new BorderLayout());
+            add(jTextField3 = new JTextField(), BorderLayout.PAGE_START);
+            jTextField4 = new JTextField();
+            jTextField4.setEditable(false);
+            jTextField4.setText("The CRC will appear here");
+            add(jTextField4, BorderLayout.PAGE_END);
+        }});
+        jTable1 = new JTable();
         jTable1.setAutoCreateRowSorter(true);
-        jTable1.setModel(new DefaultTableModel(new Object[][] {
-        }, new String[] {
-                "CRC32", "Key", "Value"
-        }
-        )
-        {
-            Class[] types = {
-                    Object.class, String.class, String.class
-            };
-            boolean[] canEdit = {
-                    false, true, true
-            };
+        jTable1.setModel(new DefaultTableModel(new Object[][] { }, new String[] { "CRC32", "Key", "Value" }) {
+            Class[] types = { Object.class, String.class, String.class };
+            boolean[] canEdit = { false, true, true };
 
             @Override
             public Class getColumnClass(int columnIndex) {
@@ -257,7 +353,6 @@ class VCCDTest extends JFrame {
         });
         jTable1.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jTable1.setRowHeight(24);
-        contentPane.setViewportView(jTable1);
         if(jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setMinWidth(85);
             jTable1.getColumnModel().getColumn(0).setPreferredWidth(85);
@@ -266,124 +361,8 @@ class VCCDTest extends JFrame {
             jTable1.getColumnModel().getColumn(1).setCellEditor(getKeyEditor());
             jTable1.getColumnModel().getColumn(2).setPreferredWidth(160);
         }
-        getContentPane().add(contentPane);
-        jMenu1.setText("File");
-        jMenuItem6.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK));
-        jMenuItem6.setMnemonic('N');
-        jMenuItem6.setText("New");
-        jMenuItem6.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                createNew(e);
-            }
-        });
-        jMenu1.add(jMenuItem6);
-        jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
-        jMenuItem1.setMnemonic('O');
-        jMenuItem1.setText("Open");
-        jMenuItem1.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                loadCaptions(e);
-            }
-        });
-        jMenu1.add(jMenuItem1);
-        jMenuItem3.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK));
-        jMenuItem3.setMnemonic('I');
-        jMenuItem3.setText("Import");
-        jMenuItem3.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                importCaptions(e);
-            }
-        });
-        jMenu1.add(jMenuItem3);
-        jMenuItem8.setMnemonic('X');
-        jMenuItem8.setText("Export");
-        jMenuItem8.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                export(e);
-            }
-        });
-        jMenu1.add(jMenuItem8);
-        jMenuItem12.setMnemonic('E');
-        jMenuItem12.setText("Export all");
-        jMenuItem12.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                exportAll(e);
-            }
-        });
-        jMenu1.add(jMenuItem12);
-        jMenuItem11.setText("Generate hash codes");
-        jMenuItem11.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                generateHash(e);
-            }
-        });
-        jMenu1.add(jMenuItem11);
-        jMenuItem2.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK));
-        jMenuItem2.setMnemonic('S');
-        jMenuItem2.setText("Save");
-        jMenuItem2.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveCaptions(e);
-            }
-        });
-        jMenu1.add(jMenuItem2);
-        jMenuItem10.setMnemonic('V');
-        jMenuItem10.setText("Save As...");
-        jMenuItem10.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                saveCaptionsAs(e);
-            }
-        });
-        jMenu1.add(jMenuItem10);
-        menuBar.add(jMenu1);
-        jMenu2.setText("Edit");
-        jMenuItem4.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK));
-        jMenuItem4.setText("Insert row");
-        jMenuItem4.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                insertRow(e);
-            }
-        });
-        jMenu2.add(jMenuItem4);
-        jMenuItem5.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK));
-        jMenuItem5.setText("Delete row");
-        jMenuItem5.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                deleteRow(e);
-            }
-        });
-        jMenu2.add(jMenuItem5);
-        jMenuItem9.setText("Goto");
-        jMenuItem9.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                gotoRow(e);
-            }
-        });
-        jMenu2.add(jMenuItem9);
-        menuBar.add(jMenu2);
-        jMenu3.setText("Help");
-        jMenuItem7.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
-        jMenuItem7.setText("Formatting");
-        jMenuItem7.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                formattingHelp(e);
-            }
-        });
-        jMenu3.add(jMenuItem7);
-        menuBar.add(jMenu3);
-        setJMenuBar(menuBar);
+        getContentPane().add(new JScrollPane(jTable1));
+        initMenu();
         pack();
     }
 
@@ -410,7 +389,9 @@ class VCCDTest extends JFrame {
                 model.removeRow(i);
             }
             for(VCCD.VCCDEntry entry : entries) {
-                model.addRow(new Object[] { hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue() });
+                model.addRow(new Object[] {
+                        hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue()
+                });
             }
             saveFile = files[0];
         } catch(IOException ex) {
@@ -523,35 +504,14 @@ class VCCDTest extends JFrame {
     }
 
     private void formattingHelp(ActionEvent evt) {
-        String message = "Main:\n" + "Avoid using spaces immediately after opening tags.\n" + "<clr:r,g,b>\n" +
-                         "  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.\n" +
-                         "  For example, <clr:255,100,100> would be red.\n" +
-                         "  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?\n" +
-                         "<B>\n" + "  Toggles bold text for the next phrase.\n" + "<I>\n" +
-                         "  Toggles italicised text for the next phrase.\n" + "<U>\n" +
-                         "  Toggles underlined text for the next phrase.\n" + "<cr>\n" + "  Go to new line for next phrase.\n" +
-                         "Other:\n" + "<sfx>\n" +
-                         "  Marks a line as a sound effect that will only be displayed with full closed captioning.\n" +
-                         "  If the user has cc_subtitles 1, it will not display these lines.\n" + "<delay:#>\n" +
-                         "  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can " +
-                         "take a decimal value.\n" +
-                         "\nUnknown:\n" + "<sameline>\n" + "  Don't go to new line for next phrase.\n" +
-                         "<linger:#> / <persist:#> / <len:#>\n" +
-                         "  Indicates how much longer than usual the caption should appear on the screen.\n" +
-                         "<position:where>\n" + "  I don't know how this one works, but from the sdk comments:\n" +
-                         "  Draw caption at special location ??? needed.\n" + "<norepeat:#>\n" +
-                         "  Sets how long until the caption can appear again. Useful for frequent sounds.\n" +
-                         "  See also: cc_sentencecaptionnorepeat\n" +
-                         "<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>\n" + '\n' +
-                         "closecaption 1 enables the captions\n" + "cc_subtitles 1 disables <sfx> captions\n" +
-                         "Captions last for 5 seconds + cc_linger_time\n" +
-                         "Captions are delayed by cc_predisplay_time seconds\n" +
-                         "Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat\n" +
-                         "cc_random emits a random caption\n" + "";
+        String message = "Unable to load";
+        try {
+            message = IOUtils.toString(getClass().getResource("/VCCDTest.txt"));
+        } catch(IOException ignored) {
+        }
         JScrollPane jsp = new JScrollPane(new JTextArea(message));
         jsp.setPreferredSize(new Dimension(500, 500));
-        JOptionPane pane = new JOptionPane(jsp, JOptionPane.INFORMATION_MESSAGE);
-        JDialog dialog = pane.createDialog(this, "Formatting");
+        JDialog dialog = new JOptionPane(jsp, JOptionPane.INFORMATION_MESSAGE).createDialog(this, "Formatting");
         dialog.setResizable(true);
         dialog.setModal(false);
         dialog.setVisible(true);

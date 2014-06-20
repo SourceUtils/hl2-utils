@@ -1,0 +1,40 @@
+Main:
+Avoid using spaces immediately after opening tags.
+<clr:r,g,b>
+  Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.
+  For example, <clr:255,100,100> would be red.
+  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?
+<B>
+  Toggles bold text for the next phrase.
+<I>
+  Toggles italicised text for the next phrase.
+<U>
+  Toggles underlined text for the next phrase.
+<cr>
+  Go to new line for next phrase.
+Other:
+<sfx>
+  Marks a line as a sound effect that will only be displayed with full closed captioning.
+  If the user has cc_subtitles 1, it will not display these lines.
+<delay:#>
+  Sets a pre-display delay. The sfx tag overrides this. This tag should come before all others. Can take a decimal value.
+
+Unknown:
+<sameline>
+  Don't go to new line for next phrase.
+<linger:#> / <persist:#> / <len:#>
+  Indicates how much longer than usual the caption should appear on the screen.
+<position:where>
+  I don't know how this one works, but from the sdk comments:
+  Draw caption at special location ??? needed.
+<norepeat:#>
+  Sets how long until the caption can appear again. Useful for frequent sounds.
+  See also: cc_sentencecaptionnorepeat
+<playerclr:playerRed,playerGreen,playerBlue:npcRed,npcGreen,npcBlue>
+
+closecaption 1 enables the captions
+cc_subtitles 1 disables <sfx> captions
+Captions last for 5 seconds + cc_linger_time
+Captions are delayed by cc_predisplay_time seconds
+Changing caption languages (cc_lang) reloads them from tf/resource/closecaption_language.dat
+cc_random emits a random caption
