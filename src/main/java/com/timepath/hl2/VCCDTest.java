@@ -46,7 +46,7 @@ class VCCDTest extends JFrame {
     private static final String                   CHAN_UNKNOWN = "CHAN_UNKNOWN";
     private final        Trie                     trie         = new Trie();
     private final        Map<Integer, StringPair> hashmap      = new HashMap<>();
-    private JCheckBoxMenuItem swapBytes;
+    private JCheckBoxMenuItem consoleMode;
     private File              saveFile;
     private JTable            jTable1;
     private JTextField        jTextField3;
@@ -301,7 +301,7 @@ class VCCDTest extends JFrame {
         }});
         menuBar.add(jMenu2);
         menuBar.add(new JMenu("Settings") {{
-            add(swapBytes = new JCheckBoxMenuItem("Swap byte order"));
+            add(consoleMode = new JCheckBoxMenuItem("Console compatible"));
         }});
         JMenu jMenu3 = new JMenu("Help");
         jMenu3.add(new JMenuItem("Formatting") {{
@@ -433,7 +433,7 @@ class VCCDTest extends JFrame {
         }
         persistHashmap(hashmap);
         try {
-            VCCD.save(entries, new FileOutputStream(saveFile), swapBytes.isSelected());
+            VCCD.save(entries, new FileOutputStream(saveFile), consoleMode.isSelected(), consoleMode.isSelected());
         } catch(IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
