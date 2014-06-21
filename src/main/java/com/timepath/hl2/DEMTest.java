@@ -124,7 +124,7 @@ class DEMTest extends JFrame {
         });
     }
 
-    private void recurse(Iterable<? extends Object> i, DefaultMutableTreeNode root) {
+    private void recurse(Iterable<?> i, DefaultMutableTreeNode root) {
         for(Object entry : i) {
             if(entry instanceof Pair) {
                 Pair p = (Pair) entry;
@@ -142,7 +142,7 @@ class DEMTest extends JFrame {
         if(v instanceof Iterable) {
             DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
             root.add(n);
-            recurse((Iterable<? extends Object>) v, n);
+            recurse((Iterable<?>) v, n);
         } else {
             root.add(new DefaultMutableTreeNode(entry));
         }
