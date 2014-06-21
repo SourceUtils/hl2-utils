@@ -16,6 +16,10 @@
         <url>https://github.com/TimePath/${project.artifactId}</url>
     </scm>
 
+    <properties>
+        <jmonkey.version>3.0.0.20140325-SNAPSHOT</jmonkey.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>lib</groupId>
@@ -40,13 +44,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.jme3</groupId>
-            <artifactId>jME3</artifactId>
-            <version>3.0-SNAPSHOT</version>
-            <type>pom</type>
-        </dependency>
-
-        <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>data-examiner</artifactId>
             <version>1.0-SNAPSHOT</version>
@@ -56,5 +53,38 @@
             <artifactId>hl2-toolkit</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+
+        <!-- jME3 -->
+        <!-- The core library -->
+        <dependency>
+            <groupId>com.jme3</groupId>
+            <artifactId>jME3-core</artifactId>
+            <version>${jmonkey.version}</version>
+        </dependency>
+
+        <!-- LWJGL renderer -->
+        <dependency>
+            <groupId>com.jme3</groupId>
+            <artifactId>jME3-lwjgl</artifactId>
+            <version>${jmonkey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jme3</groupId>
+            <artifactId>jME3-lwjgl-natives</artifactId>
+            <version>${jmonkey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.jme3</groupId>
+            <artifactId>lwjgl</artifactId>
+            <version>${jmonkey.version}</version>
+        </dependency>
+
+        <!-- Feature libs -->
+        <dependency>
+            <groupId>com.jme3</groupId>
+            <artifactId>jME3-desktop</artifactId>
+            <version>${jmonkey.version}</version>
+        </dependency>
+
     </dependencies>
 </project>
