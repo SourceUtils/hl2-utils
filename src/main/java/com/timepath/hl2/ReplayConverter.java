@@ -9,6 +9,7 @@ import com.timepath.io.OrderedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteOrder;
+import java.util.List;
 import java.util.ListIterator;
 
 /**
@@ -31,16 +32,22 @@ public class ReplayConverter {
 
     public static void patch(String input, String output) throws Exception {
         HL2DEM demo = HL2DEM.load(new File(input), false);
+        List<Message> messages = demo.getFrames();
+        Message last = messages.get(messages.size() - 1);
+        if(last.type != MessageType.Stop) { // Insert artificial stop
+            Message stop = new Message(demo, MessageType.Stop, last.tick);
+            messages.add(stop);
+        }
+
         boolean flag = false; // Injected
-        int ticks = 0; // Highest tick
+        int ticks = last.tick; // Highest tick
         int frames = 0; // Number of MessageType.Packet messages
-        for(ListIterator<Message> iterator = demo.getFrames().listIterator(); iterator.hasNext(); ) {
-            Message frame = iterator.next();
-            ticks = frame.tick;
-            if(frame.type == MessageType.Packet) {
+        for(ListIterator<Message> iterator = messages.listIterator(); iterator.hasNext(); ) {
+            Message message = iterator.next();
+            if(message.type == MessageType.Packet) {
                 frames++;
-            } else if(frame.type == MessageType.Synctick && !flag) {
-                Message injection = new Message(demo, MessageType.ConsoleCmd, frame.tick);
+            } else if(message.type == MessageType.Synctick && !flag) {
+                Message injection = new Message(demo, MessageType.ConsoleCmd, message.tick);
                 injection.setData("tv_transmitall 1".getBytes());
                 iterator.add(injection);
                 flag = true;
