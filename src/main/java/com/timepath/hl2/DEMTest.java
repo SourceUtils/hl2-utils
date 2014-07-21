@@ -112,18 +112,17 @@ class DEMTest extends JPanel {
                 if(row == -1) return;
                 Message frame = tableModel.messages.get(table.convertRowIndexToModel(row));
                 hex.setData(frame.data);
-                DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+                DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
                 recurse(frame.meta, root);
-                TreeModel tm = new DefaultTreeModel(root);
+                DefaultMutableTreeNode container = new DefaultMutableTreeNode();
+                container.add(root);
+                TreeModel tm = new DefaultTreeModel(container);
                 tree.setModel(tm);
                 // Expand all
-                int j = tree.getRowCount();
-                int i = 0;
-                while(i < j) {
+                int i = -1;
+                while(++i < tree.getRowCount()) {
                     DefaultMutableTreeNode t = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
                     if(t.getLevel() < 3) tree.expandRow(i);
-                    i++;
-                    j = tree.getRowCount();
                 }
             }
         });
