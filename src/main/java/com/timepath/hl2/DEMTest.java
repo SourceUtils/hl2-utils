@@ -11,18 +11,18 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreePath;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -126,6 +126,25 @@ class DEMTest extends JPanel {
                 }
             }
         });
+        tree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                TreePath selectionPath = tree.getSelectionPath();
+                if(selectionPath == null) return;
+                Object lastPathComponent = selectionPath.getLastPathComponent();
+                Object o = ( (DefaultMutableTreeNode) lastPathComponent ).getUserObject();
+                if(o instanceof Packet) {
+                    Packet p = (Packet) o;
+                    try {
+                        hex.setCaretLocation(p.offset / 8);
+                        hex.setBitShift(p.offset % 8);
+                        hex.update();
+                    } catch(PropertyVetoException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            }
+        });
         menu = new JMenuBar() {{
             add(new JMenu("File") {{
                 setMnemonic('F');
@@ -226,7 +245,7 @@ class DEMTest extends JPanel {
                                     if(!( o instanceof Pair )) break;
                                     Pair pair = (Pair) o;
                                     if(!( pair.getKey() instanceof Packet )) break;
-                                    switch((Packet) pair.getKey()) {
+                                    switch(((Packet) pair.getKey()).type) {
                                         case svc_GameEvent:
                                             listEvt.addElement(pair);
                                             break;
