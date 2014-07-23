@@ -12,12 +12,12 @@ import com.timepath.steam.SteamUtils;
 import org.jdesktop.swingx.JXFrame;
 import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTree;
+import org.jdesktop.swingx.decorator.AbstractHighlighter;
+import org.jdesktop.swingx.decorator.ComponentAdapter;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeModel;
@@ -29,7 +29,9 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -76,43 +78,34 @@ public class DEMTest extends JPanel {
                 setRightComponent(hex = new HexEditor());
             }});
         }});
-        // Cell renderer
-        TableCellRenderer renderer = new DefaultTableCellRenderer() {
+        table.addHighlighter(new AbstractHighlighter() {
             @Override
-            public Component getTableCellRendererComponent(JTable table,
-                                                           Object value,
-                                                           boolean isSelected,
-                                                           boolean hasFocus,
-                                                           int row,
-                                                           int column)
-            {
-                Component cell = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                setBorder(null);
-                Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(row));
+            protected Component doHighlight(final Component component, final ComponentAdapter adapter) {
+                Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(adapter.row));
                 Color c;
-                switch(f.type) {
-                    case Signon:
-                    case Packet:
-                        c = Color.CYAN;
-                        break;
-                    case UserCmd:
-                        c = Color.GREEN;
-                        break;
-                    case ConsoleCmd:
-                        c = Color.PINK;
-                        break;
-                    default:
-                        c = Color.WHITE;
-                        break;
+                if(f.incomplete) {
+                    c = Color.ORANGE;
+                } else {
+                    switch(f.type) {
+                        case Signon:
+                        case Packet:
+                            c = Color.CYAN;
+                            break;
+                        case UserCmd:
+                            c = Color.GREEN;
+                            break;
+                        case ConsoleCmd:
+                            c = Color.PINK;
+                            break;
+                        default:
+                            c = Color.WHITE;
+                            break;
+                    }
                 }
-                if(f.incomplete) c = Color.ORANGE;
-                cell.setBackground(isSelected ? cell.getBackground() : c);
-                return cell;
+                component.setBackground(adapter.isSelected() ? component.getBackground() : c);
+                return component;
             }
-        };
-        for(int i = 0; i < table.getColumnCount(); i++) {
-            table.getColumnModel().getColumn(i).setCellRenderer(renderer);
-        }
+        });
         table.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -212,51 +205,81 @@ public class DEMTest extends JPanel {
 
     protected void open() {
         try {
-            File[] fs = new NativeFileChooser().setTitle("Open DEM")
-                                               .setDirectory(new File(SteamUtils.getSteamApps(),
-                                                                      "common/Team Fortress 2/tf/."))
-                                               .addFilter(new BaseFileChooser.ExtensionFilter("Demo files", "dem"))
-                                               .choose();
+            final File[] fs = new NativeFileChooser().setTitle("Open DEM")
+                                                     .setDirectory(new File(SteamUtils.getSteamApps(),
+                                                                            "common/Team Fortress 2/tf/."))
+                                                     .addFilter(new BaseFileChooser.ExtensionFilter("Demo files",
+                                                                                                    "dem"))
+                                                     .choose();
             if(fs == null) return;
-            HL2DEM demo = HL2DEM.load(fs[0]);
-            DefaultListModel<Pair> listEvt = new DefaultListModel<>(), listMsg = new DefaultListModel<>();
-            tableModel.messages.clear();
-            int fail = 0;
-            for(Message m : demo.getFrames()) {
-                if(m.incomplete) fail++;
-                tableModel.messages.add(m);
-                switch(m.type) {
-                    case Packet:
-                    case Signon:
-                        for(Pair<Object, Object> ents : m.meta) {
-                            if(!( ents.getKey() instanceof Packet )) break;
-                            if(!( ents.getValue() instanceof Iterable )) break;
-                            for(Object o : (Iterable) ents.getValue()) {
-                                if(!( o instanceof Pair )) break;
-                                Pair pair = (Pair) o;
-                                switch(( (Packet) ents.getKey() ).type) {
-                                    case svc_GameEvent:
-                                        listEvt.addElement(pair);
-                                        break;
-                                    case svc_UserMessage:
-                                        listMsg.addElement(pair);
-                                        break;
-                                }
-                            }
-                        }
-                        break;
+            new SwingWorker<HL2DEM, Message>() {
+                DefaultListModel<Pair> listEvt = new DefaultListModel<>();
+                DefaultListModel<Pair> listMsg = new DefaultListModel<>();
+                int incomplete = 0;
+
+                @Override
+                protected HL2DEM doInBackground() throws Exception {
+                    tableModel.messages.clear();
+                    HL2DEM demo = HL2DEM.load(fs[0]);
+                    List<Message> frames = demo.getFrames(); // TODO: Stream
+                    publish(frames.toArray(new Message[frames.size()]));
+                    return demo;
                 }
-            }
-            LOG.info(String.format("Total incomplete messages: %d / %d", fail, demo.getFrames().size()));
-            while(tabs.getTabCount() > 1) tabs.remove(1); // Remove previous events and messages
-            JScrollPane jsp = new JScrollPane(new JList<>(listEvt));
-            jsp.getVerticalScrollBar().setUnitIncrement(16);
-            tabs.add("Events", jsp);
-            JScrollPane jsp2 = new JScrollPane(new JList<>(listMsg));
-            jsp2.getVerticalScrollBar().setUnitIncrement(16);
-            tabs.add("Messages", jsp2);
-        } catch(IOException ioe) {
-            LOG.log(Level.SEVERE, null, ioe);
+
+                @Override
+                protected void process(final List<Message> chunks) {
+                    for(Message m : chunks) {
+                        if(m.incomplete) incomplete++;
+                        tableModel.messages.add(m);
+                        switch(m.type) {
+                            case Packet:
+                            case Signon:
+                                for(Pair<Object, Object> ents : m.meta) {
+                                    if(!( ents.getKey() instanceof Packet )) break;
+                                    if(!( ents.getValue() instanceof Iterable )) break;
+                                    for(Object o : (Iterable) ents.getValue()) {
+                                        if(!( o instanceof Pair )) break;
+                                        Pair pair = (Pair) o;
+                                        switch(( (Packet) ents.getKey() ).type) {
+                                            case svc_GameEvent:
+                                                listEvt.addElement(pair);
+                                                break;
+                                            case svc_UserMessage:
+                                                listMsg.addElement(pair);
+                                                break;
+                                        }
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                    tableModel.fireTableDataChanged(); // FIXME
+                }
+
+                @Override
+                protected void done() {
+                    HL2DEM demo;
+                    try {
+                        demo = get();
+                    } catch(InterruptedException ignored) {
+                        return;
+                    } catch(ExecutionException e) {
+                        LOG.log(Level.SEVERE, null, e);
+                        return;
+                    }
+                    LOG.info(String.format("Total incomplete messages: %d / %d", incomplete, demo.getFrames().size()));
+                    while(tabs.getTabCount() > 1) tabs.remove(1); // Remove previous events and messages
+                    JScrollPane jsp = new JScrollPane(new JList<>(listEvt));
+                    jsp.getVerticalScrollBar().setUnitIncrement(16);
+                    tabs.add("Events", jsp);
+                    JScrollPane jsp2 = new JScrollPane(new JList<>(listMsg));
+                    jsp2.getVerticalScrollBar().setUnitIncrement(16);
+                    tabs.add("Messages", jsp2);
+                    table.setModel(tableModel);
+                }
+            }.execute();
+        } catch(IOException e) {
+            LOG.log(Level.SEVERE, null, e);
         }
     }
 
@@ -273,7 +296,7 @@ public class DEMTest extends JPanel {
         JOptionPane.showMessageDialog(this, jsp);
     }
 
-    protected class MessageModel implements TableModel {
+    protected class MessageModel extends AbstractTableModel {
 
         protected ArrayList<Message> messages = new ArrayList<>();
 
