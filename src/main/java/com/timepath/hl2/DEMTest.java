@@ -230,33 +230,29 @@ class DEMTest extends JPanel {
             DefaultListModel<Pair> listEvt = new DefaultListModel<>(), listMsg = new DefaultListModel<>();
             tableModel.messages.clear();
             int fail = 0;
-            for(Message f : demo.getFrames()) {
-                if(f.incomplete) fail++;
-                tableModel.messages.add(f);
-                for(Pair p : f.meta) {
-                    if(!( p.getKey() instanceof Message )) continue;
-                    Message m = (Message) p.getKey();
-                    switch(m.type) {
-                        case Packet:
-                        case Signon:
-                            for(Pair<Object, Object> ents : m.meta) {
-                                if(!( ents.getValue() instanceof Iterable )) break;
-                                for(Object o : (Iterable) ents.getValue()) {
-                                    if(!( o instanceof Pair )) break;
-                                    Pair pair = (Pair) o;
-                                    if(!( pair.getKey() instanceof Packet )) break;
-                                    switch(((Packet) pair.getKey()).type) {
-                                        case svc_GameEvent:
-                                            listEvt.addElement(pair);
-                                            break;
-                                        case svc_UserMessage:
-                                            listMsg.addElement(pair);
-                                            break;
-                                    }
+            for(Message m : demo.getFrames()) {
+                if(m.incomplete) fail++;
+                tableModel.messages.add(m);
+                switch(m.type) {
+                    case Packet:
+                    case Signon:
+                        for(Pair<Object, Object> ents : m.meta) {
+                            if(!( ents.getKey() instanceof Packet )) break;
+                            if(!( ents.getValue() instanceof Iterable )) break;
+                            for(Object o : (Iterable) ents.getValue()) {
+                                if(!( o instanceof Pair )) break;
+                                Pair pair = (Pair) o;
+                                switch(((Packet) ents.getKey()).type) {
+                                    case svc_GameEvent:
+                                        listEvt.addElement(pair);
+                                        break;
+                                    case svc_UserMessage:
+                                        listMsg.addElement(pair);
+                                        break;
                                 }
                             }
-                            break;
-                    }
+                        }
+                        break;
                 }
             }
             LOG.info(String.format("Total incomplete messages: %d / %d", fail, demo.getFrames().size()));
