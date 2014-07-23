@@ -3,13 +3,13 @@ Avoid using spaces immediately after opening tags.
 <clr:r,g,b>
   Sets the color of the caption using an RGB color; 0 is no color, 255 is full color.
   For example, <clr:255,100,100> would be red.
-  <clr> with no arguments should restore the previous color for the next phrase, but doesn't?
+  <clr> with no arguments will restore the previous color for all text following, but only if you have set the color at least twice
 <B>
   Toggles bold text for the next phrase.
 <I>
   Toggles italicised text for the next phrase.
 <U>
-  Toggles underlined text for the next phrase.
+  Toggles underlined text for the next phrase. Appears to be disabled in the TF2 build.
 <cr>
   Go to new line for next phrase.
 Other:
