@@ -135,8 +135,11 @@ public class DEMTest extends JPanel {
                 if(o instanceof Packet) {
                     Packet p = (Packet) o;
                     try {
-                        hex.setCaretLocation(p.offset / 8);
-                        hex.setBitShift(p.offset % 8);
+                        int offsetBytes = p.offset / 8;
+                        int offsetBits = p.offset % 8;
+                        hex.seek(offsetBytes - ( offsetBytes % 16 )); // Start of row
+                        hex.setCaretLocation(offsetBytes);
+                        hex.setBitShift(offsetBits);
                         hex.update();
                     } catch(PropertyVetoException e1) {
                         e1.printStackTrace();
