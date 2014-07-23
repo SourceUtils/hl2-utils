@@ -323,6 +323,7 @@ public class DEMTest extends JPanel {
 
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
+            if(messages.isEmpty()) return null;
             Message m = messages.get(rowIndex);
             switch(columnIndex) {
                 case 0:
