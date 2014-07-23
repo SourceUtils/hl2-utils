@@ -1,4 +1,4 @@
-package com.timepath.ui.swing;
+package com.timepath.swing;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;

@@ -5,31 +5,28 @@ import com.timepath.steam.SteamUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
-import java.text.MessageFormat;
-import java.util.logging.Logger;
 
-class CFGSetup {
+/**
+ * A simple program for TF2 to create 9 class configs and a reset.cfg.
+ *
+ * @author TimePath
+ */
+public class CFGSetup {
 
-    private static final Logger LOG = Logger.getLogger(CFGSetup.class.getName());
+    private CFGSetup() { }
 
-    private CFGSetup() {}
-
-    public static void main(String... args) throws IOException {
-        File dir = new File(MessageFormat.format("{0}{1}{2}/cfg",
-                                                 SteamUtils.getSteamApps(),
-                                                 "/common/Team Fortress 2/tf/custom/",
-                                                 SteamUtils.getUser().getUser().toLowerCase().replaceAll("[^a-z0-9]", "")));
-        if(!dir.exists()) {
-            dir.mkdirs();
-        }
+    public static void main(String[] args) throws IOException {
+        File dir = new File(SteamUtils.getSteamApps() +
+                            "/common/Team Fortress 2/tf/custom/" +
+                            SteamUtils.getUser().getUser().toLowerCase().replaceAll("[^a-z0-9]", "") +
+                            "/cfg");
+        dir.mkdirs();
         String[] classes = {
                 "scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy"
         };
         for(String clazz : classes) {
             File f = new File(dir, clazz + ".cfg");
-            if(f.exists()) {
-                continue;
-            }
+            if(f.exists()) continue;
             PrintWriter out = createWriter(f);
             out.println("// This file is executed when you play " + clazz);
             out.println("exec reset // Set " + clazz + " specific settings after this line");
@@ -50,18 +47,20 @@ class CFGSetup {
             out.println("\nexec binds\n");
             out.println();
         }
-        PrintWriter binds = createWriter(new File(dir, "binds.cfg"));
-        binds.println("// This file was generated from your config.cfg in /tf/cfg/config.cfg");
-        binds.println();
-        File config = new File(dir.getParentFile().getParentFile().getParentFile(), "cfg/config.cfg");
-        BufferedReader br = createReader(config);
-        for(String line; ( line = br.readLine() ) != null; ) {
-            if(!line.contains("bind")) {
-                break;
+        File binds = new File(dir, "binds.cfg");
+        // Always overwrite binds
+        {
+            PrintWriter out = createWriter(binds);
+            out.println("// This file was generated from your config.cfg in /tf/cfg/config.cfg");
+            out.println();
+            File config = new File(dir.getParentFile().getParentFile().getParentFile(), "cfg/config.cfg");
+            BufferedReader br = createReader(config);
+            for(String line; ( line = br.readLine() ) != null; ) {
+                if(!line.contains("bind")) break;
+                out.println(line);
             }
-            binds.println(line);
+            out.println();
         }
-        binds.println();
         JOptionPane.showMessageDialog(null, "CFG files created");
         Desktop.getDesktop().open(dir);
     }

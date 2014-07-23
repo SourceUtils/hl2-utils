@@ -1,6 +1,6 @@
-package com.timepath.ui.swing;
+package com.timepath.swing;
 
-import com.timepath.utils.Trie;
+import com.timepath.util.Trie;
 
 import javax.swing.text.JTextComponent;
 import java.util.Collections;

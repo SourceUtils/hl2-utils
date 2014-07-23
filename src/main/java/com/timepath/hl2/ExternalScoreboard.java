@@ -1,6 +1,6 @@
-package com.timepath.hl2.gameinfo;
+package com.timepath.hl2;
 
-import com.timepath.hl2.ExternalConsole;
+import com.timepath.hl2.gameinfo.Player;
 
 import java.io.IOException;
 import java.util.Collection;

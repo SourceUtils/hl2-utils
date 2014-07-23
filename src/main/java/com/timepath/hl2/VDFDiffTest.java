@@ -19,9 +19,9 @@ import java.util.logging.Logger;
 class VDFDiffTest extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(VDFDiffTest.class.getName());
-    private JTextArea text1, text2;
+    protected JTextArea text1, text2;
 
-    private VDFDiffTest() {
+    protected VDFDiffTest() {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
         add(new JSplitPane() {{
@@ -56,8 +56,10 @@ class VDFDiffTest extends JFrame {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
                     try {
-                        VDFNode n1 = VDF.load(new ByteArrayInputStream(text1.getText().getBytes(StandardCharsets.UTF_8)));
-                        VDFNode n2 = VDF.load(new ByteArrayInputStream(text2.getText().getBytes(StandardCharsets.UTF_8)));
+                        VDFNode n1 = VDF.load(new ByteArrayInputStream(text1.getText()
+                                                                            .getBytes(StandardCharsets.UTF_8)));
+                        VDFNode n2 = VDF.load(new ByteArrayInputStream(text2.getText()
+                                                                            .getBytes(StandardCharsets.UTF_8)));
                         n1.getNodes().get(0).rdiff2(n2.getNodes().get(0));
                     } catch(IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
@@ -69,12 +71,10 @@ class VDFDiffTest extends JFrame {
         setLocationRelativeTo(null);
     }
 
-    public static void main(String... args) {
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void run() {
-                new VDFDiffTest().setVisible(true);
-            }
+            public void run() { new VDFDiffTest().setVisible(true); }
         });
     }
 }

@@ -1,4 +1,4 @@
-package com.timepath.hl2.cvars;
+package com.timepath.hl2.cvar;
 
 import java.util.Arrays;
 import java.util.Map;
@@ -9,16 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * http://gskinner.com/RegExr/
- *
  * @author TimePath
  */
-class CVarList {
+public class CVarList {
 
     private static final Logger LOG = Logger.getLogger(CVarList.class.getName());
 
-    private CVarList() {
-    }
+    private CVarList() { }
 
     public static Map<String, CVar> analyzeList(Scanner scanner, Map<String, CVar> map) {
         CVar c = null;

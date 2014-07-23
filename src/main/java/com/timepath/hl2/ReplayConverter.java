@@ -14,11 +14,11 @@ import java.util.ListIterator;
 
 /**
  * .block conversion:
- * (for f in *.block; do bzcat $f; done) > join.dem
+ * bzcat *.block > joined.dem
  *
  * @author TimePath
  */
-public class ReplayConverter {
+class ReplayConverter {
 
     public static void main(String[] args) throws Exception {
         if(args.length < 2) {
@@ -27,11 +27,11 @@ public class ReplayConverter {
         }
         String input = args[0];
         String output = args[1];
-        patch(input, output);
+        patch(new File(input), new File(output));
     }
 
-    public static void patch(String input, String output) throws Exception {
-        HL2DEM demo = HL2DEM.load(new File(input), false);
+    public static void patch(File input, File output) throws Exception {
+        HL2DEM demo = HL2DEM.load(input, false);
         List<Message> messages = demo.getFrames();
         Message last = messages.get(messages.size() - 1);
         if(last.type != MessageType.Stop) { // Insert artificial stop

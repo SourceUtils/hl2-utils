@@ -47,18 +47,18 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-class MDLTest extends SimpleApplication {
+public class MDLTest extends SimpleApplication {
 
     private static final Logger          LOG         = Logger.getLogger(MDLTest.class.getName());
     private static final Logger          LOG_JME     = Logger.getLogger("com.jme3");
-    private final        ExecutorService executor    = new ScheduledThreadPoolExecutor(4);
-    private              String          FRAME_TITLE = "HLMV";
-    private JFrame frame;
-    private Node modelNode = new Node("Model node");
+    protected final      ExecutorService executor    = new ScheduledThreadPoolExecutor(4);
+    protected            String          FRAME_TITLE = "HLMV";
+    protected JFrame frame;
+    protected Node modelNode = new Node("Model node");
 
-    MDLTest() {}
+    protected MDLTest() { }
 
-    public static void main(String... args) {
+    public static void main(String[] args) {
         LOG_JME.setLevel(Level.WARNING);
         SimpleApplication app = new MDLTest();
         app.setPauseOnLostFocus(false);
@@ -86,7 +86,7 @@ class MDLTest extends SimpleApplication {
         loadMap("tf/maps/ctf_2fort.bsp");
     }
 
-    void attachCoordinateAxes(Vector3f pos, float length, int width) {
+    protected void attachCoordinateAxes(Vector3f pos, float length, int width) {
         Arrow arrow = new Arrow(Vector3f.UNIT_X.mult(length));
         arrow.setLineWidth(width);
         putShape(arrow, ColorRGBA.Red).setLocalTranslation(pos);
@@ -98,7 +98,7 @@ class MDLTest extends SimpleApplication {
         putShape(arrow, ColorRGBA.Blue).setLocalTranslation(pos);
     }
 
-    Geometry putShape(Mesh shape, ColorRGBA color) {
+    protected Geometry putShape(Mesh shape, ColorRGBA color) {
         Geometry g = new Geometry("coordinate axis", shape);
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
@@ -108,7 +108,7 @@ class MDLTest extends SimpleApplication {
         return g;
     }
 
-    void attachGrid(Vector3f pos, int size, ColorRGBA color) {
+    protected void attachGrid(Vector3f pos, int size, ColorRGBA color) {
         Geometry g = new Geometry("wireframe grid", new Grid(size, size, 1));
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
@@ -118,7 +118,7 @@ class MDLTest extends SimpleApplication {
         rootNode.attachChild(g);
     }
 
-    void initInput() {
+    protected void initInput() {
         flyCam.setDragToRotate(true);
         flyCam.setEnabled(false);
         ChaseCamera chaseCam = new ChaseCamera(cam, rootNode, inputManager);
@@ -137,7 +137,7 @@ class MDLTest extends SimpleApplication {
         chaseCam.setZoomSensitivity(250);
     }
 
-    void loadMap(final String name) {
+    protected void loadMap(final String name) {
         final Application application = this;
         executor.submit(new Callable<Void>() {
             @Override
@@ -159,7 +159,7 @@ class MDLTest extends SimpleApplication {
         });
     }
 
-    void registerLoaders() {
+    protected void registerLoaders() {
         assetManager.registerLocator("/", ACFLocator.class);
         assetManager.registerLocator("/", FileLocator.class);
         assetManager.registerLoader(BSPLoader.class, "bsp");
@@ -221,7 +221,7 @@ class MDLTest extends SimpleApplication {
         executor.shutdown();
     }
 
-    void loadModel(final String name) {
+    protected void loadModel(final String name) {
         Geometry box = createBox(10);
         modelNode.detachAllChildren();
         modelNode.attachChild(box);
@@ -251,7 +251,7 @@ class MDLTest extends SimpleApplication {
         });
     }
 
-    Geometry createBox(float s) {
+    protected Geometry createBox(float s) {
         Geometry box = new Geometry("Box", new Box(0.5f * s, 0.5f * s, 0.5f * s));
         Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.randomColor());
@@ -263,8 +263,8 @@ class MDLTest extends SimpleApplication {
 
     public static class ACFLocator implements AssetLocator {
 
-        private final ACF a;
-        private final int appID = 440;
+        private final SimpleVFile source;
+        private final int appID = 440; // TODO: Make configurable
         private String rootPath;
 
         public ACFLocator() {
@@ -274,23 +274,22 @@ class MDLTest extends SimpleApplication {
             } catch(IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            a = loading;
+            source = loading;
         }
 
         @Override
-        public void setRootPath(String path) {
-            rootPath = path;
-        }
+        public void setRootPath(String path) { rootPath = path; }
 
         @SuppressWarnings("rawtypes")
         @Override
         public AssetInfo locate(AssetManager manager, AssetKey key) {
-            if(a == null) {
-                throw new AssetLoadException(MessageFormat.format("Steam game {0} not installed, run steam://install/{0}",
-                                                                  appID));
+            if(source == null) {
+                throw new AssetLoadException(MessageFormat.format(
+                        "Steam game {0} not installed, run steam://install/{0}",
+                        appID));
             }
             String search = rootPath + VFile.SEPARATOR + key.getName();
-            SimpleVFile found = a.query(search);
+            SimpleVFile found = source.query(search);
             if(found == null) {
                 throw new AssetNotFoundException(MessageFormat.format("{0} not found", search));
             }
@@ -308,9 +307,7 @@ class MDLTest extends SimpleApplication {
             }
 
             @Override
-            public InputStream openStream() {
-                return source.openStream();
-            }
+            public InputStream openStream() { return source.openStream(); }
         }
     }
 
@@ -318,7 +315,7 @@ class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(BSPLoader.class.getName());
 
-        public BSPLoader() {}
+        public BSPLoader() { }
 
         @Override
         public Object load(AssetInfo info) throws IOException {
@@ -356,7 +353,7 @@ class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(MDLLoader.class.getName());
 
-        public MDLLoader() {}
+        public MDLLoader() { }
 
         @SuppressWarnings("rawtypes")
         @Override
@@ -411,7 +408,7 @@ class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(VTFLoader.class.getName());
 
-        public VTFLoader() {}
+        public VTFLoader() { }
 
         @Override
         public Object load(AssetInfo info) throws IOException {

@@ -9,6 +9,9 @@ import com.timepath.hl2.io.demo.Packet;
 import com.timepath.plaf.x.filechooser.BaseFileChooser;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.SteamUtils;
+import org.jdesktop.swingx.JXFrame;
+import org.jdesktop.swingx.JXTable;
+import org.jdesktop.swingx.JXTree;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -30,36 +33,41 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * @author TimePath
+ */
 @SuppressWarnings("serial")
-class DEMTest extends JPanel {
+public class DEMTest extends JPanel {
 
     private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
     public final JMenuBar     menu;
     protected    HexEditor    hex;
     protected    JTabbedPane  tabs;
-    protected    JTable       table;
-    protected    JTree        tree;
+    protected    JXTable      table;
+    protected    JXTree       tree;
     protected    MessageModel tableModel;
 
     protected DEMTest() {
         setLayout(new BorderLayout());
         add(new JSplitPane() {{
-            setResizeWeight(1.0);
+            setResizeWeight(1);
             setContinuousLayout(true);
             setOneTouchExpandable(true);
-            setLeftComponent(new JScrollPane(table = new JTable() {{
+            setLeftComponent(new JScrollPane(table = new JXTable() {{
                 setAutoCreateRowSorter(true);
+                setColumnControlVisible(true);
+                setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED);
                 setModel(tableModel = new MessageModel());
                 setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             }}));
             setRightComponent(new JSplitPane() {{
                 setOrientation(JSplitPane.VERTICAL_SPLIT);
-                setResizeWeight(1.0);
+                setResizeWeight(1);
                 setContinuousLayout(true);
                 setOneTouchExpandable(true);
                 setTopComponent(tabs = new JTabbedPane() {{
                     setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-                    addTab("Hierarchy", new JScrollPane(tree = new JTree() {{
+                    addTab("Hierarchy", new JScrollPane(tree = new JXTree() {{
                         setModel(new DefaultTreeModel(new DefaultMutableTreeNode("root")));
                         setRootVisible(false);
                         setShowsRootHandles(true);
@@ -118,11 +126,9 @@ class DEMTest extends JPanel {
                 container.add(root);
                 TreeModel tm = new DefaultTreeModel(container);
                 tree.setModel(tm);
-                // Expand all
-                int i = -1;
-                while(++i < tree.getRowCount()) {
-                    DefaultMutableTreeNode t = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
-                    if(t.getLevel() < 3) tree.expandRow(i);
+                for(int i = -1; ++i < tree.getRowCount(); ) { // Expand all
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
+                    if(node.getLevel() < 3) tree.expandRow(i);
                 }
             }
         });
@@ -151,25 +157,13 @@ class DEMTest extends JPanel {
                 add(new JMenuItem("Open") {{
                     addActionListener(new ActionListener() {
                         @Override
-                        public void actionPerformed(ActionEvent e) {
-                            openActionPerformed(e);
-                        }
-                    });
-                }});
-                add(new JMenuItem("Properties") {{
-                    addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            propertiesActionPerformed(e);
-                        }
+                        public void actionPerformed(ActionEvent e) { open(); }
                     });
                 }});
                 add(new JMenuItem("Dump commands") {{
                     addActionListener(new ActionListener() {
                         @Override
-                        public void actionPerformed(ActionEvent e) {
-                            commandsActionPerformed(e);
-                        }
+                        public void actionPerformed(ActionEvent e) { showCommands(); }
                     });
                 }});
             }});
@@ -180,7 +174,7 @@ class DEMTest extends JPanel {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JFrame f = new JFrame("netdecode");
+                JXFrame f = new JXFrame("netdecode");
                 f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                 DEMTest demTest = new DEMTest();
                 f.add(demTest);
@@ -192,7 +186,7 @@ class DEMTest extends JPanel {
         });
     }
 
-    private void recurse(Iterable<?> i, DefaultMutableTreeNode root) {
+    protected void recurse(Iterable<?> i, DefaultMutableTreeNode root) {
         for(Object entry : i) {
             if(entry instanceof Pair) {
                 Pair p = (Pair) entry;
@@ -206,7 +200,7 @@ class DEMTest extends JPanel {
         }
     }
 
-    private void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
+    protected void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
         if(v instanceof Iterable) {
             DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
             root.add(n);
@@ -216,9 +210,7 @@ class DEMTest extends JPanel {
         }
     }
 
-    private void propertiesActionPerformed(ActionEvent e) { }
-
-    private void openActionPerformed(ActionEvent e) {
+    protected void open() {
         try {
             File[] fs = new NativeFileChooser().setTitle("Open DEM")
                                                .setDirectory(new File(SteamUtils.getSteamApps(),
@@ -242,7 +234,7 @@ class DEMTest extends JPanel {
                             for(Object o : (Iterable) ents.getValue()) {
                                 if(!( o instanceof Pair )) break;
                                 Pair pair = (Pair) o;
-                                switch(((Packet) ents.getKey()).type) {
+                                switch(( (Packet) ents.getKey() ).type) {
                                     case svc_GameEvent:
                                         listEvt.addElement(pair);
                                         break;
@@ -268,11 +260,11 @@ class DEMTest extends JPanel {
         }
     }
 
-    private void commandsActionPerformed(ActionEvent e) {
+    protected void showCommands() {
         StringBuilder sb = new StringBuilder();
-        for(Message f : tableModel.messages) {
-            if(f.type != MessageType.ConsoleCmd) continue;
-            for(Pair p : f.meta) {
+        for(Message m : tableModel.messages) {
+            if(m.type != MessageType.ConsoleCmd) continue;
+            for(Pair p : m.meta) {
                 sb.append('\n').append(p.getValue());
             }
         }
@@ -281,15 +273,15 @@ class DEMTest extends JPanel {
         JOptionPane.showMessageDialog(this, jsp);
     }
 
-    private class MessageModel implements TableModel {
+    protected class MessageModel implements TableModel {
 
-        ArrayList<Message> messages = new ArrayList<>();
+        protected ArrayList<Message> messages = new ArrayList<>();
 
         @Override
         public int getRowCount() { return messages.size(); }
 
-        String[] columns = { "Tick", "Type", "Size" };
-        Class[]  types   = { Integer.class, Object.class, Integer.class };
+        protected String[] columns = { "Tick", "Type", "Size" };
+        protected Class[]  types   = { Integer.class, Enum.class, Integer.class };
 
         @Override
         public int getColumnCount() { return columns.length; }
@@ -305,17 +297,16 @@ class DEMTest extends JPanel {
 
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
-            Message f = messages.get(rowIndex);
+            Message m = messages.get(rowIndex);
             switch(columnIndex) {
                 case 0:
-                    return f.tick;
+                    return m.tick;
                 case 1:
-                    return f.type;
+                    return m.type;
                 case 2:
-                    return ( f.data == null ) ? null : f.data.capacity();
-                default:
-                    return null;
+                    return ( m.data == null ) ? null : m.data.capacity();
             }
+            return null;
         }
 
         @Override

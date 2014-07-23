@@ -8,14 +8,14 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-class Player {
+public class Player {
 
     private static final Logger       LOG     = Logger.getLogger(Player.class.getName());
     private final        List<Player> allies  = new LinkedList<>();
     private final        List<Player> enemies = new LinkedList<>();
     private String name;
 
-    Player(String name) {
+    public Player(String name) {
         this.name = name;
     }
 
@@ -32,7 +32,7 @@ class Player {
      * @param k
      *         Killer
      */
-    static void exchangeInfo(Player v, Player k) {
+    public static void exchangeInfo(Player v, Player k) {
         Iterable<Player> vAllies = new LinkedList<>(v.allies);
         Iterable<Player> vEnemies = new LinkedList<>(v.enemies);
         Collection<Player> kAllies = new LinkedList<>(k.allies);

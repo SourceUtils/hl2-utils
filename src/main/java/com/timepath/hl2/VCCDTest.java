@@ -6,7 +6,7 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.VDF;
 import com.timepath.steam.io.VDFNode;
 import com.timepath.steam.io.storage.ACF;
-import com.timepath.utils.Trie;
+import com.timepath.util.Trie;
 import com.timepath.vfs.SimpleVFile;
 import org.apache.commons.io.IOUtils;
 
@@ -91,18 +91,12 @@ class VCCDTest extends JFrame {
         });
     }
 
-    /**
-     * @param args
-     *         the command line arguments
-     *
-     * @throws java.io.IOException
-     */
-    public static void main(String... args) throws IOException {
+    public static void main(String[] args) throws IOException {
         try {
             if(args.length > 0) {
                 List<VCCD.VCCDEntry> in = VCCD.parse(new FileInputStream(args[0]));
                 Map<Integer, StringPair> hashmap = new HashMap<>();
-                for(VCCD.VCCDEntry i : in) { // learning
+                for(VCCD.VCCDEntry i : in) { // Learning
                     Object crc = i.getHash();
                     String token = i.getKey();
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);

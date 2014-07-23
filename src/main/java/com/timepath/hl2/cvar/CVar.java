@@ -1,4 +1,4 @@
-package com.timepath.hl2.cvars;
+package com.timepath.hl2.cvar;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 /**
  * @author TimePath
  */
-class CVar {
+public class CVar {
 
     private static final Logger             LOG  = Logger.getLogger(CVar.class.getName());
     private final        Collection<String> tags = new LinkedList<>();
@@ -16,12 +16,10 @@ class CVar {
     private Object maximum;
     private Object minimum;
     private String name;
-    /**
-     * null if cmd
-     */
+    /** null if cmd */
     private Object value;
 
-    CVar() {}
+    CVar() { }
 
     public Object getDefaultValue() {
         return defaultValue;

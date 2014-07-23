@@ -1,4 +1,4 @@
-package com.timepath.utils;
+package com.timepath.util;
 
 import java.util.*;
 import java.util.logging.Level;

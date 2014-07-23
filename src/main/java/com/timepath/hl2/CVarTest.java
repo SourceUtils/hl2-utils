@@ -1,6 +1,7 @@
-package com.timepath.hl2.cvars;
+package com.timepath.hl2;
 
-import com.timepath.hl2.ExternalConsole;
+import com.timepath.hl2.cvar.CVar;
+import com.timepath.hl2.cvar.CVarList;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.swing.StatusBar;
 

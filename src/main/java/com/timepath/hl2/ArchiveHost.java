@@ -1,4 +1,4 @@
-package com.timepath.steam.io;
+package com.timepath.hl2;
 
 import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.image.VTF;
@@ -30,9 +30,9 @@ class ArchiveHost {
 
     private static final Logger LOG = Logger.getLogger(ArchiveHost.class.getName());
 
-    private ArchiveHost() {}
+    private ArchiveHost() { }
 
-    public static void main(String... args) {
+    public static void main(String[] args) {
         try {
             Class.forName(BSP.class.getName());
             Files.registerMissingFileHandler(new MissingFileHandler() {
@@ -114,8 +114,7 @@ class ArchiveHost {
                                               "when you close all running instances",
                                               "Files hosted",
                                               JOptionPane.INFORMATION_MESSAGE,
-                                              null
-                                             );
+                                              null);
             }
         });
     }
