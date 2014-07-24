@@ -82,7 +82,7 @@ public class MDLTest extends SimpleApplication {
         attachGrid(Vector3f.ZERO, 100, ColorRGBA.LightGray);
         attachCoordinateAxes(Vector3f.ZERO, 10, 4);
         rootNode.attachChild(modelNode);
-        //        loadModel("tf/models/player/heavy.mdl");
+        loadModel("tf/models/player/heavy.mdl");
         loadMap("tf/maps/ctf_2fort.bsp");
     }
 
@@ -148,6 +148,7 @@ public class MDLTest extends SimpleApplication {
                         @Override
                         public Void call() {
                             modelNode.attachChild(mdl);
+                            frame.setTitle(FRAME_TITLE + " - " + mdl.getUserData("source"));
                             return null;
                         }
                     }).get();
@@ -178,6 +179,14 @@ public class MDLTest extends SimpleApplication {
         frame.setJMenuBar(mb);
         JMenu fileMenu = new JMenu("File");
         mb.add(fileMenu);
+        JMenuItem clearItem = new JMenuItem("Detach all");
+        clearItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent ae) {
+                app.modelNode.detachAllChildren();
+            }
+        });
+        fileMenu.add(clearItem);
         JMenuItem openName = new JMenuItem("Open from game");
         openName.addActionListener(new ActionListener() {
             @Override
@@ -222,8 +231,7 @@ public class MDLTest extends SimpleApplication {
     }
 
     protected void loadModel(final String name) {
-        Geometry box = createBox(10);
-        modelNode.detachAllChildren();
+        final Geometry box = createBox(10);
         modelNode.attachChild(box);
         final Application application = this;
         executor.submit(new Callable<Void>() {
@@ -234,9 +242,9 @@ public class MDLTest extends SimpleApplication {
                     return application.enqueue(new Callable<Void>() {
                         @Override
                         public Void call() {
-                            modelNode.detachAllChildren();
+                            modelNode.detachChild(box);
                             modelNode.attachChild(mdl);
-                            frame.setTitle(FRAME_TITLE + " - tf/models/" + mdl.getUserData("source"));
+                            frame.setTitle(FRAME_TITLE + " - " + mdl.getUserData("source"));
                             return null;
                         }
                     }).get();
@@ -344,6 +352,7 @@ public class MDLTest extends SimpleApplication {
             skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
             skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
             geom.setMaterial(skin);
+            geom.setUserData("source", info.getKey().getName());
             LOG.log(Level.INFO, "{0} loaded", name);
             return geom;
         }
@@ -399,7 +408,7 @@ public class MDLTest extends SimpleApplication {
                 skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
             }
             geom.setMaterial(skin);
-            geom.setUserData("source", m.mdl.header.name);
+            geom.setUserData("source", name);
             return geom;
         }
     }
