@@ -81,28 +81,30 @@ public class DEMTest extends JPanel {
         table.addHighlighter(new AbstractHighlighter() {
             @Override
             protected Component doHighlight(final Component component, final ComponentAdapter adapter) {
-                Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(adapter.row));
-                Color c;
-                if(f.incomplete) {
-                    c = Color.ORANGE;
-                } else {
-                    switch(f.type) {
-                        case Signon:
-                        case Packet:
-                            c = Color.CYAN;
-                            break;
-                        case UserCmd:
-                            c = Color.GREEN;
-                            break;
-                        case ConsoleCmd:
-                            c = Color.PINK;
-                            break;
-                        default:
-                            c = Color.WHITE;
-                            break;
+                if(adapter.row >= 0 && tableModel.messages.size() > 0 && adapter.row < tableModel.messages.size()) {
+                    Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(adapter.row));
+                    Color c;
+                    if(f.incomplete) {
+                        c = Color.ORANGE;
+                    } else {
+                        switch(f.type) {
+                            case Signon:
+                            case Packet:
+                                c = Color.CYAN;
+                                break;
+                            case UserCmd:
+                                c = Color.GREEN;
+                                break;
+                            case ConsoleCmd:
+                                c = Color.PINK;
+                                break;
+                            default:
+                                c = Color.WHITE;
+                                break;
+                        }
                     }
+                    component.setBackground(adapter.isSelected() ? component.getBackground() : c);
                 }
-                component.setBackground(adapter.isSelected() ? component.getBackground() : c);
                 return component;
             }
         });
