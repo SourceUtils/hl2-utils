@@ -33,7 +33,7 @@ class GameLauncher {
     private static final Options DEFAULT = new Options() {{
         File base = new File(SteamUtils.getSteamApps(), "common/Team Fortress 2");
         String executable = null;
-        switch(OS.get()) {
+        switch (OS.get()) {
             case Windows:
                 executable = "hl2.exe";
                 break;
@@ -45,19 +45,20 @@ class GameLauncher {
                 break;
         }
         script = new File(base, executable);
-        args = new String[] { "-game", "tf", "-steam" };
+        args = new String[]{"-game", "tf", "-steam"};
     }};
-    private static final Logger  LOG     = Logger.getLogger(GameLauncher.class.getName());
+    private static final Logger LOG = Logger.getLogger(GameLauncher.class.getName());
 
-    private GameLauncher() { }
+    private GameLauncher() {
+    }
 
     public static void main(String[] args) throws IOException {
         LOG.info(Arrays.toString(args));
         String[] command = args;
-        if(args.length == 0 && ( command = choose() ) == null) return; // Interactive
+        if (args.length == 0 && (command = choose()) == null) return; // Interactive
         // Args are tokenized correctly at this point, set up env vars
         Map<String, String> env = new HashMap<>(System.getenv());
-        if(!env.containsKey("TERM")) env.put("TERM", "xterm"); // Default TERM variable
+        if (!env.containsKey("TERM")) env.put("TERM", "xterm"); // Default TERM variable
         String dir = null; // TODO
         // Run
         start(command, env, dir, 12345);
@@ -67,7 +68,6 @@ class GameLauncher {
      * Prompt user for execution command.
      *
      * @return tokenized args
-     *
      * @throws IOException
      */
     private static String[] choose() throws IOException {
@@ -84,43 +84,40 @@ class GameLauncher {
         executableField.setMinimumSize(new Dimension(300, executableField.getMinimumSize().height));
         executableField.setPreferredSize(executableField.getMinimumSize());
         p.add(executableField);
-        String[] opts = { "Launch", "Auto", "Cancel" };
+        String[] opts = {"Launch", "Auto", "Cancel"};
         int ret = JOptionPane.showOptionDialog(frame,
-                                               p,
-                                               "Game Launcher",
-                                               JOptionPane.DEFAULT_OPTION,
-                                               JOptionPane.PLAIN_MESSAGE,
-                                               null,
-                                               opts,
-                                               opts[0]);
+                p,
+                "Game Launcher",
+                JOptionPane.DEFAULT_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                opts,
+                opts[0]);
         frame.dispose();
-        if(ret == 2 || ret < 0) return null; // Cancel
-        if(ret == 1) return autoDetect(game).full(); // Auto
+        if (ret == 2 || ret < 0) return null; // Cancel
+        if (ret == 1) return autoDetect(game).full(); // Auto
         // Launch
         String line = executableField.getText();
-        if(line == null || line.isEmpty()) return null;
+        if (line == null || line.isEmpty()) return null;
         return tokenize(line, DEFAULT.full());
     }
 
     /**
      * Split command, replace %command% with args.
      *
-     * @param command
-     *         command string
-     * @param args
-     *         %command% replacement
-     *
+     * @param command command string
+     * @param args    %command% replacement
      * @return
      */
     private static String[] tokenize(String command, String... args) {
-        LOG.log(Level.INFO, "Tokenize: {0}, {1}", new Object[] { command, Arrays.toString(args) });
+        LOG.log(Level.INFO, "Tokenize: {0}, {1}", new Object[]{command, Arrays.toString(args)});
         StringTokenizer st = new StringTokenizer(command);
         String[] cmdarray = new String[st.countTokens()];
-        for(int i = 0; st.hasMoreTokens(); i++) cmdarray[i] = st.nextToken();
-        String[] newcmd = new String[( cmdarray.length + args.length ) - 1];
-        for(int i = 0, j = -1; i < cmdarray.length; i++) {
-            if("%command%".equals(cmdarray[i])) {
-                for(String arg : args) newcmd[i + ++j] = arg;
+        for (int i = 0; st.hasMoreTokens(); i++) cmdarray[i] = st.nextToken();
+        String[] newcmd = new String[(cmdarray.length + args.length) - 1];
+        for (int i = 0, j = -1; i < cmdarray.length; i++) {
+            if ("%command%".equals(cmdarray[i])) {
+                for (String arg : args) newcmd[i + ++j] = arg;
             } else {
                 newcmd[i + j] = cmdarray[i];
             }
@@ -140,15 +137,15 @@ class GameLauncher {
         BVDF.DataNode l = conf.get("launch");
         Map<String, File> launch = new HashMap<>(l.getChildCount());
         String[] gameArgs = null;
-        for(int i = 0; i < l.getChildCount(); i++) {
+        for (int i = 0; i < l.getChildCount(); i++) {
             BVDF.DataNode c = (BVDF.DataNode) l.getChildAt(i);
-            gameArgs = ( (String) c.get("arguments").value ).split(" ");
+            gameArgs = ((String) c.get("arguments").value).split(" ");
             String os = (String) c.get("config").get("oslist").value; // FIXME: Hopefully only one OS will be present
             String exe = (String) c.get("executable").value;
             launch.put(os, new File(dir.getPath(), exe));
         }
         String get;
-        switch(get()) {
+        switch (get()) {
             case Windows:
                 get = "windows";
                 break;
@@ -165,21 +162,19 @@ class GameLauncher {
     }
 
     /**
-     * @param appID
-     *         steam application ID
-     *
+     * @param appID steam application ID
      * @return user launch options prepended with %command% if not present
      */
     private static String getUserOpts(int appID) {
         try {
             File f = new File(SteamUtils.getUserData(), "config/localconfig.vdf");
             VDFNode game = VDF.load(f).get("UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID);
-            if(game == null) return null;
+            if (game == null) return null;
             String str = (String) game.getValue("LaunchOptions");
-            if(str == null) return null;
-            if(!str.contains("%command%")) str = "%command% " + str;
+            if (str == null) return null;
+            if (!str.contains("%command%")) str = "%command% " + str;
             return str;
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.log(Level.SEVERE, null, e);
         }
         return null;
@@ -188,19 +183,14 @@ class GameLauncher {
     /**
      * Starts the process.
      *
-     * @param cmd
-     *         command to exec
-     * @param env
-     *         env vars
-     * @param dir
-     *         working directory to run game from
-     * @param port
-     *         port to listen on
-     *
+     * @param cmd  command to exec
+     * @param env  env vars
+     * @param dir  working directory to run game from
+     * @param port port to listen on
      * @throws IOException
      */
     private static void start(String[] cmd, Map<String, String> env, String dir, int port) throws IOException {
-        LOG.log(Level.INFO, "Starting {0}", new Object[] { Arrays.toString(cmd) });
+        LOG.log(Level.INFO, "Starting {0}", new Object[]{Arrays.toString(cmd)});
         LOG.log(Level.INFO, "Env: {0}", env);
         LOG.log(Level.INFO, "Dir: {0}", dir);
         final Process proc = PtyProcess.exec(cmd, env, dir, false);
@@ -217,17 +207,17 @@ class GameLauncher {
              */
             @Override
             public void write(byte[] b, int off, int len) throws IOException {
-                synchronized(queue) {
+                synchronized (queue) {
                     String[] test = new String(Arrays.copyOfRange(b, off, off + len)).split("\n");
-                    for(String t : test) {
+                    for (String t : test) {
                         boolean intern;
-                        if(queue.contains(t)) {
+                        if (queue.contains(t)) {
                             queue.remove(t);
                             intern = true;
                         } else {
                             intern = false;
                         }
-                        byte[] bytes = ( ( intern ? "\1" : "" ) + t + '\n' ).getBytes("UTF-8");
+                        byte[] bytes = ((intern ? "\1" : "") + t + '\n').getBytes("UTF-8");
                         super.write(bytes, 0, bytes.length);
                     }
                 }
@@ -245,14 +235,14 @@ class GameLauncher {
         Thread acceptor = new Thread("Acceptor") {
             @Override
             public void run() {
-                while(true) {
+                while (true) {
                     try {
                         Socket client = sock.accept();
                         aggregate.register(client.getOutputStream());
                         Proxy pipe = new Proxy(client.getInputStream(), proc.getOutputStream(), "client <--> game") {
                             @Override
                             protected boolean print(String line) {
-                                synchronized(queue) {
+                                synchronized (queue) {
                                     queue.add(line);
                                 }
                                 return super.print(line);
@@ -261,9 +251,9 @@ class GameLauncher {
                         Thread t = new Thread(pipe);
                         t.setDaemon(true);
                         t.start();
-                    } catch(SocketTimeoutException ignored) {
-                    } catch(IOException e) {
-                        if(sock.isClosed()) {
+                    } catch (SocketTimeoutException ignored) {
+                    } catch (IOException e) {
+                        if (sock.isClosed()) {
                             return;
                         }
                         LOG.log(Level.SEVERE, null, e);
@@ -278,13 +268,13 @@ class GameLauncher {
             public void run() {
                 try {
                     main.join();
-                } catch(InterruptedException e) {
+                } catch (InterruptedException e) {
                     LOG.log(Level.SEVERE, null, e);
                 }
                 LOG.info("Reaping");
                 try {
                     sock.close();
-                } catch(IOException e) {
+                } catch (IOException e) {
                     LOG.log(Level.SEVERE, null, e);
                 }
             }
@@ -294,7 +284,7 @@ class GameLauncher {
     private static class Options {
 
         protected String[] args;
-        protected File     script;
+        protected File script;
 
         protected Options() {
         }
@@ -314,9 +304,9 @@ class GameLauncher {
 
     private static class Proxy implements Runnable {
 
-        private final String      name;
+        private final String name;
         private final PrintWriter pw;
-        private final Scanner     scan;
+        private final Scanner scan;
 
         /**
          * Pipes in to out.
@@ -334,14 +324,12 @@ class GameLauncher {
         @Override
         @SuppressWarnings("empty-statement")
         public void run() {
-            while(scan.hasNextLine() && print(scan.nextLine())) ;
+            while (scan.hasNextLine() && print(scan.nextLine())) ;
             LOG.log(Level.INFO, "Stopped proxying {0}", name);
         }
 
         /**
-         * @param line
-         *         the line to print
-         *
+         * @param line the line to print
          * @return false if error
          */
         boolean print(String line) {

@@ -13,8 +13,8 @@ import java.util.logging.Logger;
 @SuppressWarnings("serial")
 public class ExternalScoreboard extends ExternalConsole {
 
-    private static final Logger             LOG     = Logger.getLogger(ExternalScoreboard.class.getName());
-    private final        Collection<Player> players = new LinkedList<>();
+    private static final Logger LOG = Logger.getLogger(ExternalScoreboard.class.getName());
+    private final Collection<Player> players = new LinkedList<>();
 
     private ExternalScoreboard() {
         setTitle("External killfeed");
@@ -30,8 +30,8 @@ public class ExternalScoreboard extends ExternalConsole {
     protected void parse(String lines) {
         getOutput().setText("");
         String[] strings = lines.split("\n");
-        for(String s : strings) {
-            if(s.contains(" killed ")) {
+        for (String s : strings) {
+            if (s.contains(" killed ")) {
                 notify(s);
             }
             //            if(s.endsWith(" suicided.")) {
@@ -49,16 +49,16 @@ public class ExternalScoreboard extends ExternalConsole {
             //            }
         }
         getOutput().append("\nPlayers:\n");
-        for(Player player : players) {
+        for (Player player : players) {
             getOutput().append(player + "\n");
         }
         Player me = getPlayer("TimePath");
         getOutput().append("\nAllies:\n");
-        for(int i = 0; i < me.getAllies().size(); i++) {
+        for (int i = 0; i < me.getAllies().size(); i++) {
             getOutput().append(me.getAllies().get(i) + "\n");
         }
         getOutput().append("\nEnemies:\n");
-        for(int i = 0; i < me.getEnemies().size(); i++) {
+        for (int i = 0; i < me.getEnemies().size(); i++) {
             getOutput().append(me.getEnemies().get(i) + "\n");
         }
         getOutput().append("\n");
@@ -71,7 +71,7 @@ public class ExternalScoreboard extends ExternalConsole {
         Player.exchangeInfo(victim, killer);
         boolean crit = weapon.endsWith("(crit)");
         weapon = weapon.substring(0, weapon.indexOf('.'));
-        if(crit) {
+        if (crit) {
             weapon = '*' + weapon + '*';
         }
         StringBuilder sb = new StringBuilder();
@@ -80,8 +80,8 @@ public class ExternalScoreboard extends ExternalConsole {
     }
 
     private Player getPlayer(String name) {
-        for(Player p : players) {
-            if(p.getName().equals(name)) {
+        for (Player p : players) {
+            if (p.getName().equals(name)) {
                 return p;
             }
         }

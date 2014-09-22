@@ -49,14 +49,15 @@ import java.util.logging.Logger;
 
 public class MDLTest extends SimpleApplication {
 
-    private static final Logger          LOG         = Logger.getLogger(MDLTest.class.getName());
-    private static final Logger          LOG_JME     = Logger.getLogger("com.jme3");
-    protected final      ExecutorService executor    = new ScheduledThreadPoolExecutor(4);
-    protected            String          FRAME_TITLE = "HLMV";
+    private static final Logger LOG = Logger.getLogger(MDLTest.class.getName());
+    private static final Logger LOG_JME = Logger.getLogger("com.jme3");
+    protected final ExecutorService executor = new ScheduledThreadPoolExecutor(4);
+    protected String FRAME_TITLE = "HLMV";
     protected JFrame frame;
     protected Node modelNode = new Node("Model node");
 
-    protected MDLTest() { }
+    protected MDLTest() {
+    }
 
     public static void main(String[] args) {
         LOG_JME.setLevel(Level.WARNING);
@@ -129,7 +130,7 @@ public class MDLTest extends SimpleApplication {
         chaseCam.setMinVerticalRotation(-FastMath.HALF_PI + FastMath.ZERO_TOLERANCE);
         chaseCam.setDefaultVerticalRotation(FastMath.HALF_PI / 2);
         chaseCam.setMaxVerticalRotation(FastMath.HALF_PI);
-        chaseCam.setDefaultHorizontalRotation(FastMath.HALF_PI - ( FastMath.HALF_PI / 2 ));
+        chaseCam.setDefaultHorizontalRotation(FastMath.HALF_PI - (FastMath.HALF_PI / 2));
         chaseCam.setDefaultDistance(100);
         chaseCam.setMaxDistance(300);
         chaseCam.setMaxDistance(30000);
@@ -152,7 +153,7 @@ public class MDLTest extends SimpleApplication {
                             return null;
                         }
                     }).get();
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
                 return null;
@@ -172,7 +173,7 @@ public class MDLTest extends SimpleApplication {
     public void startCanvas(boolean waitFor) {
         super.startCanvas(waitFor);
         final MDLTest app = this;
-        Canvas canvas = ( (JmeCanvasContext) context ).getCanvas();
+        Canvas canvas = ((JmeCanvasContext) context).getCanvas();
         canvas.setSize(settings.getWidth(), settings.getHeight());
         frame = new JFrame(FRAME_TITLE);
         JMenuBar mb = new JMenuBar();
@@ -201,11 +202,11 @@ public class MDLTest extends SimpleApplication {
             public void actionPerformed(ActionEvent ae) {
                 try {
                     File[] f = new NativeFileChooser().setParent(frame).setTitle("Select model").choose();
-                    if(f == null) {
+                    if (f == null) {
                         return;
                     }
                     app.loadModel(f[0].getPath());
-                } catch(IOException ex) {
+                } catch (IOException ex) {
                     Logger.getLogger(MDLTest.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -248,9 +249,9 @@ public class MDLTest extends SimpleApplication {
                             return null;
                         }
                     }).get();
-                } catch(InterruptedException ex) {
+                } catch (InterruptedException ex) {
                     LOG.log(Level.SEVERE, null, ex);
-                } catch(Exception ex) {
+                } catch (Exception ex) {
                     LOG.log(Level.SEVERE, null, ex);
                     JOptionPane.showMessageDialog(frame, "Nope", "Nope", JOptionPane.ERROR_MESSAGE);
                 }
@@ -279,26 +280,28 @@ public class MDLTest extends SimpleApplication {
             ACF loading = null;
             try {
                 loading = ACF.fromManifest(appID);
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             source = loading;
         }
 
         @Override
-        public void setRootPath(String path) { rootPath = path; }
+        public void setRootPath(String path) {
+            rootPath = path;
+        }
 
         @SuppressWarnings("rawtypes")
         @Override
         public AssetInfo locate(AssetManager manager, AssetKey key) {
-            if(source == null) {
+            if (source == null) {
                 throw new AssetLoadException(MessageFormat.format(
                         "Steam game {0} not installed, run steam://install/{0}",
                         appID));
             }
             String search = rootPath + VFile.SEPARATOR + key.getName();
             SimpleVFile found = source.query(search);
-            if(found == null) {
+            if (found == null) {
                 throw new AssetNotFoundException(MessageFormat.format("{0} not found", search));
             }
             return new SourceModelAssetInfo(manager, key, found);
@@ -315,7 +318,9 @@ public class MDLTest extends SimpleApplication {
             }
 
             @Override
-            public InputStream openStream() { return source.openStream(); }
+            public InputStream openStream() {
+                return source.openStream();
+            }
         }
     }
 
@@ -323,7 +328,8 @@ public class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(BSPLoader.class.getName());
 
-        public BSPLoader() { }
+        public BSPLoader() {
+        }
 
         @Override
         public Object load(AssetInfo info) throws IOException {
@@ -336,11 +342,11 @@ public class MDLTest extends SimpleApplication {
             mesh.setMode(Mesh.Mode.Lines);
             mesh.setPointSize(2);
             FloatBuffer posBuf = m.getVertices();
-            if(posBuf != null) {
+            if (posBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
             }
             IntBuffer idxBuf = m.getIndices();
-            if(idxBuf != null) {
+            if (idxBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Index, 2, idxBuf);
             }
             mesh.setStatic();
@@ -362,7 +368,8 @@ public class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(MDLLoader.class.getName());
 
-        public MDLLoader() { }
+        public MDLLoader() {
+        }
 
         @SuppressWarnings("rawtypes")
         @Override
@@ -377,23 +384,23 @@ public class MDLTest extends SimpleApplication {
             StudioModel m = new StudioModel(mdlStream, vvdStream, vtxStream);
             Mesh mesh = new Mesh();
             FloatBuffer posBuf = m.getVertices();
-            if(posBuf != null) {
+            if (posBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
             }
             FloatBuffer normBuf = m.getNormals();
-            if(normBuf != null) {
+            if (normBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Normal, 3, normBuf);
             }
             FloatBuffer texBuf = m.getTextureCoordinates();
-            if(texBuf != null) {
+            if (texBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.TexCoord, 2, texBuf);
             }
             FloatBuffer tanBuf = m.getTangents();
-            if(tanBuf != null) {
+            if (tanBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Tangent, 4, tanBuf);
             }
             IntBuffer idxBuf = m.getIndices();
-            if(idxBuf != null) {
+            if (idxBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Index, 3, idxBuf);
             }
             mesh.setStatic();
@@ -404,7 +411,7 @@ public class MDLTest extends SimpleApplication {
             skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
             try {
                 skin.setTexture("ColorMap", am.loadTexture(name + ".vtf"));
-            } catch(AssetNotFoundException anfe) {
+            } catch (AssetNotFoundException anfe) {
                 skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
             }
             geom.setMaterial(skin);
@@ -417,7 +424,8 @@ public class MDLTest extends SimpleApplication {
 
         private static final Logger LOG = Logger.getLogger(VTFLoader.class.getName());
 
-        public VTFLoader() { }
+        public VTFLoader() {
+        }
 
         @Override
         public Object load(AssetInfo info) throws IOException {
@@ -426,13 +434,13 @@ public class MDLTest extends SimpleApplication {
             VTF v = VTF.load(info.openStream());
             BufferedImage bimg = (BufferedImage) v.getImage(0);
             ByteBuffer buf = BufferUtils.createByteBuffer(bimg.getWidth() * bimg.getHeight() * 4);
-            for(int y = bimg.getHeight() - 1; y >= 0; y--) {
-                for(int x = 0; x < bimg.getWidth(); x++) {
+            for (int y = bimg.getHeight() - 1; y >= 0; y--) {
+                for (int x = 0; x < bimg.getWidth(); x++) {
                     int pixel = bimg.getRGB(x, y);
-                    buf.put((byte) ( ( pixel >> 16 ) & 0xFF )); // Red
-                    buf.put((byte) ( ( pixel >> 8 ) & 0xFF )); // Green
-                    buf.put((byte) ( pixel & 0xFF )); // Blue
-                    buf.put((byte) ( ( pixel >> 24 ) & 0xFF )); // Alpha
+                    buf.put((byte) ((pixel >> 16) & 0xFF)); // Red
+                    buf.put((byte) ((pixel >> 8) & 0xFF)); // Green
+                    buf.put((byte) (pixel & 0xFF)); // Blue
+                    buf.put((byte) ((pixel >> 24) & 0xFF)); // Alpha
                 }
             }
             buf.flip();

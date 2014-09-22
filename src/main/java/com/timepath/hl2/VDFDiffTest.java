@@ -57,11 +57,11 @@ class VDFDiffTest extends JFrame {
                 public void actionPerformed(final ActionEvent e) {
                     try {
                         VDFNode n1 = VDF.load(new ByteArrayInputStream(text1.getText()
-                                                                            .getBytes(StandardCharsets.UTF_8)));
+                                .getBytes(StandardCharsets.UTF_8)));
                         VDFNode n2 = VDF.load(new ByteArrayInputStream(text2.getText()
-                                                                            .getBytes(StandardCharsets.UTF_8)));
+                                .getBytes(StandardCharsets.UTF_8)));
                         n1.getNodes().get(0).rdiff2(n2.getNodes().get(0));
-                    } catch(IOException ex) {
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -74,7 +74,9 @@ class VDFDiffTest extends JFrame {
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
-            public void run() { new VDFDiffTest().setVisible(true); }
+            public void run() {
+                new VDFDiffTest().setVisible(true);
+            }
         });
     }
 }

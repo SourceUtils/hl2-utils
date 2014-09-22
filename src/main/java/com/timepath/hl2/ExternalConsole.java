@@ -27,13 +27,13 @@ import java.util.regex.Pattern;
 @SuppressWarnings("serial")
 public class ExternalConsole extends JFrame {
 
-    private static final Logger  LOG   = Logger.getLogger(ExternalConsole.class.getName());
+    private static final Logger LOG = Logger.getLogger(ExternalConsole.class.getName());
     private static final Pattern regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*");
     private final JTextField input;
-    private final JTextArea  output;
+    private final JTextArea output;
     private ScriptEngine engine = initScriptEngine();
     private PrintWriter pw;
-    private Socket      sock;
+    private Socket sock;
 
     protected ExternalConsole() {
         output = new JTextArea();
@@ -49,7 +49,7 @@ public class ExternalConsole extends JFrame {
         input.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(pw == null) {
+                if (pw == null) {
                     return;
                 }
                 getOutput().append("] ");
@@ -76,10 +76,10 @@ public class ExternalConsole extends JFrame {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                if(sock != null) {
+                if (sock != null) {
                     try {
                         sock.close();
-                    } catch(IOException ex) {
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -91,6 +91,54 @@ public class ExternalConsole extends JFrame {
         pack();
     }
 
+    public static String exec(String cmd, CharSequence breakline) {
+        StringBuilder sb = new StringBuilder();
+        try {
+            Socket sock = new Socket(InetAddress.getByName(null), 12345);
+            PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            pw.println(cmd);
+            if (breakline != null) {
+                in.readLine(); // first line is echoed
+                String line;
+                while ((line = in.readLine()) != null) {
+                    sb.append(line).append('\n');
+                    if (line.contains(breakline)) {
+                        break;
+                    }
+                }
+            }
+            sock.close();
+        } catch (IOException ex) {
+            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return sb.toString();
+    }
+
+    public static void main(String... args) throws Exception {
+        ExternalConsole ec = new ExternalConsole();
+        ec.connect(12345);
+        ec.setVisible(true);
+    }
+
+    public static void setErr(final InputStream s) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
+                    String line;
+                    while ((line = in.readLine()) != null) {
+                        System.err.println(line);
+                    }
+                    System.err.println("Stopped reading stderr");
+                } catch (IOException ex) {
+                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        }).start();
+    }
+
     private ScriptEngine initScriptEngine() {
         ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine scriptEngine = factory.getEngineByName("JavaScript");
@@ -99,7 +147,7 @@ public class ExternalConsole extends JFrame {
         scriptEngine.getContext().setWriter(pw);
         try {
             scriptEngine.eval(new FileReader("extern.js"));
-        } catch(ScriptException | FileNotFoundException ex) {
+        } catch (ScriptException | FileNotFoundException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
         return scriptEngine;
@@ -110,36 +158,6 @@ public class ExternalConsole extends JFrame {
      */
     protected JTextArea getOutput() {
         return output;
-    }
-
-    public static String exec(String cmd, CharSequence breakline) {
-        StringBuilder sb = new StringBuilder();
-        try {
-            Socket sock = new Socket(InetAddress.getByName(null), 12345);
-            PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-            pw.println(cmd);
-            if(breakline != null) {
-                in.readLine(); // first line is echoed
-                String line;
-                while(( line = in.readLine() ) != null) {
-                    sb.append(line).append('\n');
-                    if(line.contains(breakline)) {
-                        break;
-                    }
-                }
-            }
-            sock.close();
-        } catch(IOException ex) {
-            Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return sb.toString();
-    }
-
-    public static void main(String... args) throws Exception {
-        ExternalConsole ec = new ExternalConsole();
-        ec.connect(12345);
-        ec.setVisible(true);
     }
 
     protected void connect(int port) throws IOException {
@@ -156,11 +174,11 @@ public class ExternalConsole extends JFrame {
                 try {
                     BufferedReader in = new BufferedReader(new InputStreamReader(s));
                     String line;
-                    while(( line = in.readLine() ) != null) {
+                    while ((line = in.readLine()) != null) {
                         update(line);
                     }
                     System.err.println("Stopped reading stdout");
-                } catch(IOException ex) {
+                } catch (IOException ex) {
                     Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -177,13 +195,13 @@ public class ExternalConsole extends JFrame {
     }
 
     protected void parse(String in) {
-        if(!in.startsWith(">>>")) {
+        if (!in.startsWith(">>>")) {
             return;
         }
         String str = in.substring(3);
         System.out.println("Matching " + str);
         Matcher m = regex.matcher(str);
-        if(!m.matches()) {
+        if (!m.matches()) {
             System.out.println("Doesn't match");
             return;
         }
@@ -194,7 +212,7 @@ public class ExternalConsole extends JFrame {
         Invocable inv = (Invocable) engine;
         try {
             inv.invokeFunction(fn, args);
-        } catch(ScriptException | NoSuchMethodException ex) {
+        } catch (ScriptException | NoSuchMethodException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println(System.currentTimeMillis());
@@ -204,24 +222,6 @@ public class ExternalConsole extends JFrame {
         input.setEnabled(s != null);
         pw = new PrintWriter(s, true);
         engine.getContext().setWriter(pw);
-    }
-
-    public static void setErr(final InputStream s) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
-                    String line;
-                    while(( line = in.readLine() ) != null) {
-                        System.err.println(line);
-                    }
-                    System.err.println("Stopped reading stderr");
-                } catch(IOException ex) {
-                    Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-        }).start();
     }
 
     /**

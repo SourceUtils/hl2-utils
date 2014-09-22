@@ -10,9 +10,9 @@ import java.util.logging.Logger;
  */
 public class Player {
 
-    private static final Logger       LOG     = Logger.getLogger(Player.class.getName());
-    private final        List<Player> allies  = new LinkedList<>();
-    private final        List<Player> enemies = new LinkedList<>();
+    private static final Logger LOG = Logger.getLogger(Player.class.getName());
+    private final List<Player> allies = new LinkedList<>();
+    private final List<Player> enemies = new LinkedList<>();
     private String name;
 
     public Player(String name) {
@@ -27,33 +27,31 @@ public class Player {
      * Makes your enemy's allies your enemies.
      * Informs all your allies of your new enemy.
      *
-     * @param v
-     *         Victim
-     * @param k
-     *         Killer
+     * @param v Victim
+     * @param k Killer
      */
     public static void exchangeInfo(Player v, Player k) {
         Iterable<Player> vAllies = new LinkedList<>(v.allies);
         Iterable<Player> vEnemies = new LinkedList<>(v.enemies);
         Collection<Player> kAllies = new LinkedList<>(k.allies);
         Collection<Player> kEnemies = new LinkedList<>(k.enemies);
-        if(k.allies.contains(v) || v.allies.contains(k)) { // Traitor
-            for(Player kAlly : k.allies) {
+        if (k.allies.contains(v) || v.allies.contains(k)) { // Traitor
+            for (Player kAlly : k.allies) {
                 kAlly.allies.remove(k);
                 kAlly.enemies.remove(k);
                 kAlly.enemies.add(k);
             }
-            for(Player vAlly : v.allies) {
+            for (Player vAlly : v.allies) {
                 vAlly.allies.remove(k);
                 vAlly.enemies.remove(k);
                 vAlly.enemies.add(k);
             }
-            for(Player kEnemy : k.enemies) {
+            for (Player kEnemy : k.enemies) {
                 kEnemy.enemies.remove(k);
                 kEnemy.allies.remove(k);
                 kEnemy.allies.add(k);
             }
-            for(Player vEnemy : v.enemies) {
+            for (Player vEnemy : v.enemies) {
                 vEnemy.enemies.remove(k);
                 vEnemy.allies.remove(k);
                 vEnemy.allies.add(k);
@@ -75,57 +73,57 @@ public class Player {
     }
 
     void addAllies(Iterable<Player> list) {
-        for(Player ally : list) {
+        for (Player ally : list) {
             addAllyR(ally);
-            for(Player enemy : enemies) {
+            for (Player enemy : enemies) {
                 enemy.addEnemyR(ally);
             }
         }
     }
 
     void addAlly(Player other) {
-        if(other == this) {
+        if (other == this) {
             return;
         }
-        if(!allies.contains(other)) {
+        if (!allies.contains(other)) {
             allies.add(other);
         }
-        if(!other.hasAlly(this)) {
+        if (!other.hasAlly(this)) {
             other.allies.add(this);
         }
     }
 
     void addAllyR(Player other) {
         addAlly(other);
-        for(Player ally : allies) {
+        for (Player ally : allies) {
             ally.addAlly(other);
         }
     }
 
     void addEnemies(Iterable<Player> enemies) {
-        for(Player list1 : enemies) {
+        for (Player list1 : enemies) {
             addEnemyR(list1);
-            for(Player ally : allies) {
+            for (Player ally : allies) {
                 ally.addEnemyR(list1);
             }
         }
     }
 
     void addEnemy(Player other) {
-        if(other == this) {
+        if (other == this) {
             return;
         }
-        if(!enemies.contains(other)) {
+        if (!enemies.contains(other)) {
             enemies.add(other);
         }
-        if(!other.hasEnemy(this)) {
+        if (!other.hasEnemy(this)) {
             other.enemies.add(this);
         }
     }
 
     void addEnemyR(Player other) {
         addEnemy(other);
-        for(Player ally : allies) {
+        for (Player ally : allies) {
             ally.addEnemy(other);
         }
     }
@@ -136,17 +134,17 @@ public class Player {
         sb.append(name);
         sb.append(" (e:{");
         List<Player> myEnemies = enemies;
-        for(int i = 0; i < enemies.size(); i++) {
+        for (int i = 0; i < enemies.size(); i++) {
             sb.append(myEnemies.get(i).name);
-            if(( i + 1 ) < enemies.size()) {
+            if ((i + 1) < enemies.size()) {
                 sb.append(", ");
             }
         }
         sb.append("}, a:{");
         List<Player> myAllies = allies;
-        for(int i = 0; i < allies.size(); i++) {
+        for (int i = 0; i < allies.size(); i++) {
             sb.append(myAllies.get(i).name);
-            if(( i + 1 ) < allies.size()) {
+            if ((i + 1) < allies.size()) {
                 sb.append(", ");
             }
         }
@@ -176,8 +174,7 @@ public class Player {
     }
 
     /**
-     * @param name
-     *         the name to set
+     * @param name the name to set
      */
     public void setName(String name) {
         this.name = name;

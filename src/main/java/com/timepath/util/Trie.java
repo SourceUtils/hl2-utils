@@ -9,11 +9,12 @@ import java.util.logging.Logger;
  */
 public class Trie {
 
-    private static final Logger                    LOG   = Logger.getLogger(Trie.class.getName());
-    public final         TrieMapping               root  = new TrieMapping();
-    private final        Map<String, List<String>> cache = new HashMap<>();
+    private static final Logger LOG = Logger.getLogger(Trie.class.getName());
+    public final TrieMapping root = new TrieMapping();
+    private final Map<String, List<String>> cache = new HashMap<>();
 
-    public Trie() {}
+    public Trie() {
+    }
 
     public static void main(String... args) {
         Trie t = new Trie();
@@ -27,9 +28,9 @@ public class Trie {
 
     public void add(String s) {
         TrieMapping n = root;
-        for(int i = 0; i < s.length(); i++) {
+        for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
-            if(n.containsKey(c)) {
+            if (n.containsKey(c)) {
                 n = n.get(c);
             } else {
                 n.put(c, new TrieMapping());
@@ -42,7 +43,6 @@ public class Trie {
     /**
      * @param s
      * @param depth
-     *
      * @return A list of strings, or null
      */
     List<String> get(String s, int depth) {
@@ -51,49 +51,49 @@ public class Trie {
 
     public List<String> get(String s, int depth, TrieMapping n) {
         String path = s + n;
-        LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", new Object[] {
+        LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", new Object[]{
                 s, depth, n
         });
-        if(cache.containsKey(path)) {
+        if (cache.containsKey(path)) {
             LOG.info("Fom cache");
             return cache.get(path);
         }
         List<String> results = new LinkedList<>();
         int i = 0;
         Character c = null;
-        for(i = 0; i < s.length(); i++) {
+        for (i = 0; i < s.length(); i++) {
             c = s.charAt(i);
-            if(!n.containsKey(c)) { // Return null if a letter is not present in the tree
+            if (!n.containsKey(c)) { // Return null if a letter is not present in the tree
                 return null;
             }
             n = n.get(c);
         }
-        LOG.log(Level.INFO, "Stopped at {0}, keys: {1}", new Object[] { s.substring(0, i), n.keySet() });
+        LOG.log(Level.INFO, "Stopped at {0}, keys: {1}", new Object[]{s.substring(0, i), n.keySet()});
         depth += 1;
         Collection<TrieMapping> all = new LinkedList<>();
         all.add(n);
         Collection<TrieMapping> local = new LinkedList<>();
         local.addAll(n.values());
         LOG.log(Level.INFO, "  all {0}", all);
-        for(int j = 1; j < depth; j++) {
+        for (int j = 1; j < depth; j++) {
             LOG.log(Level.INFO, "Depth {0}", j);
             LOG.log(Level.INFO, "  local {0}", local);
             List<TrieMapping> local2 = new LinkedList<>();
-            for(TrieMapping tm : local) {
-                if(tm == null) { // char mismatch
+            for (TrieMapping tm : local) {
+                if (tm == null) { // char mismatch
                     continue;
                 }
                 Set<Character> chars = tm.keySet();
-                LOG.log(Level.INFO, "    examining {0}, {1}", new Object[] { tm, chars });
-                for(Character ch : chars) {
-                    if(ch == null) { // exact match
+                LOG.log(Level.INFO, "    examining {0}, {1}", new Object[]{tm, chars});
+                for (Character ch : chars) {
+                    if (ch == null) { // exact match
                         results.add(tm.toString());
                     } else {
                         LOG.log(Level.INFO, "      {0}", ch);
                         TrieMapping tm2 = tm.get(ch);
                         LOG.log(Level.INFO, "        {0}", tm2);
                         local2.add(tm2);
-                        if(j == ( depth - 1 )) {
+                        if (j == (depth - 1)) {
                             results.add(tm + "...");
                         }
                     }
@@ -108,9 +108,9 @@ public class Trie {
 
     public boolean contains(String s) {
         TrieMapping n = root;
-        for(int i = 0; i < s.length(); i++) {
+        for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
-            if(n.containsKey(c)) {
+            if (n.containsKey(c)) {
                 n = n.get(c);
             } else {
                 return false;
@@ -121,9 +121,9 @@ public class Trie {
 
     public TrieMapping node(String s) {
         TrieMapping n = root;
-        for(int i = 0; i < s.length(); i++) {
+        for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
-            if(!n.containsKey(c)) { // Return null if a letter is not present in the tree
+            if (!n.containsKey(c)) { // Return null if a letter is not present in the tree
                 return null;
             }
             n = n.get(c);
@@ -133,20 +133,22 @@ public class Trie {
 
     private static class Mapping<A, B> extends HashMap<A, B> {
 
-        private Mapping() {}
+        private Mapping() {
+        }
     }
 
     @SuppressWarnings("serial")
     public static class TrieMapping extends Mapping<Character, TrieMapping> {
 
-        Character   key;
+        Character key;
         TrieMapping parent;
 
-        public TrieMapping() {}
+        public TrieMapping() {
+        }
 
         @Override
         public TrieMapping put(Character key, TrieMapping value) {
-            if(value != null) {
+            if (value != null) {
                 value.parent = this;
                 value.key = key;
             }
@@ -155,7 +157,7 @@ public class Trie {
 
         @Override
         public String toString() {
-            return ( parent != null ) ? ( parent.toString() + key ) : "";
+            return (parent != null) ? (parent.toString() + key) : "";
         }
     }
 }

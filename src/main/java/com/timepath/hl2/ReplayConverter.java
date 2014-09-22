@@ -21,7 +21,7 @@ import java.util.ListIterator;
 class ReplayConverter {
 
     public static void main(String[] args) throws Exception {
-        if(args.length < 2) {
+        if (args.length < 2) {
             System.err.println("Usage: java ... input.dem output.dem");
             System.exit(1);
         }
@@ -34,7 +34,7 @@ class ReplayConverter {
         HL2DEM demo = HL2DEM.load(input, false);
         List<Message> messages = demo.getFrames();
         Message last = messages.get(messages.size() - 1);
-        if(last.type != MessageType.Stop) { // Insert artificial stop
+        if (last.type != MessageType.Stop) { // Insert artificial stop
             Message stop = new Message(demo, MessageType.Stop, last.tick);
             messages.add(stop);
         }
@@ -42,11 +42,11 @@ class ReplayConverter {
         boolean flag = false; // Injected
         int ticks = last.tick; // Highest tick
         int frames = 0; // Number of MessageType.Packet messages
-        for(ListIterator<Message> iterator = messages.listIterator(); iterator.hasNext(); ) {
+        for (ListIterator<Message> iterator = messages.listIterator(); iterator.hasNext(); ) {
             Message message = iterator.next();
-            if(message.type == MessageType.Packet) {
+            if (message.type == MessageType.Packet) {
                 frames++;
-            } else if(message.type == MessageType.Synctick && !flag) {
+            } else if (message.type == MessageType.Synctick && !flag) {
                 Message injection = new Message(demo, MessageType.ConsoleCmd, message.tick);
                 injection.setData("tv_transmitall 1".getBytes());
                 iterator.add(injection);
@@ -56,11 +56,11 @@ class ReplayConverter {
         DemoHeader header = demo.getHeader();
         header.ticks = ticks;
         header.frames = frames;
-        header.playbackTime = ticks / ( 66f + ( 2f / 3f ) );
+        header.playbackTime = ticks / (66f + (2f / 3f));
         OrderedOutputStream out = new OrderedOutputStream(new FileOutputStream(output));
         out.order(ByteOrder.LITTLE_ENDIAN);
         out.writeStruct(header);
-        for(Message message : demo.getFrames()) {
+        for (Message message : demo.getFrames()) {
             message.write(out);
         }
     }

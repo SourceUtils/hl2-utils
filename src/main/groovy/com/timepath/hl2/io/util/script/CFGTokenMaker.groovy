@@ -118,8 +118,8 @@ class CFGTokenMaker extends AbstractTokenMaker {
     @Override
     public void addToken(Segment segment, int start, int end, int tokenType, int startOffset) {
         switch (tokenType) {
-            // Since reserved words, functions, and data types are all passed into here
-            // as "identifiers," we have to see what the token really is...
+        // Since reserved words, functions, and data types are all passed into here
+        // as "identifiers," we have to see what the token really is...
             case TokenTypes.IDENTIFIER:
                 int value = this.@wordsToHighlight.get(segment, start, end);
                 if (value != -1) tokenType = value;

@@ -31,18 +31,18 @@ import java.util.logging.Logger;
 class VBFTest extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(VBFTest.class.getName());
-    private VBFCanvas        canvas;
-    private VBF.BitmapGlyph  currentGlyph;
-    private VBF              data;
-    private JSpinner         heightSpinner;
-    private VTF              image;
-    private JPopupMenu       jPopupMenu1;
+    private VBFCanvas canvas;
+    private VBF.BitmapGlyph currentGlyph;
+    private VBF data;
+    private JSpinner heightSpinner;
+    private VTF image;
+    private JPopupMenu jPopupMenu1;
     private ReorderableJTree jTree1;
     private ReorderableJTree jTree2;
-    private char             toCopy;
-    private JSpinner         widthSpinner;
-    private JSpinner         xSpinner;
-    private JSpinner         ySpinner;
+    private char toCopy;
+    private JSpinner widthSpinner;
+    private JSpinner xSpinner;
+    private JSpinner ySpinner;
 
     /**
      * Creates new form VBFTest
@@ -53,7 +53,7 @@ class VBFTest extends JFrame {
             @Override
             public void windowClosing(WindowEvent e) {
                 int choice = JOptionPane.showInternalConfirmDialog(getContentPane(), "Do you want to save?");
-                if(choice == JOptionPane.NO_OPTION) {
+                if (choice == JOptionPane.NO_OPTION) {
                     dispose();
                 }
             }
@@ -62,19 +62,19 @@ class VBFTest extends JFrame {
             @Override
             public void mousePressed(MouseEvent e) {
                 JTree which = jTree1;
-                if(jTree2.getSelectionRows() != null) {
+                if (jTree2.getSelectionRows() != null) {
                     which = jTree2;
                 }
                 jTree1.setSelectionRow(-1);
                 jTree2.setSelectionRow(-1);
                 VBF.BitmapGlyph seek = canvas.getSelected();
-                if(seek == null) {
+                if (seek == null) {
                     return;
                 }
-                for(int i = 0; i < which.getModel().getChildCount(which.getModel().getRoot()); i++) {
+                for (int i = 0; i < which.getModel().getChildCount(which.getModel().getRoot()); i++) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) which.getModel()
-                                                                                .getChild(which.getModel().getRoot(), i);
-                    if(node.getUserObject() == seek) {
+                            .getChild(which.getModel().getRoot(), i);
+                    if (node.getUserObject() == seek) {
                         which.setSelectionRow(node.getParent().getIndex(node) + 1);
                         break;
                     }
@@ -83,7 +83,7 @@ class VBFTest extends JFrame {
 
             @Override
             public void mouseReleased(MouseEvent e) {
-                if(currentGlyph == null) {
+                if (currentGlyph == null) {
                     return;
                 }
                 Rectangle r = currentGlyph.getBounds();
@@ -112,17 +112,16 @@ class VBFTest extends JFrame {
                                                           boolean expanded,
                                                           boolean leaf,
                                                           int row,
-                                                          boolean hasFocus)
-            {
+                                                          boolean hasFocus) {
                 return super.getTreeCellRendererComponent(tree,
-                                                          value,
-                                                          sel,
-                                                          expanded,
-                                                          ( ( (TreeNode) value ).getParent() != null ) &&
-                                                          !( (TreeNode) value ).getParent().equals(tree.getModel().getRoot()),
-                                                          row,
-                                                          hasFocus
-                                                         );
+                        value,
+                        sel,
+                        expanded,
+                        (((TreeNode) value).getParent() != null) &&
+                                !((TreeNode) value).getParent().equals(tree.getModel().getRoot()),
+                        row,
+                        hasFocus
+                );
             }
 
             public TreeCellRenderer init() {
@@ -138,21 +137,21 @@ class VBFTest extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(( data == null ) || ( currentGlyph == null )) {
+                if ((data == null) || (currentGlyph == null)) {
                     xSpinner.setValue(0);
                     return;
                 }
-                int current = ( (Number) xSpinner.getValue() ).intValue();
+                int current = ((Number) xSpinner.getValue()).intValue();
                 currentGlyph.getBounds().x = current;
                 doRepaint(Math.min(old, current),
-                          ( (Number) ySpinner.getValue() ).intValue(),
-                          Math.max(old, current) + ( (Number) widthSpinner.getValue() ).intValue(),
-                          ( (Number) heightSpinner.getValue() ).intValue());
+                        ((Number) ySpinner.getValue()).intValue(),
+                        Math.max(old, current) + ((Number) widthSpinner.getValue()).intValue(),
+                        ((Number) heightSpinner.getValue()).intValue());
                 old = current;
-                int wide = ( image != null ) ? image.getWidth() : data.getWidth();
-                if(spinners) {
-                    ( (SpinnerNumberModel) widthSpinner.getModel() ).setMaximum(
-                            wide - ( (Number) xSpinner.getValue() ).intValue());
+                int wide = (image != null) ? image.getWidth() : data.getWidth();
+                if (spinners) {
+                    ((SpinnerNumberModel) widthSpinner.getModel()).setMaximum(
+                            wide - ((Number) xSpinner.getValue()).intValue());
                 }
             }
         });
@@ -161,21 +160,21 @@ class VBFTest extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(( data == null ) || ( currentGlyph == null )) {
+                if ((data == null) || (currentGlyph == null)) {
                     widthSpinner.setValue(0);
                     return;
                 }
-                int current = ( (Number) widthSpinner.getValue() ).intValue();
+                int current = ((Number) widthSpinner.getValue()).intValue();
                 currentGlyph.getBounds().width = current;
-                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
-                          ( (Number) ySpinner.getValue() ).intValue(),
-                          Math.max(old, current),
-                          ( (Number) heightSpinner.getValue() ).intValue());
+                doRepaint(((Number) xSpinner.getValue()).intValue(),
+                        ((Number) ySpinner.getValue()).intValue(),
+                        Math.max(old, current),
+                        ((Number) heightSpinner.getValue()).intValue());
                 old = current;
-                int wide = ( image != null ) ? image.getWidth() : data.getWidth();
-                if(spinners) {
-                    ( (SpinnerNumberModel) xSpinner.getModel() ).setMaximum(
-                            wide - ( (Number) widthSpinner.getValue() ).intValue());
+                int wide = (image != null) ? image.getWidth() : data.getWidth();
+                if (spinners) {
+                    ((SpinnerNumberModel) xSpinner.getModel()).setMaximum(
+                            wide - ((Number) widthSpinner.getValue()).intValue());
                 }
             }
         });
@@ -184,21 +183,21 @@ class VBFTest extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(( data == null ) || ( currentGlyph == null )) {
+                if ((data == null) || (currentGlyph == null)) {
                     ySpinner.setValue(0);
                     return;
                 }
-                int current = ( (Number) ySpinner.getValue() ).intValue();
+                int current = ((Number) ySpinner.getValue()).intValue();
                 currentGlyph.getBounds().y = current;
-                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
-                          Math.min(old, current),
-                          ( (Number) widthSpinner.getValue() ).intValue(),
-                          Math.max(old, current) + ( (Number) heightSpinner.getValue() ).intValue());
+                doRepaint(((Number) xSpinner.getValue()).intValue(),
+                        Math.min(old, current),
+                        ((Number) widthSpinner.getValue()).intValue(),
+                        Math.max(old, current) + ((Number) heightSpinner.getValue()).intValue());
                 old = current;
-                int high = ( image != null ) ? image.getHeight() : data.getHeight();
-                if(spinners) {
-                    ( (SpinnerNumberModel) heightSpinner.getModel() ).setMaximum(
-                            high - ( (Number) ySpinner.getValue() ).intValue());
+                int high = (image != null) ? image.getHeight() : data.getHeight();
+                if (spinners) {
+                    ((SpinnerNumberModel) heightSpinner.getModel()).setMaximum(
+                            high - ((Number) ySpinner.getValue()).intValue());
                 }
             }
         });
@@ -207,21 +206,21 @@ class VBFTest extends JFrame {
 
             @Override
             public void stateChanged(ChangeEvent e) {
-                if(( data == null ) || ( currentGlyph == null )) {
+                if ((data == null) || (currentGlyph == null)) {
                     heightSpinner.setValue(0);
                     return;
                 }
-                int current = ( (Number) heightSpinner.getValue() ).intValue();
+                int current = ((Number) heightSpinner.getValue()).intValue();
                 currentGlyph.getBounds().height = current;
-                doRepaint(( (Number) xSpinner.getValue() ).intValue(),
-                          ( (Number) ySpinner.getValue() ).intValue(),
-                          ( (Number) widthSpinner.getValue() ).intValue(),
-                          Math.max(old, current));
+                doRepaint(((Number) xSpinner.getValue()).intValue(),
+                        ((Number) ySpinner.getValue()).intValue(),
+                        ((Number) widthSpinner.getValue()).intValue(),
+                        Math.max(old, current));
                 old = current;
-                int high = ( image != null ) ? image.getHeight() : data.getHeight();
-                if(spinners) {
-                    ( (SpinnerNumberModel) ySpinner.getModel() ).setMaximum(
-                            high - ( (Number) heightSpinner.getValue() ).intValue());
+                int high = (image != null) ? image.getHeight() : data.getHeight();
+                if (spinners) {
+                    ((SpinnerNumberModel) ySpinner.getModel()).setMaximum(
+                            high - ((Number) heightSpinner.getValue()).intValue());
                 }
             }
         });
@@ -238,17 +237,17 @@ class VBFTest extends JFrame {
 
     private void createGlyph(ActionEvent evt) {
         VBF.BitmapGlyph g = new VBF.BitmapGlyph();
-        if(data == null) {
+        if (data == null) {
             data = new VBF();
             canvas.setVBF(data);
         }
-        for(int i = 0; i < 256; i++) {
-            if(!data.hasGlyph(i)) {
+        for (int i = 0; i < 256; i++) {
+            if (!data.hasGlyph(i)) {
                 g.setIndex((byte) i);
                 break;
             }
-            if(i == data.getGlyphs().size()) {
-                g.setIndex((byte) ( i + 1 ));
+            if (i == data.getGlyphs().size()) {
+                g.setIndex((byte) (i + 1));
             }
         }
         data.getGlyphs().add(g);
@@ -348,61 +347,61 @@ class VBFTest extends JFrame {
         GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                      .addComponent(jPanel5,
-                                                                    GroupLayout.Alignment.TRAILING,
-                                                                    GroupLayout.DEFAULT_SIZE,
-                                                                    GroupLayout.DEFAULT_SIZE,
-                                                                    Short.MAX_VALUE)
-                                                      .addComponent(jPanel3,
-                                                                    GroupLayout.Alignment.TRAILING,
-                                                                    GroupLayout.DEFAULT_SIZE,
-                                                                    GroupLayout.DEFAULT_SIZE,
-                                                                    Short.MAX_VALUE)
-                                        );
+                        .addComponent(jPanel5,
+                                GroupLayout.Alignment.TRAILING,
+                                GroupLayout.DEFAULT_SIZE,
+                                GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE)
+                        .addComponent(jPanel3,
+                                GroupLayout.Alignment.TRAILING,
+                                GroupLayout.DEFAULT_SIZE,
+                                GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE)
+        );
         jPanel2Layout.setVerticalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                    .addGroup(jPanel2Layout.createSequentialGroup()
-                                                                           .addComponent(jPanel3,
-                                                                                         GroupLayout.PREFERRED_SIZE,
-                                                                                         GroupLayout.DEFAULT_SIZE,
-                                                                                         GroupLayout.PREFERRED_SIZE)
-                                                                           .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                    .RELATED)
-                                                                           .addComponent(jPanel5,
-                                                                                         GroupLayout.PREFERRED_SIZE,
-                                                                                         GroupLayout.DEFAULT_SIZE,
-                                                                                         GroupLayout.PREFERRED_SIZE)
-                                                                           .addGap(0, 0, Short.MAX_VALUE))
-                                      );
+                        .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addComponent(jPanel3,
+                                        GroupLayout.PREFERRED_SIZE,
+                                        GroupLayout.DEFAULT_SIZE,
+                                        GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement
+                                        .RELATED)
+                                .addComponent(jPanel5,
+                                        GroupLayout.PREFERRED_SIZE,
+                                        GroupLayout.DEFAULT_SIZE,
+                                        GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE))
+        );
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                      .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-                                                      .addComponent(jSplitPane2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
-                                        );
+                        .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+                        .addComponent(jSplitPane2, GroupLayout.DEFAULT_SIZE, 249, Short.MAX_VALUE)
+        );
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                    .addGroup(GroupLayout.Alignment.TRAILING,
-                                                              jPanel1Layout.createSequentialGroup()
-                                                                           .addComponent(jSplitPane2,
-                                                                                         GroupLayout.DEFAULT_SIZE,
-                                                                                         301,
-                                                                                         Short.MAX_VALUE)
-                                                                           .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                    .RELATED)
-                                                                           .addComponent(jPanel2,
-                                                                                         GroupLayout.PREFERRED_SIZE,
-                                                                                         148,
-                                                                                         GroupLayout.PREFERRED_SIZE)
-                                                             )
-                                      );
+                        .addGroup(GroupLayout.Alignment.TRAILING,
+                                jPanel1Layout.createSequentialGroup()
+                                        .addComponent(jSplitPane2,
+                                                GroupLayout.DEFAULT_SIZE,
+                                                301,
+                                                Short.MAX_VALUE)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement
+                                                .RELATED)
+                                        .addComponent(jPanel2,
+                                                GroupLayout.PREFERRED_SIZE,
+                                                148,
+                                                GroupLayout.PREFERRED_SIZE)
+                        )
+        );
         jSplitPane1.setLeftComponent(jPanel1);
         GroupLayout canvasLayout = new GroupLayout(canvas);
         canvas.setLayout(canvasLayout);
         canvasLayout.setHorizontalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                    .addGap(0, 373, Short.MAX_VALUE)
-                                       );
+                        .addGap(0, 373, Short.MAX_VALUE)
+        );
         canvasLayout.setVerticalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                  .addGap(0, 449, Short.MAX_VALUE)
-                                     );
+                        .addGap(0, 449, Short.MAX_VALUE)
+        );
         jScrollPane1.setViewportView(canvas);
         jSplitPane1.setRightComponent(jScrollPane1);
         getContentPane().add(jSplitPane1, BorderLayout.CENTER);
@@ -443,9 +442,9 @@ class VBFTest extends JFrame {
     }
 
     private void insertCharacters(DefaultTreeModel model, MutableTreeNode child, int g) {
-        for(int i = 0; i < data.getTable().length; i++) {
+        for (int i = 0; i < data.getTable().length; i++) {
             int glyphIndex = data.getTable()[i];
-            if(glyphIndex != g) {
+            if (glyphIndex != g) {
                 continue;
             }
             MutableTreeNode sub = new DefaultMutableTreeNode(new DisplayableCharacter(i));
@@ -478,17 +477,17 @@ class VBFTest extends JFrame {
         VBFCanvas p = canvas;
         File vbf = new File(s + ".vbf");
         File vtf = new File(s + ".vtf");
-        if(vbf.exists()) {
+        if (vbf.exists()) {
             data = new VBF(new FileInputStream(vbf));
             p.setVBF(data);
             DefaultTreeModel model = (DefaultTreeModel) jTree1.getModel();
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
             root.removeAllChildren();
-            for(VBF.BitmapGlyph g : data.getGlyphs()) {
+            for (VBF.BitmapGlyph g : data.getGlyphs()) {
                 insertGlyph(model, g);
             }
         }
-        if(vtf.exists()) {
+        if (vtf.exists()) {
             image = VTF.load(new FileInputStream(vtf));
             p.setVTF(image);
         }
@@ -496,22 +495,22 @@ class VBFTest extends JFrame {
     }
 
     private void mouseClicked(MouseEvent evt) {
-        if(SwingUtilities.isRightMouseButton(evt)) {
+        if (SwingUtilities.isRightMouseButton(evt)) {
             JTree jTree = (JTree) evt.getComponent();
             TreePath clicked = jTree.getPathForLocation(evt.getX(), evt.getY());
-            if(clicked == null) {
+            if (clicked == null) {
                 return;
             }
-            if(( jTree.getSelectionPaths() == null ) || !Arrays.asList(jTree.getSelectionPaths()).contains(clicked)) {
+            if ((jTree.getSelectionPaths() == null) || !Arrays.asList(jTree.getSelectionPaths()).contains(clicked)) {
                 jTree.setSelectionPath(clicked);
             }
-            for(TreePath p : jTree.getSelectionPaths()) {
-                if(!( p.getLastPathComponent() instanceof DefaultMutableTreeNode )) {
+            for (TreePath p : jTree.getSelectionPaths()) {
+                if (!(p.getLastPathComponent() instanceof DefaultMutableTreeNode)) {
                     return;
                 }
-                Object userObject = ( (DefaultMutableTreeNode) p.getLastPathComponent() ).getUserObject();
-                if(userObject instanceof DisplayableCharacter) {
-                    toCopy = ( (DisplayableCharacter) userObject ).getC();
+                Object userObject = ((DefaultMutableTreeNode) p.getLastPathComponent()).getUserObject();
+                if (userObject instanceof DisplayableCharacter) {
+                    toCopy = ((DisplayableCharacter) userObject).getC();
                     jPopupMenu1.show(jTree, evt.getX(), evt.getY());
                 }
             }
@@ -521,16 +520,16 @@ class VBFTest extends JFrame {
     private void open(ActionEvent evt) {
         try {
             File[] fs = new NativeFileChooser().setParent(this)
-                                               .setTitle("Select vbf")
-                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
-                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Texture File", ".vtf"))
-                                               .choose();
-            if(fs == null) {
+                    .setTitle("Select vbf")
+                    .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
+                    .addFilter(new BaseFileChooser.ExtensionFilter("Valve Texture File", ".vtf"))
+                    .choose();
+            if (fs == null) {
                 return;
             }
             File file = fs[0];
             load(file.getPath().replace(".vbf", "").replace(".vtf", ""));
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
@@ -538,56 +537,56 @@ class VBFTest extends JFrame {
     private void save(ActionEvent evt) {
         try {
             File[] fs = new NativeFileChooser().setParent(this)
-                                               .setTitle("Select save location")
-                                               .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
-                                               .setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG)
-                                               .choose();
-            if(fs == null) {
+                    .setTitle("Select save location")
+                    .addFilter(new BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf"))
+                    .setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG)
+                    .choose();
+            if (fs == null) {
                 return;
             }
             File file = fs[0];
             TreeModel model = jTree1.getModel();
             TreeNode root = (TreeNode) model.getRoot();
-            for(int i = 0; i < root.getChildCount(); i++) {
+            for (int i = 0; i < root.getChildCount(); i++) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) root.getChildAt(i);
                 VBF.BitmapGlyph g = (VBF.BitmapGlyph) node.getUserObject();
-                for(int x = 0; x < node.getChildCount(); x++) {
+                for (int x = 0; x < node.getChildCount(); x++) {
                     DefaultMutableTreeNode character = (DefaultMutableTreeNode) node.getChildAt(x);
                     Object obj = character.getUserObject();
-                    if(obj instanceof DisplayableCharacter) {
-                        data.getTable()[( (DisplayableCharacter) obj ).getC()] = g.getIndex();
-                    } else if(obj instanceof DefaultMutableTreeNode) { // XXX: hack
-                        data.getTable()[( (DisplayableCharacter) ( (DefaultMutableTreeNode) obj ).getUserObject() ).getC()]
+                    if (obj instanceof DisplayableCharacter) {
+                        data.getTable()[((DisplayableCharacter) obj).getC()] = g.getIndex();
+                    } else if (obj instanceof DefaultMutableTreeNode) { // XXX: hack
+                        data.getTable()[((DisplayableCharacter) ((DefaultMutableTreeNode) obj).getUserObject()).getC()]
                                 = g.getIndex();
                     }
                 }
             }
             data.save(new FileOutputStream(file));
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     private void treeInteraction(TreeSelectionEvent evt) {
         TreePath selection = evt.getNewLeadSelectionPath();
-        if(selection == null) {
+        if (selection == null) {
             return;
         }
-        JTree other = ( evt.getSource() == jTree1 ) ? jTree2 : ( ( evt.getSource() == jTree2 ) ? jTree1 : null );
-        if(other != null) {
+        JTree other = (evt.getSource() == jTree1) ? jTree2 : ((evt.getSource() == jTree2) ? jTree1 : null);
+        if (other != null) {
             other.setSelectionRow(-1);
         }
         Object node = selection.getLastPathComponent();
-        if(!( node instanceof DefaultMutableTreeNode )) {
+        if (!(node instanceof DefaultMutableTreeNode)) {
             return;
         }
-        Object obj = ( (DefaultMutableTreeNode) node ).getUserObject();
-        if(!( obj instanceof VBF.BitmapGlyph )) {
+        Object obj = ((DefaultMutableTreeNode) node).getUserObject();
+        if (!(obj instanceof VBF.BitmapGlyph)) {
             return;
         }
         currentGlyph = (VBF.BitmapGlyph) obj;
         canvas.select(currentGlyph);
-        if(currentGlyph.getBounds() == null) {
+        if (currentGlyph.getBounds() == null) {
             currentGlyph.setBounds(new Rectangle());
         }
         Rectangle r = currentGlyph.getBounds();
@@ -612,10 +611,10 @@ class VBFTest extends JFrame {
         @Override
         public String toString() {
             Character.UnicodeBlock block = Character.UnicodeBlock.of(c);
-            boolean unprintable = Character.isISOControl(c) || ( c == KeyEvent.CHAR_UNDEFINED ) || ( block == null ) ||
-                                  block.equals(Character.UnicodeBlock.SPECIALS);
-            if(unprintable) {
-                return "0x" + ( ( c <= 0xF ) ? "0" : "" ) + Integer.toHexString(c).toUpperCase();
+            boolean unprintable = Character.isISOControl(c) || (c == KeyEvent.CHAR_UNDEFINED) || (block == null) ||
+                    block.equals(Character.UnicodeBlock.SPECIALS);
+            if (unprintable) {
+                return "0x" + ((c <= 0xF) ? "0" : "") + Integer.toHexString(c).toUpperCase();
             }
             return Character.toString(c);
         }

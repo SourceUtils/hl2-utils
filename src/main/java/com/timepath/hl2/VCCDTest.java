@@ -39,33 +39,33 @@ import java.util.zip.CRC32;
 @SuppressWarnings("serial")
 class VCCDTest extends JFrame {
 
-    private static final Logger                   LOG          = Logger.getLogger(VCCDTest.class.getName());
-    private static final Preferences              prefs        = Preferences.userRoot()
-                                                                            .node("timepath")
-                                                                            .node("hl2-caption-editor");
-    private static final String                   CHAN_UNKNOWN = "CHAN_UNKNOWN";
-    private final        Trie                     trie         = new Trie();
-    private final        Map<Integer, StringPair> hashmap      = new HashMap<>();
+    private static final Logger LOG = Logger.getLogger(VCCDTest.class.getName());
+    private static final Preferences prefs = Preferences.userRoot()
+            .node("timepath")
+            .node("hl2-caption-editor");
+    private static final String CHAN_UNKNOWN = "CHAN_UNKNOWN";
+    private final Trie trie = new Trie();
+    private final Map<Integer, StringPair> hashmap = new HashMap<>();
     private JCheckBoxMenuItem consoleMode;
-    private File              saveFile;
-    private JTable            jTable1;
-    private JTextField        jTextField3;
-    private JTextField        jTextField4;
+    private File saveFile;
+    private JTable jTable1;
+    private JTextField jTextField3;
+    private JTextField jTextField4;
 
     private VCCDTest() {
         // Load known mappings from preferences
         try {
-            for(String channel : prefs.childrenNames()) {
-                for(String name : prefs.node(channel).keys()) {
+            for (String channel : prefs.childrenNames()) {
+                for (String name : prefs.node(channel).keys()) {
                     int hash = prefs.getInt(name, -1);
-                    LOG.log(Level.FINER, "{0} = {1}", new Object[] { name, hash });
-                    if(hash != -1) {
+                    LOG.log(Level.FINER, "{0} = {1}", new Object[]{name, hash});
+                    if (hash != -1) {
                         hashmap.put(hash, new StringPair(name, channel));
                         trie.add(name);
                     }
                 }
             }
-        } catch(BackingStoreException ex) {
+        } catch (BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         initComponents();
@@ -93,10 +93,10 @@ class VCCDTest extends JFrame {
 
     public static void main(String[] args) throws IOException {
         try {
-            if(args.length > 0) {
+            if (args.length > 0) {
                 List<VCCD.VCCDEntry> in = VCCD.parse(new FileInputStream(args[0]));
                 Map<Integer, StringPair> hashmap = new HashMap<>();
-                for(VCCD.VCCDEntry i : in) { // Learning
+                for (VCCD.VCCDEntry i : in) { // Learning
                     Object crc = i.getHash();
                     String token = i.getKey();
                     long hash = Long.parseLong(crc.toString().toLowerCase(), 16);
@@ -106,7 +106,7 @@ class VCCDTest extends JFrame {
                 VCCD.save(in, new FileOutputStream("closecaption_english.dat"));
                 return;
             }
-        } catch(FileNotFoundException ex) {
+        } catch (FileNotFoundException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         EventQueue.invokeLater(new Runnable() {
@@ -120,10 +120,10 @@ class VCCDTest extends JFrame {
     }
 
     private static void persistHashmap(Map<Integer, StringPair> map) {
-        for(Map.Entry<Integer, StringPair> entry : map.entrySet()) {
+        for (Map.Entry<Integer, StringPair> entry : map.entrySet()) {
             Integer key = entry.getKey();
             String value = entry.getValue().name;
-            if(( key == null ) || ( value == null )) {
+            if ((key == null) || (value == null)) {
                 continue;
             }
             prefs.node(entry.getValue().channel).putInt(value, key);
@@ -132,7 +132,7 @@ class VCCDTest extends JFrame {
 
     private static String hexFormat(int in) {
         String str = Integer.toHexString(in).toUpperCase();
-        while(str.length() < 8) {
+        while (str.length() < 8) {
             str = '0' + str;
         }
         return str;
@@ -163,10 +163,10 @@ class VCCDTest extends JFrame {
                     pb.setMaximum(caps.size());
                     pb.setIndeterminate(false);
                     int i = 0;
-                    for(SimpleVFile f : caps) {
+                    for (SimpleVFile f : caps) {
                         LOG.log(Level.INFO, "Parsing {0}", f);
                         VDFNode root = VDF.load(f.openStream());
-                        for(VDFNode node : root.getNodes()) {
+                        for (VDFNode node : root.getNodes()) {
                             String str = (String) node.getCustom();
                             String channel = (String) node.getValue("channel", CHAN_UNKNOWN);
                             LOG.log(Level.FINER, str);
@@ -176,7 +176,7 @@ class VCCDTest extends JFrame {
                         }
                         pb.setValue(++i);
                     }
-                } catch(IOException ex) {
+                } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Error generating hash codes", ex);
                 }
                 hashmap.putAll(map);
@@ -187,7 +187,7 @@ class VCCDTest extends JFrame {
     }
 
     private String attemptDecode(int hash) {
-        if(!hashmap.containsKey(hash)) {
+        if (!hashmap.containsKey(hash)) {
             //            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
             return null;
         }
@@ -327,9 +327,9 @@ class VCCDTest extends JFrame {
         }});
         jTable1 = new JTable();
         jTable1.setAutoCreateRowSorter(true);
-        jTable1.setModel(new DefaultTableModel(new Object[][] { }, new String[] { "CRC32", "Key", "Value" }) {
-            Class[] types = { Object.class, String.class, String.class };
-            boolean[] canEdit = { false, true, true };
+        jTable1.setModel(new DefaultTableModel(new Object[][]{}, new String[]{"CRC32", "Key", "Value"}) {
+            Class[] types = {Object.class, String.class, String.class};
+            boolean[] canEdit = {false, true, true};
 
             @Override
             public Class getColumnClass(int columnIndex) {
@@ -343,7 +343,7 @@ class VCCDTest extends JFrame {
         });
         jTable1.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
         jTable1.setRowHeight(24);
-        if(jTable1.getColumnModel().getColumnCount() > 0) {
+        if (jTable1.getColumnModel().getColumnCount() > 0) {
             jTable1.getColumnModel().getColumn(0).setMinWidth(85);
             jTable1.getColumnModel().getColumn(0).setPreferredWidth(85);
             jTable1.getColumnModel().getColumn(0).setMaxWidth(85);
@@ -363,34 +363,34 @@ class VCCDTest extends JFrame {
             fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Binary Files", ".dat"));
             fc.setParent(this);
             File[] files = fc.choose();
-            if(files == null) {
+            if (files == null) {
                 return;
             }
             List<VCCD.VCCDEntry> entries;
             try {
                 entries = VCCD.load(new FileInputStream(files[0]));
-            } catch(FileNotFoundException ex) {
+            } catch (FileNotFoundException ex) {
                 LOG.log(Level.SEVERE, null, ex);
                 return;
             }
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-            for(int i = model.getRowCount() - 1; i >= 0; i--) {
+            for (int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(VCCD.VCCDEntry entry : entries) {
-                model.addRow(new Object[] {
+            for (VCCD.VCCDEntry entry : entries) {
+                model.addRow(new Object[]{
                         hexFormat(entry.getHash()), attemptDecode(entry.getHash()), entry.getValue()
                 });
             }
             saveFile = files[0];
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     private void save(boolean flag) {
-        if(( saveFile == null ) || flag) {
+        if ((saveFile == null) || flag) {
             try {
                 NativeFileChooser fc = new NativeFileChooser();
                 fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG);
@@ -398,29 +398,29 @@ class VCCDTest extends JFrame {
                 fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Binary Files", ".dat"));
                 fc.setParent(this);
                 File[] fs = fc.choose();
-                if(fs == null) {
+                if (fs == null) {
                     return;
                 }
                 saveFile = fs[0];
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
                 return;
             }
         }
-        if(jTable1.isEditing()) {
+        if (jTable1.isEditing()) {
             jTable1.getCellEditor().stopCellEditing();
         }
         List<VCCD.VCCDEntry> entries = new LinkedList<>();
         TableModel model = jTable1.getModel();
-        for(int i = 0; i < model.getRowCount(); i++) {
+        for (int i = 0; i < model.getRowCount(); i++) {
             Object crc = model.getValueAt(i, 0);
-            if(( model.getValueAt(i, 1) != null ) && !model.getValueAt(i, 1).toString().isEmpty()) {
+            if ((model.getValueAt(i, 1) != null) && !model.getValueAt(i, 1).toString().isEmpty()) {
                 crc = hexFormat(VCCD.hash(model.getValueAt(i, 1).toString()));
             }
             int hash = (int) Long.parseLong(crc.toString().toLowerCase(), 16);
             Object key = model.getValueAt(i, 1);
-            String token = ( key instanceof String ) ? key.toString() : null;
-            if(!hashmap.containsKey(hash)) {
+            String token = (key instanceof String) ? key.toString() : null;
+            if (!hashmap.containsKey(hash)) {
                 hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
             }
             entries.add(new VCCD.VCCDEntry(hash, model.getValueAt(i, 2).toString()));
@@ -428,7 +428,7 @@ class VCCDTest extends JFrame {
         persistHashmap(hashmap);
         try {
             VCCD.save(entries, new FileOutputStream(saveFile), consoleMode.isSelected(), consoleMode.isSelected());
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
@@ -444,60 +444,60 @@ class VCCDTest extends JFrame {
             fc.setParent(this);
             fc.addFilter(new BaseFileChooser.ExtensionFilter("VCCD Source Files", ".txt"));
             File[] files = fc.choose();
-            if(files == null) {
+            if (files == null) {
                 return;
             }
             List<VCCD.VCCDEntry> entries = VCCD.parse(new FileInputStream(files[0]));
             LOG.log(Level.INFO, "Entries: {0}", entries.size());
             DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-            for(int i = model.getRowCount() - 1; i >= 0; i--) {
+            for (int i = model.getRowCount() - 1; i >= 0; i--) {
                 model.removeRow(i);
             }
-            for(VCCD.VCCDEntry entrie : entries) {
+            for (VCCD.VCCDEntry entrie : entries) {
                 int hash = entrie.getHash();
                 String token = entrie.getKey();
-                if(!hashmap.containsKey(hash)) {
+                if (!hashmap.containsKey(hash)) {
                     hashmap.put(hash, new StringPair(token, CHAN_UNKNOWN));
                 }
-                model.addRow(new Object[] { hexFormat(entrie.getHash()), entrie.getKey(), entrie.getValue() });
+                model.addRow(new Object[]{hexFormat(entrie.getHash()), entrie.getKey(), entrie.getValue()});
             }
             persistHashmap(hashmap);
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }
 
     private void insertRow(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        model.addRow(new Object[] { 0, "", "" });
+        model.addRow(new Object[]{0, "", ""});
     }
 
     private void deleteRow(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
         int newRow = Math.min(jTable1.getSelectedRow(), jTable1.getRowCount() - 1);
-        if(jTable1.getSelectedRow() == ( jTable1.getRowCount() - 1 )) {
+        if (jTable1.getSelectedRow() == (jTable1.getRowCount() - 1)) {
             newRow = jTable1.getRowCount() - 2;
         }
         LOG.log(Level.FINER, "New row: {0}", newRow);
         model.removeRow(jTable1.getSelectedRow());
-        if(jTable1.getRowCount() > 0) {
+        if (jTable1.getRowCount() > 0) {
             jTable1.setRowSelectionInterval(newRow, newRow);
         }
     }
 
     private void createNew(ActionEvent evt) {
         DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        for(int i = model.getRowCount() - 1; i >= 0; i--) {
+        for (int i = model.getRowCount() - 1; i >= 0; i--) {
             model.removeRow(i);
         }
-        model.addRow(new Object[] { 0, "", "" });
+        model.addRow(new Object[]{0, "", ""});
     }
 
     private void formattingHelp(ActionEvent evt) {
         String message = "Unable to load";
         try {
             message = IOUtils.toString(getClass().getResource("/VCCDTest.txt"));
-        } catch(IOException ignored) {
+        } catch (IOException ignored) {
         }
         JScrollPane jsp = new JScrollPane(new JTextArea(message));
         jsp.setPreferredSize(new Dimension(500, 500));
@@ -510,7 +510,7 @@ class VCCDTest extends JFrame {
     private void export(ActionEvent evt) {
         StringBuilder sb = new StringBuilder(jTable1.getRowCount() * 100); // rough estimate
         TableModel model = jTable1.getModel();
-        for(int i = 0; i < model.getRowCount(); i++) {
+        for (int i = 0; i < model.getRowCount(); i++) {
             sb.append(MessageFormat.format("{0}\t{1}\n", model.getValueAt(i, 0), model.getValueAt(i, 2)));
         }
         JTextArea pane = new JTextArea(sb.toString());
@@ -528,13 +528,13 @@ class VCCDTest extends JFrame {
     private int showInputDialog() {
         String inputValue = JOptionPane.showInputDialog("Enter row", jTable1.getSelectedRow() + 1);
         int intValue = -1;
-        if(inputValue != null) {
+        if (inputValue != null) {
             try {
                 intValue = Integer.parseInt(inputValue) - 1;
-            } catch(NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 showInputDialog();
             }
-            if(intValue < 0) {
+            if (intValue < 0) {
                 showInputDialog();
             }
         }
@@ -543,10 +543,10 @@ class VCCDTest extends JFrame {
 
     private void gotoRow(ActionEvent evt) {
         int row = showInputDialog();
-        if(row < 0) {
+        if (row < 0) {
             return;
         }
-        if(row > jTable1.getRowCount()) {
+        if (row > jTable1.getRowCount()) {
             row = jTable1.getRowCount();
         }
         jTable1.setRowSelectionInterval(row, row);
@@ -569,12 +569,12 @@ class VCCDTest extends JFrame {
             fc.addFilter(new BaseFileChooser.ExtensionFilter("XML", ".xml"));
             fc.setParent(this);
             File[] fs = fc.choose();
-            if(fs == null) {
+            if (fs == null) {
                 return;
             }
             saveFile = fs[0];
             prefs.exportSubtree(new FileOutputStream(saveFile));
-        } catch(IOException | BackingStoreException ex) {
+        } catch (IOException | BackingStoreException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
     }

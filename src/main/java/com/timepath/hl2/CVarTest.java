@@ -35,13 +35,13 @@ class CVarTest extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(CVarTest.class.getName());
     private final TableRowSorter<TableModel> sorter;
-    private       JCheckBox                  caseSensitiveCheckBox;
-    private       JLabel                     jLabel1;
-    private       JLabel                     jLabel5;
-    private       JTable                     jTable1;
-    private       JTextField                 jTextField1;
-    private       JCheckBox                  notCheckBox;
-    private       JCheckBox                  regexCheckBox;
+    private JCheckBox caseSensitiveCheckBox;
+    private JLabel jLabel1;
+    private JLabel jLabel5;
+    private JTable jTable1;
+    private JTextField jTextField1;
+    private JCheckBox notCheckBox;
+    private JCheckBox regexCheckBox;
 
     /**
      * Creates new form CVarTest
@@ -53,9 +53,9 @@ class CVarTest extends JFrame {
             @Override
             public int compare(String o1, String o2) {
                 return o1.replaceFirst("\\+", "")
-                         .replaceFirst("-", "")
-                         .toLowerCase()
-                         .compareTo(o2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
+                        .replaceFirst("-", "")
+                        .toLowerCase()
+                        .compareTo(o2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase());
             }
         };
         sorter.setComparator(0, comparator);
@@ -82,8 +82,7 @@ class CVarTest extends JFrame {
     }
 
     /**
-     * @param args
-     *         the command line arguments
+     * @param args the command line arguments
      */
     public static void main(String... args) {
         SwingUtilities.invokeLater(new Runnable() {
@@ -98,24 +97,24 @@ class CVarTest extends JFrame {
         jLabel1.setText(Integer.toString(sorter.getModelRowCount()));
         try {
             String str = jTextField1.getText();
-            if(str.isEmpty()) {
+            if (str.isEmpty()) {
                 sorter.setRowFilter(null);
             } else {
-                if(!regexCheckBox.isSelected()) {
+                if (!regexCheckBox.isSelected()) {
                     str = Pattern.quote(str);
                 }
-                if(!caseSensitiveCheckBox.isSelected()) {
+                if (!caseSensitiveCheckBox.isSelected()) {
                     str = "(?i)" + str;
                 }
                 RowFilter<TableModel, Object> rf = RowFilter.regexFilter(str, 0, 1, 2, 3, 4, 5, 6);
-                if(notCheckBox.isSelected()) {
+                if (notCheckBox.isSelected()) {
                     rf = RowFilter.notFilter(rf);
                 }
                 sorter.setRowFilter(rf);
             }
             jLabel5.setText(Integer.toString(sorter.getViewRowCount()));
             jTextField1.setForeground(Color.BLACK);
-        } catch(PatternSyntaxException e) {
+        } catch (PatternSyntaxException e) {
             jTextField1.setForeground(Color.RED);
         }
     }
@@ -147,8 +146,8 @@ class CVarTest extends JFrame {
         JMenuItem jMenuItem3 = new JMenuItem();
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("CVar listing");
-        jTable1.setModel(new DefaultTableModel(new Object[][] {
-        }, new String[] {
+        jTable1.setModel(new DefaultTableModel(new Object[][]{
+        }, new String[]{
                 "Name", "Value", "Default", "Min", "Max", "Tags", "Description"
         }
         ));
@@ -191,42 +190,42 @@ class CVarTest extends JFrame {
         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                      .addGroup(jPanel1Layout.createSequentialGroup()
-                                                                             .addContainerGap()
-                                                                             .addComponent(jLabel3)
-                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                      .RELATED)
-                                                                             .addComponent(jTextField1)
-                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                      .RELATED)
-                                                                             .addComponent(notCheckBox)
-                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                      .RELATED)
-                                                                             .addComponent(caseSensitiveCheckBox)
-                                                                             .addPreferredGap(LayoutStyle.ComponentPlacement
-                                                                                                      .RELATED)
-                                                                             .addComponent(regexCheckBox))
-                                        );
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement
+                                        .RELATED)
+                                .addComponent(jTextField1)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement
+                                        .RELATED)
+                                .addComponent(notCheckBox)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement
+                                        .RELATED)
+                                .addComponent(caseSensitiveCheckBox)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement
+                                        .RELATED)
+                                .addComponent(regexCheckBox))
+        );
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                                    .addGroup(jPanel1Layout.createSequentialGroup()
-                                                                           .addGap(0, 0, 0)
-                                                                           .addGroup(jPanel1Layout.createParallelGroup
-                                                                                   (GroupLayout.Alignment.BASELINE)
-                                                                                                  .addComponent(jTextField1,
-                                                                                                                GroupLayout
-                                                                                                                        .PREFERRED_SIZE,
-                                                                                                                GroupLayout
-                                                                                                                        .DEFAULT_SIZE,
-                                                                                                                GroupLayout
-                                                                                                                        .PREFERRED_SIZE
-                                                                                                               )
-                                                                                                  .addComponent(jLabel3)
-                                                                                                  .addComponent(regexCheckBox)
-                                                                                                  .addComponent(
-                                                                                                          caseSensitiveCheckBox)
-                                                                                                  .addComponent(notCheckBox))
-                                                                           .addGap(0, 0, 0))
-                                      );
+                        .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGap(0, 0, 0)
+                                .addGroup(jPanel1Layout.createParallelGroup
+                                        (GroupLayout.Alignment.BASELINE)
+                                        .addComponent(jTextField1,
+                                                GroupLayout
+                                                        .PREFERRED_SIZE,
+                                                GroupLayout
+                                                        .DEFAULT_SIZE,
+                                                GroupLayout
+                                                        .PREFERRED_SIZE
+                                        )
+                                        .addComponent(jLabel3)
+                                        .addComponent(regexCheckBox)
+                                        .addComponent(
+                                                caseSensitiveCheckBox)
+                                        .addComponent(notCheckBox))
+                                .addGap(0, 0, 0))
+        );
         jMenu1.setText("File");
         jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         jMenuItem1.setText("Open");
@@ -292,30 +291,30 @@ class CVarTest extends JFrame {
         GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                        .addComponent(statusBar1,
-                                                      GroupLayout.DEFAULT_SIZE,
-                                                      GroupLayout.DEFAULT_SIZE,
-                                                      Short.MAX_VALUE)
-                                        .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 908, Short.MAX_VALUE)
-                                        .addComponent(jPanel1,
-                                                      GroupLayout.DEFAULT_SIZE,
-                                                      GroupLayout.DEFAULT_SIZE,
-                                                      Short.MAX_VALUE)
-                                 );
+                        .addComponent(statusBar1,
+                                GroupLayout.DEFAULT_SIZE,
+                                GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE)
+                        .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 908, Short.MAX_VALUE)
+                        .addComponent(jPanel1,
+                                GroupLayout.DEFAULT_SIZE,
+                                GroupLayout.DEFAULT_SIZE,
+                                Short.MAX_VALUE)
+        );
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                                      .addGroup(layout.createSequentialGroup()
-                                                      .addComponent(jPanel1,
-                                                                    GroupLayout.PREFERRED_SIZE,
-                                                                    GroupLayout.DEFAULT_SIZE,
-                                                                    GroupLayout.PREFERRED_SIZE)
-                                                      .addGap(0, 0, 0)
-                                                      .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
-                                                      .addGap(0, 0, 0)
-                                                      .addComponent(statusBar1,
-                                                                    GroupLayout.PREFERRED_SIZE,
-                                                                    25,
-                                                                    GroupLayout.PREFERRED_SIZE))
-                               );
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(jPanel1,
+                                        GroupLayout.PREFERRED_SIZE,
+                                        GroupLayout.DEFAULT_SIZE,
+                                        GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, 0)
+                                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 201, Short.MAX_VALUE)
+                                .addGap(0, 0, 0)
+                                .addComponent(statusBar1,
+                                        GroupLayout.PREFERRED_SIZE,
+                                        25,
+                                        GroupLayout.PREFERRED_SIZE))
+        );
         pack();
     }
 
@@ -323,7 +322,7 @@ class CVarTest extends JFrame {
         Map<String, CVar> map = CVarList.analyzeList(scanner, new HashMap<String, CVar>());
         DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
         String[] columns = new String[p.getColumnCount()];
-        for(int i = 0; i < columns.length; i++) {
+        for (int i = 0; i < columns.length; i++) {
             columns[i] = p.getColumnName(i);
         }
         return map;
@@ -332,16 +331,16 @@ class CVarTest extends JFrame {
     private void jMenuItem1ActionPerformed(ActionEvent evt) {
         try {
             final File[] f = new NativeFileChooser().setTitle("Select cvarlist").choose();
-            if(f != null) {
+            if (f != null) {
                 SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
                     @Override
                     protected Void doInBackground() throws Exception {
                         RandomAccessFile rf = new RandomAccessFile(f[0].getPath(), "r");
                         Scanner scanner = new Scanner(rf.getChannel());
                         Map<String, CVar> map = analyze(scanner);
-                        for(Map.Entry<String, CVar> entry : map.entrySet()) {
+                        for (Map.Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
-                            publish(new Object[] {
+                            publish(new Object[]{
                                     var.getName(),
                                     var.getValue(),
                                     var.getDefaultValue(),
@@ -356,15 +355,15 @@ class CVarTest extends JFrame {
 
                     @Override
                     protected void process(List<Object[]> chunks) {
-                        for(Object[] row : chunks) {
-                            ( (DefaultTableModel) jTable1.getModel() ).addRow(row);
+                        for (Object[] row : chunks) {
+                            ((DefaultTableModel) jTable1.getModel()).addRow(row);
                         }
                         filter();
                     }
                 };
                 worker.execute();
             }
-        } catch(IOException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(CVarTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
@@ -379,7 +378,7 @@ class CVarTest extends JFrame {
 
     private void jMenuItem2ActionPerformed(ActionEvent evt) {
         StringBuilder sb = new StringBuilder();
-        for(int i = 0; i < jTable1.getModel().getRowCount(); i++) {
+        for (int i = 0; i < jTable1.getModel().getRowCount(); i++) {
             int row = jTable1.convertRowIndexToModel(i);
             sb.append(jTable1.getModel().getValueAt(row, 0)).append('\n');
         }
@@ -394,30 +393,30 @@ class CVarTest extends JFrame {
         int col;
         int rows = m.getRowCount();
         int cols = m.getColumnCount();
-        for(int i = 0; i < cols; i++) {
+        for (int i = 0; i < cols; i++) {
             col = jTable1.convertColumnIndexToModel(i);
             sb.append(tab).append(m.getColumnName(col));
         }
         String line = "\n";
         sb.append(tab).append(line);
-        for(int i = 0; i < cols; i++) {
+        for (int i = 0; i < cols; i++) {
             sb.append(tab).append("--");
         }
         sb.append(tab).append(line);
-        for(int i = 0; i < rows; i++) {
+        for (int i = 0; i < rows; i++) {
             int row = jTable1.convertRowIndexToModel(i);
-            for(int j = 0; j < cols; j++) {
+            for (int j = 0; j < cols; j++) {
                 col = jTable1.convertColumnIndexToModel(j);
                 Object obj = m.getValueAt(row, col);
-                if(col == 0) {
+                if (col == 0) {
                     obj = "[" + obj + "](/r/tf2scripthelp/wiki/" + obj + "#todo \"TODO\")";
                 }
                 sb.append(tab);
-                if(obj != null) {
-                    if(obj instanceof Object[]) {
+                if (obj != null) {
+                    if (obj instanceof Object[]) {
                         Object[] arr = (Object[]) obj;
                         sb.append(arr[0]);
-                        for(int k = 1; k < arr.length; k++) {
+                        for (int k = 1; k < arr.length; k++) {
                             sb.append(", ").append(arr[k]);
                         }
                     } else {
@@ -435,12 +434,12 @@ class CVarTest extends JFrame {
         clear();
         String ret = null;
         int limit = 5;
-        for(int i = 0; ; i++) {
+        for (int i = 0; ; i++) {
             String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--", "--end of cvarlist--");
-            if(temp.equals(ret)) {
+            if (temp.equals(ret)) {
                 break;
             }
-            if(i == limit) {
+            if (i == limit) {
                 LOG.warning("Aborting inconsistency fixer");
                 break;
             }
@@ -449,7 +448,7 @@ class CVarTest extends JFrame {
         StringSelection selection = new StringSelection(ret);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
         Map<String, CVar> map = analyze(new Scanner(ret));
-        for(Map.Entry<String, CVar> entry : map.entrySet()) {
+        for (Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
             Object[] chunks = {
                     var.getName(),
@@ -460,7 +459,7 @@ class CVarTest extends JFrame {
                     Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
                     var.getDesc()
             };
-            ( (DefaultTableModel) jTable1.getModel() ).addRow(chunks);
+            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();
     }
@@ -475,15 +474,15 @@ class CVarTest extends JFrame {
         ExternalConsole.exec("sv_cheats 1", null);
         TableModel m = jTable1.getModel();
         int rows = m.getRowCount();
-        for(int i = 0; i < rows; i++) {
+        for (int i = 0; i < rows; i++) {
             int row = jTable1.convertRowIndexToModel(i);
             int j = 2;
             Object name = m.getValueAt(row, jTable1.convertColumnIndexToModel(0));
-            if("sv_cheats".equals(name.toString())) {
+            if ("sv_cheats".equals(name.toString())) {
                 continue;
             }
             Object val = m.getValueAt(row, jTable1.convertColumnIndexToModel(2));
-            if(val != null) {
+            if (val != null) {
                 String strVal = "\"" + val + '"';
                 sb.append(name).append(' ').append(strVal).append('\n');
                 ExternalConsole.exec(name + " " + strVal, null);
@@ -499,7 +498,7 @@ class CVarTest extends JFrame {
         clear();
         String ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--");
         Map<String, CVar> map = analyze(new Scanner(ret));
-        for(Map.Entry<String, CVar> entry : map.entrySet()) {
+        for (Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
             Object[] chunks = {
                     var.getName(),
@@ -510,7 +509,7 @@ class CVarTest extends JFrame {
                     Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
                     var.getDesc()
             };
-            ( (DefaultTableModel) jTable1.getModel() ).addRow(chunks);
+            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
         }
         filter();
     }
@@ -522,7 +521,7 @@ class CVarTest extends JFrame {
     private void clear() {
         DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
         int rowCount = dm.getRowCount();
-        for(int i = 0; i < rowCount; i++) {
+        for (int i = 0; i < rowCount; i++) {
             dm.removeRow(0);
         }
         filter();

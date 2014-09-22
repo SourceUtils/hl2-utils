@@ -26,7 +26,8 @@ class VTFTest {
 
     private static final Logger LOG = Logger.getLogger(VTFTest.class.getName());
 
-    private VTFTest() {}
+    private VTFTest() {
+    }
 
     public static void main(String... args) {
         new Thread(new Runnable() {
@@ -53,21 +54,21 @@ class VTFTest {
         chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1));
         chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT5));
         chooser.addChoosableFileFilter(new AntiVtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1,
-                                                             ImageFormat.IMAGE_FORMAT_DXT3,
-                                                             ImageFormat.IMAGE_FORMAT_DXT5));
+                ImageFormat.IMAGE_FORMAT_DXT3,
+                ImageFormat.IMAGE_FORMAT_DXT5));
         chooser.addChoosableFileFilter(new AntiVtfFileFilter("RGB",
-                                                             ImageFormat.IMAGE_FORMAT_DXT1,
-                                                             ImageFormat.IMAGE_FORMAT_DXT3,
-                                                             ImageFormat.IMAGE_FORMAT_DXT5,
-                                                             ImageFormat.IMAGE_FORMAT_ABGR8888,
-                                                             ImageFormat.IMAGE_FORMAT_ARGB8888,
-                                                             ImageFormat.IMAGE_FORMAT_BGRA8888,
-                                                             ImageFormat.IMAGE_FORMAT_BGRA4444,
-                                                             ImageFormat.IMAGE_FORMAT_BGRA5551,
-                                                             ImageFormat.IMAGE_FORMAT_RGBA16161616,
-                                                             ImageFormat.IMAGE_FORMAT_RGBA16161616F,
-                                                             ImageFormat.IMAGE_FORMAT_RGBA32323232F,
-                                                             ImageFormat.IMAGE_FORMAT_RGBA8888));
+                ImageFormat.IMAGE_FORMAT_DXT1,
+                ImageFormat.IMAGE_FORMAT_DXT3,
+                ImageFormat.IMAGE_FORMAT_DXT5,
+                ImageFormat.IMAGE_FORMAT_ABGR8888,
+                ImageFormat.IMAGE_FORMAT_ARGB8888,
+                ImageFormat.IMAGE_FORMAT_BGRA8888,
+                ImageFormat.IMAGE_FORMAT_BGRA4444,
+                ImageFormat.IMAGE_FORMAT_BGRA5551,
+                ImageFormat.IMAGE_FORMAT_RGBA16161616,
+                ImageFormat.IMAGE_FORMAT_RGBA16161616F,
+                ImageFormat.IMAGE_FORMAT_RGBA32323232F,
+                ImageFormat.IMAGE_FORMAT_RGBA8888));
         chooser.setFileFilter(generic);
         ImagePreviewPanel preview = new ImagePreviewPanel(frame);
         chooser.setAccessory(preview);
@@ -82,14 +83,14 @@ class VTFTest {
     @SuppressWarnings("serial")
     static class ImagePreviewPanel extends JPanel implements PropertyChangeListener {
 
-        private static final int    ACCSIZE = 256;
-        private static final Logger LOG     = Logger.getLogger(ImagePreviewPanel.class.getName());
+        private static final int ACCSIZE = 256;
+        private static final Logger LOG = Logger.getLogger(ImagePreviewPanel.class.getName());
         private final JSpinner frame;
         private final JSpinner lod;
-        private       Color    bgColor;
-        private       Image    image;
-        private       VTF      vtf;
-        private       JFrame   parentFrame;
+        private Color bgColor;
+        private Image image;
+        private VTF vtf;
+        private JFrame parentFrame;
 
         ImagePreviewPanel(JFrame frame) {
             parentFrame = frame;
@@ -102,7 +103,7 @@ class VTFTest {
                     try {
                         createImage(vtf);
                         repaint();
-                    } catch(IOException ex) {
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -115,7 +116,7 @@ class VTFTest {
                     try {
                         createImage(vtf);
                         repaint();
-                    } catch(IOException ex) {
+                    } catch (IOException ex) {
                         LOG.log(Level.SEVERE, null, ex);
                     }
                 }
@@ -124,9 +125,9 @@ class VTFTest {
         }
 
         private void createImage(VTF v) throws IOException {
-            if(v != null) {
+            if (v != null) {
                 Image img = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
-                if(img != null) {
+                if (img != null) {
                     parentFrame.setIconImage(v.getThumbImage());
                     image = img;
                     return;
@@ -139,33 +140,33 @@ class VTFTest {
         public void paintComponent(Graphics g) {
             g.setColor(bgColor);
             g.fillRect(0, 0, ACCSIZE, getHeight());
-            if(image != null) {
+            if (image != null) {
                 g.drawImage(image,
-                            ( getWidth() / 2 ) - ( image.getWidth(null) / 2 ),
-                            ( getHeight() / 2 ) - ( image.getHeight(null) / 2 ),
-                            this);
+                        (getWidth() / 2) - (image.getWidth(null) / 2),
+                        (getHeight() / 2) - (image.getHeight(null) / 2),
+                        this);
             }
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
-            if(propertyName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
+            if (propertyName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
                 try {
                     load((File) evt.getNewValue());
                     repaint();
-                } catch(IOException ex) {
+                } catch (IOException ex) {
                     LOG.log(Level.SEVERE, null, ex);
                 }
             }
         }
 
         private void load(File selection) throws IOException, FileNotFoundException {
-            if(selection == null) {
+            if (selection == null) {
                 return;
             }
             vtf = VTF.load(new FileInputStream(selection));
-            if(vtf != null) {
+            if (vtf != null) {
                 frame.setValue(vtf.getFrameFirst());
             }
             createImage(vtf);
@@ -183,19 +184,19 @@ class VTFTest {
 
         @Override
         public boolean accept(File f) {
-            if(f.isDirectory()) {
+            if (f.isDirectory()) {
                 return true;
             }
             VTF v = null;
             try {
                 v = VTF.load(new FileInputStream(f));
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            if(v == null) {
+            if (v == null) {
                 return false;
             }
-            if(vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) {
+            if (vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) {
                 return true;
             }
             return v.getFormat() == vtfFormat;
@@ -203,7 +204,7 @@ class VTFTest {
 
         @Override
         public String getDescription() {
-            return "VTF (" + ( ( vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN ) ? "All" : vtfFormat.name() ) + ')';
+            return "VTF (" + ((vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) ? "All" : vtfFormat.name()) + ')';
         }
     }
 
@@ -211,7 +212,7 @@ class VTFTest {
 
         private static final Logger LOG = Logger.getLogger(AntiVtfFileFilter.class.getName());
         private ImageFormat[] ignored;
-        private String        name;
+        private String name;
 
         AntiVtfFileFilter(ImageFormat... formats) {
             this(null, formats);
@@ -224,20 +225,20 @@ class VTFTest {
 
         @Override
         public boolean accept(File f) {
-            if(f.isDirectory()) {
+            if (f.isDirectory()) {
                 return true;
             }
             VTF v = null;
             try {
                 v = VTF.load(new FileInputStream(f));
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            if(v == null) {
+            if (v == null) {
                 return false;
             }
-            for(ImageFormat format : ignored) {
-                if(v.getFormat() == format) {
+            for (ImageFormat format : ignored) {
+                if (v.getFormat() == format) {
                     return false;
                 }
             }
@@ -246,7 +247,7 @@ class VTFTest {
 
         @Override
         public String getDescription() {
-            if(name != null) {
+            if (name != null) {
                 return name;
             }
             return "VTF (Not " + Arrays.toString(ignored) + ')';

@@ -42,12 +42,12 @@ import java.util.logging.Logger;
 public class DEMTest extends JPanel {
 
     private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
-    public final JMenuBar     menu;
-    protected    HexEditor    hex;
-    protected    JTabbedPane  tabs;
-    protected    JXTable      table;
-    protected    JXTree       tree;
-    protected    MessageModel tableModel;
+    public final JMenuBar menu;
+    protected HexEditor hex;
+    protected JTabbedPane tabs;
+    protected JXTable table;
+    protected JXTree tree;
+    protected MessageModel tableModel;
 
     protected DEMTest() {
         setLayout(new BorderLayout());
@@ -81,13 +81,13 @@ public class DEMTest extends JPanel {
         table.addHighlighter(new AbstractHighlighter() {
             @Override
             protected Component doHighlight(final Component component, final ComponentAdapter adapter) {
-                if(adapter.row >= 0 && tableModel.messages.size() > 0 && adapter.row < tableModel.messages.size()) {
+                if (adapter.row >= 0 && tableModel.messages.size() > 0 && adapter.row < tableModel.messages.size()) {
                     Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(adapter.row));
                     Color c;
-                    if(f.incomplete) {
+                    if (f.incomplete) {
                         c = Color.ORANGE;
                     } else {
-                        switch(f.type) {
+                        switch (f.type) {
                             case Signon:
                             case Packet:
                                 c = Color.CYAN;
@@ -112,7 +112,7 @@ public class DEMTest extends JPanel {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 int row = table.getSelectedRow();
-                if(row == -1) return;
+                if (row == -1) return;
                 Message frame = tableModel.messages.get(table.convertRowIndexToModel(row));
                 hex.setData(frame.data);
                 DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
@@ -121,9 +121,9 @@ public class DEMTest extends JPanel {
                 container.add(root);
                 TreeModel tm = new DefaultTreeModel(container);
                 tree.setModel(tm);
-                for(int i = -1; ++i < tree.getRowCount(); ) { // Expand all
+                for (int i = -1; ++i < tree.getRowCount(); ) { // Expand all
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
-                    if(node.getLevel() < 3) tree.expandRow(i);
+                    if (node.getLevel() < 3) tree.expandRow(i);
                 }
             }
         });
@@ -131,19 +131,19 @@ public class DEMTest extends JPanel {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
                 TreePath selectionPath = tree.getSelectionPath();
-                if(selectionPath == null) return;
+                if (selectionPath == null) return;
                 Object lastPathComponent = selectionPath.getLastPathComponent();
-                Object o = ( (DefaultMutableTreeNode) lastPathComponent ).getUserObject();
-                if(o instanceof Packet) {
+                Object o = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
+                if (o instanceof Packet) {
                     Packet p = (Packet) o;
                     try {
                         int offsetBytes = p.offset / 8;
                         int offsetBits = p.offset % 8;
-                        hex.seek(offsetBytes - ( offsetBytes % 16 )); // Start of row
+                        hex.seek(offsetBytes - (offsetBytes % 16)); // Start of row
                         hex.setCaretLocation(offsetBytes);
                         hex.setBitShift(offsetBits);
                         hex.update();
-                    } catch(PropertyVetoException e1) {
+                    } catch (PropertyVetoException e1) {
                         e1.printStackTrace();
                     }
                 }
@@ -155,13 +155,17 @@ public class DEMTest extends JPanel {
                 add(new JMenuItem("Open") {{
                     addActionListener(new ActionListener() {
                         @Override
-                        public void actionPerformed(ActionEvent e) { open(); }
+                        public void actionPerformed(ActionEvent e) {
+                            open();
+                        }
                     });
                 }});
                 add(new JMenuItem("Dump commands") {{
                     addActionListener(new ActionListener() {
                         @Override
-                        public void actionPerformed(ActionEvent e) { showCommands(); }
+                        public void actionPerformed(ActionEvent e) {
+                            showCommands();
+                        }
                     });
                 }});
             }});
@@ -185,11 +189,11 @@ public class DEMTest extends JPanel {
     }
 
     protected void recurse(Iterable<?> i, DefaultMutableTreeNode root) {
-        for(Object entry : i) {
-            if(entry instanceof Pair) {
+        for (Object entry : i) {
+            if (entry instanceof Pair) {
                 Pair p = (Pair) entry;
                 expand(p, p.getKey(), p.getValue(), root);
-            } else if(entry instanceof Map.Entry) {
+            } else if (entry instanceof Map.Entry) {
                 Map.Entry e = (Map.Entry) entry;
                 expand(e, e.getKey(), e.getValue(), root);
             } else {
@@ -199,7 +203,7 @@ public class DEMTest extends JPanel {
     }
 
     protected void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
-        if(v instanceof Iterable) {
+        if (v instanceof Iterable) {
             DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
             root.add(n);
             recurse((Iterable<?>) v, n);
@@ -211,12 +215,12 @@ public class DEMTest extends JPanel {
     protected void open() {
         try {
             final File[] fs = new NativeFileChooser().setTitle("Open DEM")
-                                                     .setDirectory(new File(SteamUtils.getSteamApps(),
-                                                                            "common/Team Fortress 2/tf/."))
-                                                     .addFilter(new BaseFileChooser.ExtensionFilter("Demo files",
-                                                                                                    "dem"))
-                                                     .choose();
-            if(fs == null) return;
+                    .setDirectory(new File(SteamUtils.getSteamApps(),
+                            "common/Team Fortress 2/tf/."))
+                    .addFilter(new BaseFileChooser.ExtensionFilter("Demo files",
+                            "dem"))
+                    .choose();
+            if (fs == null) return;
             new SwingWorker<HL2DEM, Message>() {
                 DefaultListModel<Pair> listEvt = new DefaultListModel<>();
                 DefaultListModel<Pair> listMsg = new DefaultListModel<>();
@@ -233,19 +237,19 @@ public class DEMTest extends JPanel {
 
                 @Override
                 protected void process(final List<Message> chunks) {
-                    for(Message m : chunks) {
-                        if(m.incomplete) incomplete++;
+                    for (Message m : chunks) {
+                        if (m.incomplete) incomplete++;
                         tableModel.messages.add(m);
-                        switch(m.type) {
+                        switch (m.type) {
                             case Packet:
                             case Signon:
-                                for(Pair<Object, Object> ents : m.meta) {
-                                    if(!( ents.getKey() instanceof Packet )) break;
-                                    if(!( ents.getValue() instanceof Iterable )) break;
-                                    for(Object o : (Iterable) ents.getValue()) {
-                                        if(!( o instanceof Pair )) break;
+                                for (Pair<Object, Object> ents : m.meta) {
+                                    if (!(ents.getKey() instanceof Packet)) break;
+                                    if (!(ents.getValue() instanceof Iterable)) break;
+                                    for (Object o : (Iterable) ents.getValue()) {
+                                        if (!(o instanceof Pair)) break;
                                         Pair pair = (Pair) o;
-                                        switch(( (Packet) ents.getKey() ).type) {
+                                        switch (((Packet) ents.getKey()).type) {
                                             case svc_GameEvent:
                                                 listEvt.addElement(pair);
                                                 break;
@@ -266,14 +270,14 @@ public class DEMTest extends JPanel {
                     HL2DEM demo;
                     try {
                         demo = get();
-                    } catch(InterruptedException ignored) {
+                    } catch (InterruptedException ignored) {
                         return;
-                    } catch(ExecutionException e) {
+                    } catch (ExecutionException e) {
                         LOG.log(Level.SEVERE, null, e);
                         return;
                     }
                     LOG.info(String.format("Total incomplete messages: %d / %d", incomplete, demo.getFrames().size()));
-                    while(tabs.getTabCount() > 1) tabs.remove(1); // Remove previous events and messages
+                    while (tabs.getTabCount() > 1) tabs.remove(1); // Remove previous events and messages
                     JScrollPane jsp = new JScrollPane(new JList<>(listEvt));
                     jsp.getVerticalScrollBar().setUnitIncrement(16);
                     tabs.add("Events", jsp);
@@ -283,16 +287,16 @@ public class DEMTest extends JPanel {
                     table.setModel(tableModel);
                 }
             }.execute();
-        } catch(IOException e) {
+        } catch (IOException e) {
             LOG.log(Level.SEVERE, null, e);
         }
     }
 
     protected void showCommands() {
         StringBuilder sb = new StringBuilder();
-        for(Message m : tableModel.messages) {
-            if(m.type != MessageType.ConsoleCmd) continue;
-            for(Pair p : m.meta) {
+        for (Message m : tableModel.messages) {
+            if (m.type != MessageType.ConsoleCmd) continue;
+            for (Pair p : m.meta) {
                 sb.append('\n').append(p.getValue());
             }
         }
@@ -304,47 +308,59 @@ public class DEMTest extends JPanel {
     protected class MessageModel extends AbstractTableModel {
 
         protected ArrayList<Message> messages = new ArrayList<>();
+        protected String[] columns = {"Tick", "Type", "Size"};
+        protected Class[] types = {Integer.class, Enum.class, Integer.class};
 
         @Override
-        public int getRowCount() { return messages.size(); }
-
-        protected String[] columns = { "Tick", "Type", "Size" };
-        protected Class[]  types   = { Integer.class, Enum.class, Integer.class };
-
-        @Override
-        public int getColumnCount() { return columns.length; }
+        public int getRowCount() {
+            return messages.size();
+        }
 
         @Override
-        public String getColumnName(final int columnIndex) { return columns[columnIndex]; }
+        public int getColumnCount() {
+            return columns.length;
+        }
 
         @Override
-        public Class<?> getColumnClass(final int columnIndex) { return types[columnIndex]; }
+        public String getColumnName(final int columnIndex) {
+            return columns[columnIndex];
+        }
 
         @Override
-        public boolean isCellEditable(final int rowIndex, final int columnIndex) { return false; }
+        public Class<?> getColumnClass(final int columnIndex) {
+            return types[columnIndex];
+        }
+
+        @Override
+        public boolean isCellEditable(final int rowIndex, final int columnIndex) {
+            return false;
+        }
 
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
-            if(messages.isEmpty()) return null;
+            if (messages.isEmpty()) return null;
             Message m = messages.get(rowIndex);
-            switch(columnIndex) {
+            switch (columnIndex) {
                 case 0:
                     return m.tick;
                 case 1:
                     return m.type;
                 case 2:
-                    return ( m.data == null ) ? null : m.data.capacity();
+                    return (m.data == null) ? null : m.data.capacity();
             }
             return null;
         }
 
         @Override
-        public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) { }
+        public void setValueAt(final Object aValue, final int rowIndex, final int columnIndex) {
+        }
 
         @Override
-        public void addTableModelListener(final TableModelListener l) { }
+        public void addTableModelListener(final TableModelListener l) {
+        }
 
         @Override
-        public void removeTableModelListener(final TableModelListener l) { }
+        public void removeTableModelListener(final TableModelListener l) {
+        }
     }
 }

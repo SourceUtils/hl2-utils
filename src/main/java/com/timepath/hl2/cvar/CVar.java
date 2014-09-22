@@ -9,17 +9,20 @@ import java.util.logging.Logger;
  */
 public class CVar {
 
-    private static final Logger             LOG  = Logger.getLogger(CVar.class.getName());
-    private final        Collection<String> tags = new LinkedList<>();
+    private static final Logger LOG = Logger.getLogger(CVar.class.getName());
+    private final Collection<String> tags = new LinkedList<>();
     private Object defaultValue;
     private String desc;
     private Object maximum;
     private Object minimum;
     private String name;
-    /** null if cmd */
+    /**
+     * null if cmd
+     */
     private Object value;
 
-    CVar() { }
+    CVar() {
+    }
 
     public Object getDefaultValue() {
         return defaultValue;
@@ -76,19 +79,19 @@ public class CVar {
     @Override
     public int hashCode() {
         int hash = 3;
-        hash = 97 * hash + ( ( defaultValue != null ) ? defaultValue.hashCode() : 0 );
-        hash = 97 * hash + ( ( desc != null ) ? desc.hashCode() : 0 );
-        hash = 97 * hash + ( ( maximum != null ) ? maximum.hashCode() : 0 );
-        hash = 97 * hash + ( ( minimum != null ) ? minimum.hashCode() : 0 );
-        hash = 97 * hash + ( ( name != null ) ? name.hashCode() : 0 );
-        hash = 97 * hash + ( ( tags != null ) ? tags.hashCode() : 0 );
-        hash = 97 * hash + ( ( value != null ) ? value.hashCode() : 0 );
+        hash = 97 * hash + ((defaultValue != null) ? defaultValue.hashCode() : 0);
+        hash = 97 * hash + ((desc != null) ? desc.hashCode() : 0);
+        hash = 97 * hash + ((maximum != null) ? maximum.hashCode() : 0);
+        hash = 97 * hash + ((minimum != null) ? minimum.hashCode() : 0);
+        hash = 97 * hash + ((name != null) ? name.hashCode() : 0);
+        hash = 97 * hash + ((tags != null) ? tags.hashCode() : 0);
+        hash = 97 * hash + ((value != null) ? value.hashCode() : 0);
         return hash;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if(obj instanceof CVar) {
+        if (obj instanceof CVar) {
             return toString().equals(obj.toString());
         }
         return false;
@@ -98,7 +101,7 @@ public class CVar {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(name).append(" : ").append(value).append(" : ");
-        for(String tag : tags) {
+        for (String tag : tags) {
             sb.append(", ").append('"').append(tag).append('"');
         }
         sb.append(" : ").append(desc);

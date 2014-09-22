@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 @SuppressWarnings("serial")
 abstract class AutoCompleter {
 
-    private static final String         COMPLETION   = "AUTOCOMPLETION";
+    private static final String COMPLETION = "AUTOCOMPLETION";
     private static final ActionListener acceptAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -29,30 +29,30 @@ abstract class AutoCompleter {
             completer.acceptedListItem(completer.getList().getSelectedValue());
         }
     };
-    private static final ActionListener hideAction   = new AbstractAction() {
+    private static final ActionListener hideAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            if(tf.isEnabled()) {
+            if (tf.isEnabled()) {
                 completer.getPopup().setVisible(false);
             }
         }
     };
-    private static final ActionListener showAction   = new AbstractAction() {
+    private static final ActionListener showAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
             JComponent tf = (JComponent) e.getSource();
             AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-            if(tf.isEnabled()) {
-                if(!completer.getPopup().isVisible()) {
+            if (tf.isEnabled()) {
+                if (!completer.getPopup().isVisible()) {
                     completer.showPopup();
                 }
             }
         }
     };
-    private static final Logger         LOG          = Logger.getLogger(AutoCompleter.class.getName());
-    final                JList<String>  list         = new JList<String>() {
+    private static final Logger LOG = Logger.getLogger(AutoCompleter.class.getName());
+    final JList<String> list = new JList<String>() {
         {
             setFocusable(false);
             setRequestFocusEnabled(false);
@@ -74,7 +74,7 @@ abstract class AutoCompleter {
         public void changedUpdate(DocumentEvent e) {
         }
     };
-    private final JPopupMenu       popup            = new JPopupMenu() {
+    private final JPopupMenu popup = new JPopupMenu() {
         {
             JScrollPane scroll = new JScrollPane(getList()) {
                 {
@@ -87,7 +87,7 @@ abstract class AutoCompleter {
             add(scroll);
         }
     };
-    private final int              rowCount         = 10;
+    private final int rowCount = 10;
 
     AutoCompleter(JTextComponent jtc) {
         textComponent = jtc;
@@ -95,19 +95,19 @@ abstract class AutoCompleter {
         jtc.getDocument().addDocumentListener(documentListener);
         jtc.registerKeyboardAction(shift(-1), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(shift(1), KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0), JComponent.WHEN_FOCUSED);
-        jtc.registerKeyboardAction(shift(-( rowCount - 1 )),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
-                                   JComponent.WHEN_FOCUSED);
+        jtc.registerKeyboardAction(shift(-(rowCount - 1)),
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0),
+                JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(shift(rowCount - 1),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
-                                   JComponent.WHEN_FOCUSED);
+                KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0),
+                JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(shift(Integer.MIN_VALUE),
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
-                                   JComponent.WHEN_FOCUSED);
+                KeyStroke.getKeyStroke(KeyEvent.VK_HOME, 0),
+                JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(shift(Integer.MAX_VALUE), KeyStroke.getKeyStroke(KeyEvent.VK_END, 0), JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(showAction,
-                                   KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK),
-                                   JComponent.WHEN_FOCUSED);
+                KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK),
+                JComponent.WHEN_FOCUSED);
         jtc.registerKeyboardAction(hideAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
     }
 
@@ -117,8 +117,8 @@ abstract class AutoCompleter {
             public void actionPerformed(ActionEvent e) {
                 JComponent tf = (JComponent) e.getSource();
                 AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
-                if(tf.isEnabled()) {
-                    if(completer.getPopup().isVisible()) {
+                if (tf.isEnabled()) {
+                    if (completer.getPopup().isVisible()) {
                         completer.shiftSelection(val);
                     }
                 }
@@ -158,18 +158,18 @@ abstract class AutoCompleter {
 
     private void showPopup() {
         popup.setVisible(false);
-        if(textComponent.isEnabled() && updateListData() && ( list.getModel().getSize() != 0 )) {
+        if (textComponent.isEnabled() && updateListData() && (list.getModel().getSize() != 0)) {
             textComponent.getDocument().addDocumentListener(documentListener);
             textComponent.registerKeyboardAction(acceptAction,
-                                                 KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
-                                                 JComponent.WHEN_FOCUSED);
+                    KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
+                    JComponent.WHEN_FOCUSED);
             int size = list.getModel().getSize();
-            list.setVisibleRowCount(( size < rowCount ) ? size : rowCount);
+            list.setVisibleRowCount((size < rowCount) ? size : rowCount);
             int xPos = 0;
             try {
                 int pos = Math.min(textComponent.getCaret().getDot(), textComponent.getCaret().getMark());
                 xPos = textComponent.getUI().modelToView(textComponent, pos).x;
-            } catch(BadLocationException ex) {
+            } catch (BadLocationException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             popup.show(textComponent, xPos, textComponent.getHeight());

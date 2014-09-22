@@ -30,7 +30,8 @@ class ArchiveHost {
 
     private static final Logger LOG = Logger.getLogger(ArchiveHost.class.getName());
 
-    private ArchiveHost() { }
+    private ArchiveHost() {
+    }
 
     public static void main(String[] args) {
         try {
@@ -38,9 +39,9 @@ class ArchiveHost {
             Files.registerMissingFileHandler(new MissingFileHandler() {
                 @Override
                 public SimpleVFile handle(final SimpleVFile parent, final String name) {
-                    if(!name.endsWith(".png")) return null;
+                    if (!name.endsWith(".png")) return null;
                     final SimpleVFile vtf = parent.get(name.replace(".png", ".vtf"));
-                    if(vtf == null) return null;
+                    if (vtf == null) return null;
                     return new SimpleVFile() {
                         private SoftReference<byte[]> data = new SoftReference<>(null);
 
@@ -57,22 +58,22 @@ class ArchiveHost {
                         @Override
                         public InputStream openStream() {
                             byte[] arr = data.get();
-                            if(arr == null) {
+                            if (arr == null) {
                                 try {
                                     LOG.log(Level.INFO, "Converting {0}...", vtf);
                                     VTF v = VTF.load(vtf.openStream());
-                                    if(v == null) {
+                                    if (v == null) {
                                         return null;
                                     }
                                     Image image = v.getImage(Math.min(1, v.getMipCount() - 1));
-                                    if(image == null) {
+                                    if (image == null) {
                                         return null;
                                     }
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     ImageIO.write((RenderedImage) image, "png", baos);
                                     arr = baos.toByteArray();
                                     data = new SoftReference<>(arr);
-                                } catch(IOException e) {
+                                } catch (IOException e) {
                                     LOG.log(Level.SEVERE, null, e);
                                 } finally {
                                     LOG.log(Level.INFO, "Converted {0}", vtf);
@@ -90,31 +91,31 @@ class ArchiveHost {
                 HTTPFS http = new HTTPFS();
                 http.addAll(files);
                 new Thread(http).start();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             try {
                 FTPFS ftp = new FTPFS();
                 ftp.addAll(files);
                 new Thread(ftp).start();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             FUSEFS fuse = new FUSEFS("test");
             fuse.addAll(files);
             new Thread(fuse).start();
-        } catch(ClassNotFoundException | IOException ex) {
+        } catch (ClassNotFoundException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 JOptionPane.showMessageDialog(null,
-                                              "Navigate to ftp://localhost:2121. The files will stop being hosted " +
-                                              "when you close all running instances",
-                                              "Files hosted",
-                                              JOptionPane.INFORMATION_MESSAGE,
-                                              null);
+                        "Navigate to ftp://localhost:2121. The files will stop being hosted " +
+                                "when you close all running instances",
+                        "Files hosted",
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null);
             }
         });
     }

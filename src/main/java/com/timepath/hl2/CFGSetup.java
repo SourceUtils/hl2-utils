@@ -13,34 +13,35 @@ import java.io.*;
  */
 public class CFGSetup {
 
-    private CFGSetup() { }
+    private CFGSetup() {
+    }
 
     public static void main(String[] args) throws IOException {
         File dir = new File(SteamUtils.getSteamApps() +
-                            "/common/Team Fortress 2/tf/custom/" +
-                            SteamUtils.getUser().getUser().toLowerCase().replaceAll("[^a-z0-9]", "") +
-                            "/cfg");
+                "/common/Team Fortress 2/tf/custom/" +
+                SteamUtils.getUser().getUser().toLowerCase().replaceAll("[^a-z0-9]", "") +
+                "/cfg");
         dir.mkdirs();
         String[] classes = {
                 "scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy"
         };
-        for(String clazz : classes) {
+        for (String clazz : classes) {
             File f = new File(dir, clazz + ".cfg");
-            if(f.exists()) continue;
+            if (f.exists()) continue;
             PrintWriter out = createWriter(f);
             out.println("// This file is executed when you play " + clazz);
             out.println("exec reset // Set " + clazz + " specific settings after this line");
             out.println();
         }
         File autoexec = new File(dir, "autoexec.cfg");
-        if(!autoexec.exists()) {
+        if (!autoexec.exists()) {
             PrintWriter out = createWriter(autoexec);
             out.println("// This file is executed on startup, exec other files from here");
             out.println("// Example: exec dx9frames");
             out.println();
         }
         File reset = new File(dir, "reset.cfg");
-        if(!reset.exists()) {
+        if (!reset.exists()) {
             PrintWriter out = createWriter(reset);
             out.println("// This file is executed on class change, put all your 'normal' settings here");
             out.println("// You will no longer be able to change these settings in-game");
@@ -55,8 +56,8 @@ public class CFGSetup {
             out.println();
             File config = new File(dir.getParentFile().getParentFile().getParentFile(), "cfg/config.cfg");
             BufferedReader br = createReader(config);
-            for(String line; ( line = br.readLine() ) != null; ) {
-                if(!line.contains("bind")) break;
+            for (String line; (line = br.readLine()) != null; ) {
+                if (!line.contains("bind")) break;
                 out.println(line);
             }
             out.println();
