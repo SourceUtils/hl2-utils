@@ -1,8 +1,12 @@
-/target/
-/build/
-/.gradle/
-/.idea/
-/*.iml
+target/
+build/
+.gradle/
+.idea/
+*.iml
+*.ipr
+*.iws
 
-/*.so
-/hs_err_pid*.log
+*.so
+*.dll
+*.jnilib
+hs_err_pid*.log
