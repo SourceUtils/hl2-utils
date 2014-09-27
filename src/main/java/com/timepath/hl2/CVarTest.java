@@ -461,14 +461,14 @@ class CVarTest extends JFrame {
 
     private Object[] toRow(CVar var) {
         return new Object[]{
-                        var.getName(),
-                        var.getValue(),
-                        var.getDefaultValue(),
-                        var.getMinimum(),
-                        var.getMaximum(),
-                        Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
-                        var.getDesc()
-                };
+                var.getName(),
+                var.getValue(),
+                var.getDefaultValue(),
+                var.getMinimum(),
+                var.getMaximum(),
+                Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
+                var.getDesc()
+        };
     }
 
     private void notCheckBoxActionPerformed(ActionEvent evt) {
