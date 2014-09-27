@@ -454,19 +454,21 @@ class CVarTest extends JFrame {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
         @NotNull Map<String, CVar> map = analyze(new Scanner(ret));
         for (@NotNull Map.Entry<String, CVar> entry : map.entrySet()) {
-            CVar var = entry.getValue();
-            @NotNull Object[] chunks = {
-                    var.getName(),
-                    var.getValue(),
-                    var.getDefaultValue(),
-                    var.getMinimum(),
-                    var.getMaximum(),
-                    Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
-                    var.getDesc()
-            };
-            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+            ((DefaultTableModel) jTable1.getModel()).addRow(toRow(entry.getValue()));
         }
         filter();
+    }
+
+    private Object[] toRow(CVar var) {
+        return new Object[]{
+                        var.getName(),
+                        var.getValue(),
+                        var.getDefaultValue(),
+                        var.getMinimum(),
+                        var.getMaximum(),
+                        Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
+                        var.getDesc()
+                };
     }
 
     private void notCheckBoxActionPerformed(ActionEvent evt) {
@@ -504,17 +506,7 @@ class CVarTest extends JFrame {
         @NotNull String ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--");
         @NotNull Map<String, CVar> map = analyze(new Scanner(ret));
         for (@NotNull Map.Entry<String, CVar> entry : map.entrySet()) {
-            CVar var = entry.getValue();
-            @NotNull Object[] chunks = {
-                    var.getName(),
-                    var.getValue(),
-                    var.getDefaultValue(),
-                    var.getMinimum(),
-                    var.getMaximum(),
-                    Arrays.toString(var.getTags().toArray(new String[var.getTags().size()])),
-                    var.getDesc()
-            };
-            ((DefaultTableModel) jTable1.getModel()).addRow(chunks);
+            ((DefaultTableModel) jTable1.getModel()).addRow(toRow(entry.getValue()));
         }
         filter();
     }
