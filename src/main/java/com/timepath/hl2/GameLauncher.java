@@ -297,7 +297,7 @@ class GameLauncher {
         protected Options() {
         }
 
-        public Options(File script, String... args) {
+        public Options(@Nullable File script, String... args) {
             this.script = script;
             this.args = args;
         }

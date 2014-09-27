@@ -459,7 +459,8 @@ class CVarTest extends JFrame {
         filter();
     }
 
-    private Object[] toRow(CVar var) {
+    @NotNull
+    private Object[] toRow(@NotNull CVar var) {
         return new Object[]{
                 var.getName(),
                 var.getValue(),
