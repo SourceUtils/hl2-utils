@@ -2,6 +2,8 @@ package com.timepath.hl2;
 
 import com.timepath.hl2.io.image.ImageFormat;
 import com.timepath.hl2.io.image.VTF;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -39,17 +41,17 @@ class VTFTest {
     }
 
     public static void test() {
-        JFrame frame = new JFrame("VTF Loader");
+        @NotNull JFrame frame = new JFrame("VTF Loader");
         frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        JScrollPane jsp = new JScrollPane();
+        @NotNull JScrollPane jsp = new JScrollPane();
         jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
         jsp.getVerticalScrollBar().setUnitIncrement(64);
         frame.add(jsp);
-        JPanel pane = new JPanel();
+        @NotNull JPanel pane = new JPanel();
         pane.setLayout(new BoxLayout(pane, BoxLayout.PAGE_AXIS));
         jsp.setViewportView(pane);
-        JFileChooser chooser = new JFileChooser();
-        FileFilter generic = new VtfFileFilter(ImageFormat.IMAGE_FORMAT_UNKNOWN);
+        @NotNull JFileChooser chooser = new JFileChooser();
+        @NotNull FileFilter generic = new VtfFileFilter(ImageFormat.IMAGE_FORMAT_UNKNOWN);
         chooser.addChoosableFileFilter(generic);
         chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1));
         chooser.addChoosableFileFilter(new VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT5));
@@ -70,7 +72,7 @@ class VTFTest {
                 ImageFormat.IMAGE_FORMAT_RGBA32323232F,
                 ImageFormat.IMAGE_FORMAT_RGBA8888));
         chooser.setFileFilter(generic);
-        ImagePreviewPanel preview = new ImagePreviewPanel(frame);
+        @NotNull ImagePreviewPanel preview = new ImagePreviewPanel(frame);
         chooser.setAccessory(preview);
         chooser.addPropertyChangeListener(preview);
         chooser.setControlButtonsAreShown(false);
@@ -85,10 +87,14 @@ class VTFTest {
 
         private static final int ACCSIZE = 256;
         private static final Logger LOG = Logger.getLogger(ImagePreviewPanel.class.getName());
+        @NotNull
         private final JSpinner frame;
+        @NotNull
         private final JSpinner lod;
         private Color bgColor;
+        @Nullable
         private Image image;
+        @Nullable
         private VTF vtf;
         private JFrame parentFrame;
 
@@ -124,9 +130,9 @@ class VTFTest {
             add(this.frame, BorderLayout.EAST);
         }
 
-        private void createImage(VTF v) throws IOException {
+        private void createImage(@Nullable VTF v) throws IOException {
             if (v != null) {
-                Image img = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
+                @Nullable Image img = v.getImage((Integer) lod.getValue(), (Integer) frame.getValue());
                 if (img != null) {
                     parentFrame.setIconImage(v.getThumbImage());
                     image = img;
@@ -137,7 +143,7 @@ class VTFTest {
         }
 
         @Override
-        public void paintComponent(Graphics g) {
+        public void paintComponent(@NotNull Graphics g) {
             g.setColor(bgColor);
             g.fillRect(0, 0, ACCSIZE, getHeight());
             if (image != null) {
@@ -149,7 +155,7 @@ class VTFTest {
         }
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(@NotNull PropertyChangeEvent evt) {
             String propertyName = evt.getPropertyName();
             if (propertyName.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
                 try {
@@ -161,7 +167,7 @@ class VTFTest {
             }
         }
 
-        private void load(File selection) throws IOException, FileNotFoundException {
+        private void load(@Nullable File selection) throws IOException, FileNotFoundException {
             if (selection == null) {
                 return;
             }
@@ -183,11 +189,11 @@ class VTFTest {
         }
 
         @Override
-        public boolean accept(File f) {
+        public boolean accept(@NotNull File f) {
             if (f.isDirectory()) {
                 return true;
             }
-            VTF v = null;
+            @Nullable VTF v = null;
             try {
                 v = VTF.load(new FileInputStream(f));
             } catch (IOException ex) {
@@ -202,6 +208,7 @@ class VTFTest {
             return v.getFormat() == vtfFormat;
         }
 
+        @NotNull
         @Override
         public String getDescription() {
             return "VTF (" + ((vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) ? "All" : vtfFormat.name()) + ')';
@@ -224,11 +231,11 @@ class VTFTest {
         }
 
         @Override
-        public boolean accept(File f) {
+        public boolean accept(@NotNull File f) {
             if (f.isDirectory()) {
                 return true;
             }
-            VTF v = null;
+            @Nullable VTF v = null;
             try {
                 v = VTF.load(new FileInputStream(f));
             } catch (IOException ex) {

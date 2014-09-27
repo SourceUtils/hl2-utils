@@ -1,5 +1,8 @@
 package com.timepath.hl2.cvar;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Scanner;
@@ -18,8 +21,9 @@ public class CVarList {
     private CVarList() {
     }
 
-    public static Map<String, CVar> analyzeList(Scanner scanner, Map<String, CVar> map) {
-        CVar c = null;
+    @NotNull
+    public static Map<String, CVar> analyzeList(@NotNull Scanner scanner, @NotNull Map<String, CVar> map) {
+        @Nullable CVar c = null;
         Pattern cvarlist = Pattern.compile("([\\S]*)[\\s]*:[\\s]*([\\S]*)[\\s]*:[^\"]*(.*)[\\s]*:[\\s]*(.*)");
         Pattern tag = Pattern.compile("\"([^\"]*)\"");
         Pattern kv = Pattern.compile("\"([^\"]*)\"[\\s]*=[\\s]*\"([^\"]*)\"[\\s]*(.*)");
@@ -33,9 +37,9 @@ public class CVarList {
                 continue;
             }
             LOG.fine(line);
-            Matcher cvarlistMatcher = cvarlist.matcher(line);
-            Matcher kvMatcher = kv.matcher(line);
-            Matcher descMatcher = desc.matcher(line);
+            @NotNull Matcher cvarlistMatcher = cvarlist.matcher(line);
+            @NotNull Matcher kvMatcher = kv.matcher(line);
+            @NotNull Matcher descMatcher = desc.matcher(line);
             if (kvMatcher.find()) {
                 //                    LOG.info("KV match");
                 String name = kvMatcher.group(1);
@@ -49,15 +53,15 @@ public class CVarList {
                 }
                 String extra = kvMatcher.group(3);
                 if (!extra.isEmpty()) {
-                    Matcher defaultMatcher = defaultValue.matcher(extra);
+                    @NotNull Matcher defaultMatcher = defaultValue.matcher(extra);
                     if (defaultMatcher.find()) {
                         c.setDefaultValue(defaultMatcher.group(1));
                     }
-                    Matcher minMatcher = minValue.matcher(extra);
+                    @NotNull Matcher minMatcher = minValue.matcher(extra);
                     if (minMatcher.find()) {
                         c.setMinimum(minMatcher.group(1));
                     }
-                    Matcher maxMatcher = maxValue.matcher(extra);
+                    @NotNull Matcher maxMatcher = maxValue.matcher(extra);
                     if (maxMatcher.find()) {
                         c.setMaximum(maxMatcher.group(1));
                     }
@@ -67,7 +71,7 @@ public class CVarList {
                 c = new CVar();
                 c.setName(cvarlistMatcher.group(1));
                 c.setValue(cvarlistMatcher.group(2));
-                Matcher tagMatcher = tag.matcher(cvarlistMatcher.group(3));
+                @NotNull Matcher tagMatcher = tag.matcher(cvarlistMatcher.group(3));
                 while (tagMatcher.find()) {
                     c.getTags().add(tagMatcher.group());
                 }

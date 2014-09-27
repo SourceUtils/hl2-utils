@@ -1,6 +1,7 @@
 package com.timepath.hl2;
 
 import com.timepath.hl2.gameinfo.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -21,16 +22,16 @@ public class ExternalScoreboard extends ExternalConsole {
     }
 
     public static void main(String... args) throws IOException {
-        ExternalScoreboard es = new ExternalScoreboard();
+        @NotNull ExternalScoreboard es = new ExternalScoreboard();
         es.connect(12345);
         es.setVisible(true);
     }
 
     @Override
-    protected void parse(String lines) {
+    protected void parse(@NotNull String lines) {
         getOutput().setText("");
-        String[] strings = lines.split("\n");
-        for (String s : strings) {
+        @NotNull String[] strings = lines.split("\n");
+        for (@NotNull String s : strings) {
             if (s.contains(" killed ")) {
                 notify(s);
             }
@@ -52,7 +53,7 @@ public class ExternalScoreboard extends ExternalConsole {
         for (Player player : players) {
             getOutput().append(player + "\n");
         }
-        Player me = getPlayer("TimePath");
+        @NotNull Player me = getPlayer("TimePath");
         getOutput().append("\nAllies:\n");
         for (int i = 0; i < me.getAllies().size(); i++) {
             getOutput().append(me.getAllies().get(i) + "\n");
@@ -64,9 +65,9 @@ public class ExternalScoreboard extends ExternalConsole {
         getOutput().append("\n");
     }
 
-    private void notify(String s) {
-        Player killer = getPlayer(s.split(" killed ")[0]);
-        Player victim = getPlayer(s.split(" killed ")[1].split(" with ")[0]);
+    private void notify(@NotNull String s) {
+        @NotNull Player killer = getPlayer(s.split(" killed ")[0]);
+        @NotNull Player victim = getPlayer(s.split(" killed ")[1].split(" with ")[0]);
         String weapon = s.split(" killed ")[1].split(" with ")[1];
         Player.exchangeInfo(victim, killer);
         boolean crit = weapon.endsWith("(crit)");
@@ -74,18 +75,19 @@ public class ExternalScoreboard extends ExternalConsole {
         if (crit) {
             weapon = '*' + weapon + '*';
         }
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         sb.append(killer.getName()).append(" = ").append(weapon).append(" -> ").append(victim.getName());
         getOutput().append(sb + "\n");
     }
 
+    @NotNull
     private Player getPlayer(String name) {
-        for (Player p : players) {
+        for (@NotNull Player p : players) {
             if (p.getName().equals(name)) {
                 return p;
             }
         }
-        Player p = new Player(name);
+        @NotNull Player p = new Player(name);
         players.add(p);
         return p;
     }

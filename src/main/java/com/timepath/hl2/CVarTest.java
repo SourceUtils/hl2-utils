@@ -4,6 +4,8 @@ import com.timepath.hl2.cvar.CVar;
 import com.timepath.hl2.cvar.CVarList;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.swing.StatusBar;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -34,6 +36,7 @@ import java.util.regex.PatternSyntaxException;
 class CVarTest extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(CVarTest.class.getName());
+    @NotNull
     private final TableRowSorter<TableModel> sorter;
     private JCheckBox caseSensitiveCheckBox;
     private JLabel jLabel1;
@@ -49,9 +52,9 @@ class CVarTest extends JFrame {
     private CVarTest() {
         initComponents();
         sorter = new TableRowSorter<>(jTable1.getModel());
-        Comparator<String> comparator = new Comparator<String>() {
+        @NotNull Comparator<String> comparator = new Comparator<String>() {
             @Override
-            public int compare(String o1, String o2) {
+            public int compare(@NotNull String o1, @NotNull String o2) {
                 return o1.replaceFirst("\\+", "")
                         .replaceFirst("-", "")
                         .toLowerCase()
@@ -59,7 +62,7 @@ class CVarTest extends JFrame {
             }
         };
         sorter.setComparator(0, comparator);
-        List<RowSorter.SortKey> sortKeys = new LinkedList<>();
+        @NotNull List<RowSorter.SortKey> sortKeys = new LinkedList<>();
         sortKeys.add(new RowSorter.SortKey(0, SortOrder.ASCENDING));
         sorter.setSortKeys(sortKeys);
         jTable1.setRowSorter(sorter);
@@ -120,30 +123,30 @@ class CVarTest extends JFrame {
     }
 
     private void initComponents() {
-        JScrollPane jScrollPane1 = new JScrollPane();
+        @NotNull JScrollPane jScrollPane1 = new JScrollPane();
         jTable1 = new JTable();
-        StatusBar statusBar1 = new StatusBar();
-        JLabel jLabel2 = new JLabel();
+        @NotNull StatusBar statusBar1 = new StatusBar();
+        @NotNull JLabel jLabel2 = new JLabel();
         jLabel1 = new JLabel();
-        JToolBar.Separator jSeparator1 = new JToolBar.Separator();
-        JLabel jLabel4 = new JLabel();
+        @NotNull JToolBar.Separator jSeparator1 = new JToolBar.Separator();
+        @NotNull JLabel jLabel4 = new JLabel();
         jLabel5 = new JLabel();
-        JPanel jPanel1 = new JPanel();
+        @NotNull JPanel jPanel1 = new JPanel();
         jTextField1 = new JTextField();
-        JLabel jLabel3 = new JLabel();
+        @NotNull JLabel jLabel3 = new JLabel();
         regexCheckBox = new JCheckBox();
         caseSensitiveCheckBox = new JCheckBox();
         notCheckBox = new JCheckBox();
-        JMenuBar jMenuBar1 = new JMenuBar();
-        JMenu jMenu1 = new JMenu();
-        JMenuItem jMenuItem1 = new JMenuItem();
-        JMenuItem jMenuItem4 = new JMenuItem();
-        JMenuItem jMenuItem6 = new JMenuItem();
-        JMenuItem jMenuItem5 = new JMenuItem();
-        JMenuItem jMenuItem7 = new JMenuItem();
-        JMenu jMenu2 = new JMenu();
-        JMenuItem jMenuItem2 = new JMenuItem();
-        JMenuItem jMenuItem3 = new JMenuItem();
+        @NotNull JMenuBar jMenuBar1 = new JMenuBar();
+        @NotNull JMenu jMenu1 = new JMenu();
+        @NotNull JMenuItem jMenuItem1 = new JMenuItem();
+        @NotNull JMenuItem jMenuItem4 = new JMenuItem();
+        @NotNull JMenuItem jMenuItem6 = new JMenuItem();
+        @NotNull JMenuItem jMenuItem5 = new JMenuItem();
+        @NotNull JMenuItem jMenuItem7 = new JMenuItem();
+        @NotNull JMenu jMenu2 = new JMenu();
+        @NotNull JMenuItem jMenuItem2 = new JMenuItem();
+        @NotNull JMenuItem jMenuItem3 = new JMenuItem();
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("CVar listing");
         jTable1.setModel(new DefaultTableModel(new Object[][]{
@@ -187,7 +190,7 @@ class CVarTest extends JFrame {
                 notCheckBoxActionPerformed(e);
             }
         });
-        GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
+        @NotNull GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addGroup(jPanel1Layout.createSequentialGroup()
@@ -288,7 +291,7 @@ class CVarTest extends JFrame {
         jMenu2.add(jMenuItem3);
         jMenuBar1.add(jMenu2);
         setJMenuBar(jMenuBar1);
-        GroupLayout layout = new GroupLayout(getContentPane());
+        @NotNull GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(statusBar1,
@@ -318,10 +321,11 @@ class CVarTest extends JFrame {
         pack();
     }
 
-    private Map<String, CVar> analyze(Scanner scanner) {
-        Map<String, CVar> map = CVarList.analyzeList(scanner, new HashMap<String, CVar>());
-        DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
-        String[] columns = new String[p.getColumnCount()];
+    @NotNull
+    private Map<String, CVar> analyze(@NotNull Scanner scanner) {
+        @NotNull Map<String, CVar> map = CVarList.analyzeList(scanner, new HashMap<String, CVar>());
+        @NotNull DefaultTableModel p = (DefaultTableModel) jTable1.getModel();
+        @NotNull String[] columns = new String[p.getColumnCount()];
         for (int i = 0; i < columns.length; i++) {
             columns[i] = p.getColumnName(i);
         }
@@ -330,15 +334,16 @@ class CVarTest extends JFrame {
 
     private void jMenuItem1ActionPerformed(ActionEvent evt) {
         try {
-            final File[] f = new NativeFileChooser().setTitle("Select cvarlist").choose();
+            @Nullable final File[] f = new NativeFileChooser().setTitle("Select cvarlist").choose();
             if (f != null) {
-                SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
+                @NotNull SwingWorker<Void, Object[]> worker = new SwingWorker<Void, Object[]>() {
+                    @Nullable
                     @Override
                     protected Void doInBackground() throws Exception {
-                        RandomAccessFile rf = new RandomAccessFile(f[0].getPath(), "r");
-                        Scanner scanner = new Scanner(rf.getChannel());
-                        Map<String, CVar> map = analyze(scanner);
-                        for (Map.Entry<String, CVar> entry : map.entrySet()) {
+                        @NotNull RandomAccessFile rf = new RandomAccessFile(f[0].getPath(), "r");
+                        @NotNull Scanner scanner = new Scanner(rf.getChannel());
+                        @NotNull Map<String, CVar> map = analyze(scanner);
+                        for (@NotNull Map.Entry<String, CVar> entry : map.entrySet()) {
                             CVar var = entry.getValue();
                             publish(new Object[]{
                                     var.getName(),
@@ -354,7 +359,7 @@ class CVarTest extends JFrame {
                     }
 
                     @Override
-                    protected void process(List<Object[]> chunks) {
+                    protected void process(@NotNull List<Object[]> chunks) {
                         for (Object[] row : chunks) {
                             ((DefaultTableModel) jTable1.getModel()).addRow(row);
                         }
@@ -377,19 +382,19 @@ class CVarTest extends JFrame {
     }
 
     private void jMenuItem2ActionPerformed(ActionEvent evt) {
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         for (int i = 0; i < jTable1.getModel().getRowCount(); i++) {
             int row = jTable1.convertRowIndexToModel(i);
             sb.append(jTable1.getModel().getValueAt(row, 0)).append('\n');
         }
-        StringSelection selection = new StringSelection(sb.toString());
+        @NotNull StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }
 
     private void jMenuItem3ActionPerformed(ActionEvent evt) {
         TableModel m = jTable1.getModel();
-        StringBuilder sb = new StringBuilder();
-        String tab = "|";
+        @NotNull StringBuilder sb = new StringBuilder();
+        @NotNull String tab = "|";
         int col;
         int rows = m.getRowCount();
         int cols = m.getColumnCount();
@@ -397,7 +402,7 @@ class CVarTest extends JFrame {
             col = jTable1.convertColumnIndexToModel(i);
             sb.append(tab).append(m.getColumnName(col));
         }
-        String line = "\n";
+        @NotNull String line = "\n";
         sb.append(tab).append(line);
         for (int i = 0; i < cols; i++) {
             sb.append(tab).append("--");
@@ -414,7 +419,7 @@ class CVarTest extends JFrame {
                 sb.append(tab);
                 if (obj != null) {
                     if (obj instanceof Object[]) {
-                        Object[] arr = (Object[]) obj;
+                        @NotNull Object[] arr = (Object[]) obj;
                         sb.append(arr[0]);
                         for (int k = 1; k < arr.length; k++) {
                             sb.append(", ").append(arr[k]);
@@ -426,16 +431,16 @@ class CVarTest extends JFrame {
             }
             sb.append(tab).append(line);
         }
-        StringSelection selection = new StringSelection(sb.toString());
+        @NotNull StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }
 
     private void jMenuItem4ActionPerformed(ActionEvent evt) {
         clear();
-        String ret = null;
+        @Nullable String ret = null;
         int limit = 5;
         for (int i = 0; ; i++) {
-            String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--", "--end of cvarlist--");
+            @NotNull String temp = ExternalConsole.exec("cvarlist; echo --end of cvarlist--", "--end of cvarlist--");
             if (temp.equals(ret)) {
                 break;
             }
@@ -445,12 +450,12 @@ class CVarTest extends JFrame {
             }
             ret = temp;
         }
-        StringSelection selection = new StringSelection(ret);
+        @NotNull StringSelection selection = new StringSelection(ret);
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-        Map<String, CVar> map = analyze(new Scanner(ret));
-        for (Map.Entry<String, CVar> entry : map.entrySet()) {
+        @NotNull Map<String, CVar> map = analyze(new Scanner(ret));
+        for (@NotNull Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
-            Object[] chunks = {
+            @NotNull Object[] chunks = {
                     var.getName(),
                     var.getValue(),
                     var.getDefaultValue(),
@@ -469,7 +474,7 @@ class CVarTest extends JFrame {
     }
 
     private void jMenuItem5ActionPerformed(ActionEvent evt) {
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         sb.append("sv_cheats 1\n");
         ExternalConsole.exec("sv_cheats 1", null);
         TableModel m = jTable1.getModel();
@@ -483,24 +488,24 @@ class CVarTest extends JFrame {
             }
             Object val = m.getValueAt(row, jTable1.convertColumnIndexToModel(2));
             if (val != null) {
-                String strVal = "\"" + val + '"';
+                @NotNull String strVal = "\"" + val + '"';
                 sb.append(name).append(' ').append(strVal).append('\n');
                 ExternalConsole.exec(name + " " + strVal, null);
             }
         }
         sb.append("sv_cheats 0\n");
         ExternalConsole.exec("sv_cheats 0", null);
-        StringSelection selection = new StringSelection(sb.toString());
+        @NotNull StringSelection selection = new StringSelection(sb.toString());
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
     }
 
     private void jMenuItem6ActionPerformed(ActionEvent evt) {
         clear();
-        String ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--");
-        Map<String, CVar> map = analyze(new Scanner(ret));
-        for (Map.Entry<String, CVar> entry : map.entrySet()) {
+        @NotNull String ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--");
+        @NotNull Map<String, CVar> map = analyze(new Scanner(ret));
+        for (@NotNull Map.Entry<String, CVar> entry : map.entrySet()) {
             CVar var = entry.getValue();
-            Object[] chunks = {
+            @NotNull Object[] chunks = {
                     var.getName(),
                     var.getValue(),
                     var.getDefaultValue(),
@@ -519,7 +524,7 @@ class CVarTest extends JFrame {
     }
 
     private void clear() {
-        DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
+        @NotNull DefaultTableModel dm = (DefaultTableModel) jTable1.getModel();
         int rowCount = dm.getRowCount();
         for (int i = 0; i < rowCount; i++) {
             dm.removeRow(0);

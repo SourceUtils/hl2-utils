@@ -9,6 +9,8 @@ import com.timepath.vfs.SimpleVFile.MissingFileHandler;
 import com.timepath.vfs.ftp.FTPFS;
 import com.timepath.vfs.fuse.FUSEFS;
 import com.timepath.vfs.http.HTTPFS;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -37,14 +39,17 @@ class ArchiveHost {
         try {
             Class.forName(BSP.class.getName());
             Files.registerMissingFileHandler(new MissingFileHandler() {
+                @Nullable
                 @Override
-                public SimpleVFile handle(final SimpleVFile parent, final String name) {
+                public SimpleVFile handle(@NotNull final SimpleVFile parent, @NotNull final String name) {
                     if (!name.endsWith(".png")) return null;
-                    final SimpleVFile vtf = parent.get(name.replace(".png", ".vtf"));
+                    @Nullable final SimpleVFile vtf = parent.get(name.replace(".png", ".vtf"));
                     if (vtf == null) return null;
                     return new SimpleVFile() {
+                        @NotNull
                         private SoftReference<byte[]> data = new SoftReference<>(null);
 
+                        @NotNull
                         @Override
                         public String getName() {
                             return name;
@@ -55,21 +60,22 @@ class ArchiveHost {
                             return false;
                         }
 
+                        @Nullable
                         @Override
                         public InputStream openStream() {
-                            byte[] arr = data.get();
+                            @Nullable byte[] arr = data.get();
                             if (arr == null) {
                                 try {
                                     LOG.log(Level.INFO, "Converting {0}...", vtf);
-                                    VTF v = VTF.load(vtf.openStream());
+                                    @Nullable VTF v = VTF.load(vtf.openStream());
                                     if (v == null) {
                                         return null;
                                     }
-                                    Image image = v.getImage(Math.min(1, v.getMipCount() - 1));
+                                    @Nullable Image image = v.getImage(Math.min(1, v.getMipCount() - 1));
                                     if (image == null) {
                                         return null;
                                     }
-                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    @NotNull ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     ImageIO.write((RenderedImage) image, "png", baos);
                                     arr = baos.toByteArray();
                                     data = new SoftReference<>(arr);
@@ -85,26 +91,26 @@ class ArchiveHost {
                 }
             });
             int appID = 440;
-            ACF acf = ACF.fromManifest(appID);
-            Collection<? extends SimpleVFile> files = acf.list();
+            @Nullable ACF acf = ACF.fromManifest(appID);
+            @Nullable Collection<? extends SimpleVFile> files = acf.list();
             try {
-                HTTPFS http = new HTTPFS();
+                @NotNull HTTPFS http = new HTTPFS();
                 http.addAll(files);
                 new Thread(http).start();
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             try {
-                FTPFS ftp = new FTPFS();
+                @NotNull FTPFS ftp = new FTPFS();
                 ftp.addAll(files);
                 new Thread(ftp).start();
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            FUSEFS fuse = new FUSEFS("test");
+            @NotNull FUSEFS fuse = new FUSEFS("test");
             fuse.addAll(files);
             new Thread(fuse).start();
-        } catch (ClassNotFoundException | IOException ex) {
+        } catch (@NotNull ClassNotFoundException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         SwingUtilities.invokeLater(new Runnable() {

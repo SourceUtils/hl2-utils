@@ -2,6 +2,7 @@ package com.timepath.hl2;
 
 import com.timepath.steam.io.VDF;
 import com.timepath.steam.io.VDFNode;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -56,9 +57,9 @@ class VDFDiffTest extends JFrame {
                 @Override
                 public void actionPerformed(final ActionEvent e) {
                     try {
-                        VDFNode n1 = VDF.load(new ByteArrayInputStream(text1.getText()
+                        @NotNull VDFNode n1 = VDF.load(new ByteArrayInputStream(text1.getText()
                                 .getBytes(StandardCharsets.UTF_8)));
-                        VDFNode n2 = VDF.load(new ByteArrayInputStream(text2.getText()
+                        @NotNull VDFNode n2 = VDF.load(new ByteArrayInputStream(text2.getText()
                                 .getBytes(StandardCharsets.UTF_8)));
                         n1.getNodes().get(0).rdiff2(n2.getNodes().get(0));
                     } catch (IOException ex) {

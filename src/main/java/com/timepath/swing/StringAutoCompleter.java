@@ -1,6 +1,8 @@
 package com.timepath.swing;
 
 import com.timepath.util.Trie;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.text.JTextComponent;
 import java.util.Collections;
@@ -14,12 +16,15 @@ public class StringAutoCompleter extends AutoCompleter {
 
     private static final Logger LOG = Logger.getLogger(StringAutoCompleter.class.getName());
     private final int depth;
+    @NotNull
     private final Trie trie;
     private boolean cached;
+    @NotNull
     private String last = "";
+    @Nullable
     private Trie.TrieMapping n;
 
-    private StringAutoCompleter(JTextComponent comp, Trie trie, int depth) {
+    private StringAutoCompleter(@NotNull JTextComponent comp, @NotNull Trie trie, int depth) {
         super(comp);
         this.trie = trie;
         n = trie.root;
@@ -28,7 +33,7 @@ public class StringAutoCompleter extends AutoCompleter {
 
     @Override
     protected boolean updateListData() {
-        String text = textComponent.getText().toLowerCase();
+        @NotNull String text = textComponent.getText().toLowerCase();
         if (last.equals(text)) {
             return cached;
         }
@@ -41,7 +46,7 @@ public class StringAutoCompleter extends AutoCompleter {
         if (n == null) {
             n = trie.root;
         }
-        List<String> strings = trie.get(String.valueOf(text.charAt(text.length() - 1)), depth, n);
+        @Nullable List<String> strings = trie.get(String.valueOf(text.charAt(text.length() - 1)), depth, n);
         if (strings == null) {
             return false;
         }
@@ -60,7 +65,7 @@ public class StringAutoCompleter extends AutoCompleter {
     }
 
     @Override
-    protected void acceptedListItem(String selected) {
+    protected void acceptedListItem(@Nullable String selected) {
         if (selected == null) {
             return;
         }

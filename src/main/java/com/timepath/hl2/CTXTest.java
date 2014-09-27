@@ -4,6 +4,8 @@ import com.timepath.hl2.io.CTX;
 import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import org.jdesktop.swingx.JXTextArea;
 import org.jdesktop.swingx.JXTextField;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,9 +36,9 @@ public class CTXTest extends JFrame {
         output.setRows(5);
         output.setTabSize(4);
         output.setEditable(false);
-        JMenuBar jMenuBar1 = new JMenuBar();
-        JMenu jMenu1 = new JMenu("File");
-        JMenuItem jMenuItem1 = new JMenuItem("Open");
+        @NotNull JMenuBar jMenuBar1 = new JMenuBar();
+        @NotNull JMenu jMenu1 = new JMenu("File");
+        @NotNull JMenuItem jMenuItem1 = new JMenuItem("Open");
         jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK));
         jMenuItem1.addActionListener(new ActionListener() {
             @Override
@@ -47,9 +49,9 @@ public class CTXTest extends JFrame {
         jMenu1.add(jMenuItem1);
         jMenuBar1.add(jMenu1);
         this.setJMenuBar(jMenuBar1);
-        GroupLayout layout = new GroupLayout(getContentPane());
+        @NotNull GroupLayout layout = new GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
-        JScrollPane jScrollPane2 = new JScrollPane(output);
+        @NotNull JScrollPane jScrollPane2 = new JScrollPane(output);
         layout.setHorizontalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addComponent(input)
                 .addComponent(jScrollPane2,
@@ -83,9 +85,9 @@ public class CTXTest extends JFrame {
 
     protected void open() {
         try {
-            File[] f = new NativeFileChooser().setTitle("Select CTX").setMultiSelectionEnabled(false).choose();
+            @Nullable File[] f = new NativeFileChooser().setTitle("Select CTX").setMultiSelectionEnabled(false).choose();
             if (f == null) return;
-            BufferedReader br = new BufferedReader(new InputStreamReader(CTX.decrypt(input.getText().getBytes(),
+            @NotNull BufferedReader br = new BufferedReader(new InputStreamReader(CTX.decrypt(input.getText().getBytes(),
                     new FileInputStream(f[0]))));
             output.setText("");
             for (String line; (line = br.readLine()) != null; ) output.append(line + '\n');

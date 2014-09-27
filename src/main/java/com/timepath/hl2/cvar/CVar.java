@@ -1,5 +1,7 @@
 package com.timepath.hl2.cvar;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.logging.Logger;
@@ -64,6 +66,7 @@ public class CVar {
         this.name = name;
     }
 
+    @NotNull
     public Collection<String> getTags() {
         return tags;
     }
@@ -97,9 +100,10 @@ public class CVar {
         return false;
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         sb.append(name).append(" : ").append(value).append(" : ");
         for (String tag : tags) {
             sb.append(", ").append('"').append(tag).append('"');

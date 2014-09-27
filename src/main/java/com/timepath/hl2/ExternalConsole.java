@@ -1,5 +1,8 @@
 package com.timepath.hl2;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
@@ -29,7 +32,9 @@ public class ExternalConsole extends JFrame {
 
     private static final Logger LOG = Logger.getLogger(ExternalConsole.class.getName());
     private static final Pattern regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*");
+    @NotNull
     private final JTextField input;
+    @NotNull
     private final JTextArea output;
     private ScriptEngine engine = initScriptEngine();
     private PrintWriter pw;
@@ -39,9 +44,9 @@ public class ExternalConsole extends JFrame {
         output = new JTextArea();
         output.setFont(new Font("Monospaced", Font.PLAIN, 15));
         output.setEnabled(false);
-        DefaultCaret caret = (DefaultCaret) output.getCaret();
+        @NotNull DefaultCaret caret = (DefaultCaret) output.getCaret();
         caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
-        JScrollPane jsp = new JScrollPane(output);
+        @NotNull JScrollPane jsp = new JScrollPane(output);
         jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         input = new JTextField();
@@ -57,11 +62,11 @@ public class ExternalConsole extends JFrame {
                 input.setText("");
             }
         });
-        JMenuBar jmb = new JMenuBar();
+        @NotNull JMenuBar jmb = new JMenuBar();
         setJMenuBar(jmb);
-        JMenu fileMenu = new JMenu("File");
+        @NotNull JMenu fileMenu = new JMenu("File");
         jmb.add(fileMenu);
-        JMenuItem reload = new JMenuItem("Reload script");
+        @NotNull JMenuItem reload = new JMenuItem("Reload script");
         fileMenu.add(reload);
         reload.addActionListener(new ActionListener() {
             @Override
@@ -91,12 +96,13 @@ public class ExternalConsole extends JFrame {
         pack();
     }
 
-    public static String exec(String cmd, CharSequence breakline) {
-        StringBuilder sb = new StringBuilder();
+    @NotNull
+    public static String exec(String cmd, @Nullable CharSequence breakline) {
+        @NotNull StringBuilder sb = new StringBuilder();
         try {
-            Socket sock = new Socket(InetAddress.getByName(null), 12345);
-            PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
-            BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+            @NotNull Socket sock = new Socket(InetAddress.getByName(null), 12345);
+            @NotNull PrintWriter pw = new PrintWriter(sock.getOutputStream(), true);
+            @NotNull BufferedReader in = new BufferedReader(new InputStreamReader(sock.getInputStream()));
             pw.println(cmd);
             if (breakline != null) {
                 in.readLine(); // first line is echoed
@@ -116,17 +122,17 @@ public class ExternalConsole extends JFrame {
     }
 
     public static void main(String... args) throws Exception {
-        ExternalConsole ec = new ExternalConsole();
+        @NotNull ExternalConsole ec = new ExternalConsole();
         ec.connect(12345);
         ec.setVisible(true);
     }
 
-    public static void setErr(final InputStream s) {
+    public static void setErr(@NotNull final InputStream s) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
+                    @NotNull BufferedReader in = new BufferedReader(new InputStreamReader(s));
                     String line;
                     while ((line = in.readLine()) != null) {
                         System.err.println(line);
@@ -140,14 +146,14 @@ public class ExternalConsole extends JFrame {
     }
 
     private ScriptEngine initScriptEngine() {
-        ScriptEngineManager factory = new ScriptEngineManager();
+        @NotNull ScriptEngineManager factory = new ScriptEngineManager();
         ScriptEngine scriptEngine = factory.getEngineByName("JavaScript");
         //        Bindings bindings = engine.createBindings();
         //        bindings.put("loadTime", new Date());
         scriptEngine.getContext().setWriter(pw);
         try {
             scriptEngine.eval(new FileReader("extern.js"));
-        } catch (ScriptException | FileNotFoundException ex) {
+        } catch (@NotNull ScriptException | FileNotFoundException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
         return scriptEngine;
@@ -156,6 +162,7 @@ public class ExternalConsole extends JFrame {
     /**
      * @return the output
      */
+    @NotNull
     protected JTextArea getOutput() {
         return output;
     }
@@ -166,13 +173,13 @@ public class ExternalConsole extends JFrame {
         setOut(sock.getOutputStream());
     }
 
-    void setIn(final InputStream s) {
+    void setIn(@Nullable final InputStream s) {
         output.setEnabled(s != null);
         new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
-                    BufferedReader in = new BufferedReader(new InputStreamReader(s));
+                    @NotNull BufferedReader in = new BufferedReader(new InputStreamReader(s));
                     String line;
                     while ((line = in.readLine()) != null) {
                         update(line);
@@ -185,7 +192,7 @@ public class ExternalConsole extends JFrame {
         }).start();
     }
 
-    void update(String str) {
+    void update(@NotNull String str) {
         parse(str);
         appendOutput(str);
     }
@@ -194,31 +201,31 @@ public class ExternalConsole extends JFrame {
         output.append(str + '\n');
     }
 
-    protected void parse(String in) {
+    protected void parse(@NotNull String in) {
         if (!in.startsWith(">>>")) {
             return;
         }
-        String str = in.substring(3);
+        @NotNull String str = in.substring(3);
         System.out.println("Matching " + str);
-        Matcher m = regex.matcher(str);
+        @NotNull Matcher m = regex.matcher(str);
         if (!m.matches()) {
             System.out.println("Doesn't match");
             return;
         }
         String fn = m.group(1);
         System.out.println(fn);
-        Object args = m.group(2).split(",");
+        @NotNull Object args = m.group(2).split(",");
         System.out.println(System.currentTimeMillis());
-        Invocable inv = (Invocable) engine;
+        @NotNull Invocable inv = (Invocable) engine;
         try {
             inv.invokeFunction(fn, args);
-        } catch (ScriptException | NoSuchMethodException ex) {
+        } catch (@NotNull ScriptException | NoSuchMethodException ex) {
             Logger.getLogger(ExternalConsole.class.getName()).log(Level.SEVERE, null, ex);
         }
         System.out.println(System.currentTimeMillis());
     }
 
-    void setOut(OutputStream s) {
+    void setOut(@Nullable OutputStream s) {
         input.setEnabled(s != null);
         pw = new PrintWriter(s, true);
         engine.getContext().setWriter(pw);

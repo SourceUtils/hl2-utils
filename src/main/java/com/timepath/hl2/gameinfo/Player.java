@@ -1,5 +1,7 @@
 package com.timepath.hl2.gameinfo;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,28 +32,28 @@ public class Player {
      * @param v Victim
      * @param k Killer
      */
-    public static void exchangeInfo(Player v, Player k) {
-        Iterable<Player> vAllies = new LinkedList<>(v.allies);
-        Iterable<Player> vEnemies = new LinkedList<>(v.enemies);
-        Collection<Player> kAllies = new LinkedList<>(k.allies);
-        Collection<Player> kEnemies = new LinkedList<>(k.enemies);
+    public static void exchangeInfo(@NotNull Player v, @NotNull Player k) {
+        @NotNull Iterable<Player> vAllies = new LinkedList<>(v.allies);
+        @NotNull Iterable<Player> vEnemies = new LinkedList<>(v.enemies);
+        @NotNull Collection<Player> kAllies = new LinkedList<>(k.allies);
+        @NotNull Collection<Player> kEnemies = new LinkedList<>(k.enemies);
         if (k.allies.contains(v) || v.allies.contains(k)) { // Traitor
-            for (Player kAlly : k.allies) {
+            for (@NotNull Player kAlly : k.allies) {
                 kAlly.allies.remove(k);
                 kAlly.enemies.remove(k);
                 kAlly.enemies.add(k);
             }
-            for (Player vAlly : v.allies) {
+            for (@NotNull Player vAlly : v.allies) {
                 vAlly.allies.remove(k);
                 vAlly.enemies.remove(k);
                 vAlly.enemies.add(k);
             }
-            for (Player kEnemy : k.enemies) {
+            for (@NotNull Player kEnemy : k.enemies) {
                 kEnemy.enemies.remove(k);
                 kEnemy.allies.remove(k);
                 kEnemy.allies.add(k);
             }
-            for (Player vEnemy : v.enemies) {
+            for (@NotNull Player vEnemy : v.enemies) {
                 vEnemy.enemies.remove(k);
                 vEnemy.allies.remove(k);
                 vEnemy.allies.add(k);
@@ -72,16 +74,16 @@ public class Player {
         }
     }
 
-    void addAllies(Iterable<Player> list) {
-        for (Player ally : list) {
+    void addAllies(@NotNull Iterable<Player> list) {
+        for (@NotNull Player ally : list) {
             addAllyR(ally);
-            for (Player enemy : enemies) {
+            for (@NotNull Player enemy : enemies) {
                 enemy.addEnemyR(ally);
             }
         }
     }
 
-    void addAlly(Player other) {
+    void addAlly(@NotNull Player other) {
         if (other == this) {
             return;
         }
@@ -93,23 +95,23 @@ public class Player {
         }
     }
 
-    void addAllyR(Player other) {
+    void addAllyR(@NotNull Player other) {
         addAlly(other);
-        for (Player ally : allies) {
+        for (@NotNull Player ally : allies) {
             ally.addAlly(other);
         }
     }
 
-    void addEnemies(Iterable<Player> enemies) {
-        for (Player list1 : enemies) {
+    void addEnemies(@NotNull Iterable<Player> enemies) {
+        for (@NotNull Player list1 : enemies) {
             addEnemyR(list1);
-            for (Player ally : allies) {
+            for (@NotNull Player ally : allies) {
                 ally.addEnemyR(list1);
             }
         }
     }
 
-    void addEnemy(Player other) {
+    void addEnemy(@NotNull Player other) {
         if (other == this) {
             return;
         }
@@ -121,19 +123,20 @@ public class Player {
         }
     }
 
-    void addEnemyR(Player other) {
+    void addEnemyR(@NotNull Player other) {
         addEnemy(other);
-        for (Player ally : allies) {
+        for (@NotNull Player ally : allies) {
             ally.addEnemy(other);
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
+        @NotNull StringBuilder sb = new StringBuilder();
         sb.append(name);
         sb.append(" (e:{");
-        List<Player> myEnemies = enemies;
+        @NotNull List<Player> myEnemies = enemies;
         for (int i = 0; i < enemies.size(); i++) {
             sb.append(myEnemies.get(i).name);
             if ((i + 1) < enemies.size()) {
@@ -141,7 +144,7 @@ public class Player {
             }
         }
         sb.append("}, a:{");
-        List<Player> myAllies = allies;
+        @NotNull List<Player> myAllies = allies;
         for (int i = 0; i < allies.size(); i++) {
             sb.append(myAllies.get(i).name);
             if ((i + 1) < allies.size()) {
@@ -155,6 +158,7 @@ public class Player {
     /**
      * @return the allies
      */
+    @NotNull
     public List<Player> getAllies() {
         return allies;
     }
@@ -162,6 +166,7 @@ public class Player {
     /**
      * @return the enemies
      */
+    @NotNull
     public List<Player> getEnemies() {
         return enemies;
     }

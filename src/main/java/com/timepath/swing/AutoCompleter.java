@@ -1,5 +1,7 @@
 package com.timepath.swing;
 
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -22,18 +24,18 @@ abstract class AutoCompleter {
     private static final String COMPLETION = "AUTOCOMPLETION";
     private static final ActionListener acceptAction = new AbstractAction() {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+        public void actionPerformed(@NotNull ActionEvent e) {
+            @NotNull JComponent tf = (JComponent) e.getSource();
+            @NotNull AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
             completer.getPopup().setVisible(false);
             completer.acceptedListItem(completer.getList().getSelectedValue());
         }
     };
     private static final ActionListener hideAction = new AbstractAction() {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+        public void actionPerformed(@NotNull ActionEvent e) {
+            @NotNull JComponent tf = (JComponent) e.getSource();
+            @NotNull AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
             if (tf.isEnabled()) {
                 completer.getPopup().setVisible(false);
             }
@@ -41,9 +43,9 @@ abstract class AutoCompleter {
     };
     private static final ActionListener showAction = new AbstractAction() {
         @Override
-        public void actionPerformed(ActionEvent e) {
-            JComponent tf = (JComponent) e.getSource();
-            AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+        public void actionPerformed(@NotNull ActionEvent e) {
+            @NotNull JComponent tf = (JComponent) e.getSource();
+            @NotNull AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
             if (tf.isEnabled()) {
                 if (!completer.getPopup().isVisible()) {
                     completer.showPopup();
@@ -58,6 +60,7 @@ abstract class AutoCompleter {
             setRequestFocusEnabled(false);
         }
     };
+    @NotNull
     final JTextComponent textComponent;
     private final DocumentListener documentListener = new DocumentListener() {
         @Override
@@ -76,7 +79,7 @@ abstract class AutoCompleter {
     };
     private final JPopupMenu popup = new JPopupMenu() {
         {
-            JScrollPane scroll = new JScrollPane(getList()) {
+            @NotNull JScrollPane scroll = new JScrollPane(getList()) {
                 {
                     setBorder(null);
                     getVerticalScrollBar().setFocusable(false);
@@ -89,7 +92,7 @@ abstract class AutoCompleter {
     };
     private final int rowCount = 10;
 
-    AutoCompleter(JTextComponent jtc) {
+    AutoCompleter(@NotNull JTextComponent jtc) {
         textComponent = jtc;
         jtc.putClientProperty(COMPLETION, this);
         jtc.getDocument().addDocumentListener(documentListener);
@@ -111,12 +114,13 @@ abstract class AutoCompleter {
         jtc.registerKeyboardAction(hideAction, KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), JComponent.WHEN_FOCUSED);
     }
 
+    @NotNull
     private static ActionListener shift(final int val) {
         return new AbstractAction() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                JComponent tf = (JComponent) e.getSource();
-                AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
+            public void actionPerformed(@NotNull ActionEvent e) {
+                @NotNull JComponent tf = (JComponent) e.getSource();
+                @NotNull AutoCompleter completer = (AutoCompleter) tf.getClientProperty(COMPLETION);
                 if (tf.isEnabled()) {
                     if (completer.getPopup().isVisible()) {
                         completer.shiftSelection(val);
@@ -129,6 +133,7 @@ abstract class AutoCompleter {
     /**
      * @return the popup
      */
+    @NotNull
     JPopupMenu getPopup() {
         return popup;
     }
@@ -152,6 +157,7 @@ abstract class AutoCompleter {
     /**
      * @return the list
      */
+    @NotNull
     JList<String> getList() {
         return list;
     }

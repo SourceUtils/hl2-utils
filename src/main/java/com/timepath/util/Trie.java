@@ -1,5 +1,8 @@
 package com.timepath.util;
 
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +20,7 @@ public class Trie {
     }
 
     public static void main(String... args) {
-        Trie t = new Trie();
+        @NotNull Trie t = new Trie();
         t.add("af");
         t.add("abd");
         t.add("abc");
@@ -26,7 +29,7 @@ public class Trie {
         LOG.info(t.get("a", 3).toString());
     }
 
-    public void add(String s) {
+    public void add(@NotNull String s) {
         TrieMapping n = root;
         for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
@@ -45,12 +48,14 @@ public class Trie {
      * @param depth
      * @return A list of strings, or null
      */
-    List<String> get(String s, int depth) {
+    @Nullable
+    List<String> get(@NotNull String s, int depth) {
         return get(s, depth, root);
     }
 
-    public List<String> get(String s, int depth, TrieMapping n) {
-        String path = s + n;
+    @Nullable
+    public List<String> get(@NotNull String s, int depth, @NotNull TrieMapping n) {
+        @NotNull String path = s + n;
         LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", new Object[]{
                 s, depth, n
         });
@@ -58,9 +63,9 @@ public class Trie {
             LOG.info("Fom cache");
             return cache.get(path);
         }
-        List<String> results = new LinkedList<>();
+        @NotNull List<String> results = new LinkedList<>();
         int i = 0;
-        Character c = null;
+        @Nullable Character c = null;
         for (i = 0; i < s.length(); i++) {
             c = s.charAt(i);
             if (!n.containsKey(c)) { // Return null if a letter is not present in the tree
@@ -70,22 +75,22 @@ public class Trie {
         }
         LOG.log(Level.INFO, "Stopped at {0}, keys: {1}", new Object[]{s.substring(0, i), n.keySet()});
         depth += 1;
-        Collection<TrieMapping> all = new LinkedList<>();
+        @NotNull Collection<TrieMapping> all = new LinkedList<>();
         all.add(n);
-        Collection<TrieMapping> local = new LinkedList<>();
+        @NotNull Collection<TrieMapping> local = new LinkedList<>();
         local.addAll(n.values());
         LOG.log(Level.INFO, "  all {0}", all);
         for (int j = 1; j < depth; j++) {
             LOG.log(Level.INFO, "Depth {0}", j);
             LOG.log(Level.INFO, "  local {0}", local);
-            List<TrieMapping> local2 = new LinkedList<>();
-            for (TrieMapping tm : local) {
+            @NotNull List<TrieMapping> local2 = new LinkedList<>();
+            for (@Nullable TrieMapping tm : local) {
                 if (tm == null) { // char mismatch
                     continue;
                 }
-                Set<Character> chars = tm.keySet();
+                @NotNull Set<Character> chars = tm.keySet();
                 LOG.log(Level.INFO, "    examining {0}, {1}", new Object[]{tm, chars});
-                for (Character ch : chars) {
+                for (@Nullable Character ch : chars) {
                     if (ch == null) { // exact match
                         results.add(tm.toString());
                     } else {
@@ -106,7 +111,7 @@ public class Trie {
         return results;
     }
 
-    public boolean contains(String s) {
+    public boolean contains(@NotNull String s) {
         TrieMapping n = root;
         for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
@@ -119,7 +124,8 @@ public class Trie {
         return n.containsKey(null);
     }
 
-    public TrieMapping node(String s) {
+    @Nullable
+    public TrieMapping node(@NotNull String s) {
         TrieMapping n = root;
         for (int i = 0; i < s.length(); i++) {
             Character c = s.charAt(i);
@@ -147,7 +153,7 @@ public class Trie {
         }
 
         @Override
-        public TrieMapping put(Character key, TrieMapping value) {
+        public TrieMapping put(Character key, @Nullable TrieMapping value) {
             if (value != null) {
                 value.parent = this;
                 value.key = key;
@@ -155,6 +161,7 @@ public class Trie {
             return super.put(key, value);
         }
 
+        @NotNull
         @Override
         public String toString() {
             return (parent != null) ? (parent.toString() + key) : "";

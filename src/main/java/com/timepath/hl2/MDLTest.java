@@ -26,6 +26,8 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser;
 import com.timepath.steam.io.storage.ACF;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.VFile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
@@ -52,8 +54,10 @@ public class MDLTest extends SimpleApplication {
     private static final Logger LOG = Logger.getLogger(MDLTest.class.getName());
     private static final Logger LOG_JME = Logger.getLogger("com.jme3");
     protected final ExecutorService executor = new ScheduledThreadPoolExecutor(4);
+    @NotNull
     protected String FRAME_TITLE = "HLMV";
     protected JFrame frame;
+    @NotNull
     protected Node modelNode = new Node("Model node");
 
     protected MDLTest() {
@@ -61,10 +65,10 @@ public class MDLTest extends SimpleApplication {
 
     public static void main(String[] args) {
         LOG_JME.setLevel(Level.WARNING);
-        SimpleApplication app = new MDLTest();
+        @NotNull SimpleApplication app = new MDLTest();
         app.setPauseOnLostFocus(false);
         app.setShowSettings(true);
-        AppSettings settings = new AppSettings(true);
+        @NotNull AppSettings settings = new AppSettings(true);
         settings.setRenderer(AppSettings.LWJGL_OPENGL_ANY);
         settings.setAudioRenderer(null);
         app.setSettings(settings);
@@ -88,7 +92,7 @@ public class MDLTest extends SimpleApplication {
     }
 
     protected void attachCoordinateAxes(Vector3f pos, float length, int width) {
-        Arrow arrow = new Arrow(Vector3f.UNIT_X.mult(length));
+        @NotNull Arrow arrow = new Arrow(Vector3f.UNIT_X.mult(length));
         arrow.setLineWidth(width);
         putShape(arrow, ColorRGBA.Red).setLocalTranslation(pos);
         arrow = new Arrow(Vector3f.UNIT_Y.mult(length));
@@ -99,9 +103,10 @@ public class MDLTest extends SimpleApplication {
         putShape(arrow, ColorRGBA.Blue).setLocalTranslation(pos);
     }
 
+    @NotNull
     protected Geometry putShape(Mesh shape, ColorRGBA color) {
-        Geometry g = new Geometry("coordinate axis", shape);
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        @NotNull Geometry g = new Geometry("coordinate axis", shape);
+        @NotNull Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
         mat.setColor("Color", color);
         g.setMaterial(mat);
@@ -110,8 +115,8 @@ public class MDLTest extends SimpleApplication {
     }
 
     protected void attachGrid(Vector3f pos, int size, ColorRGBA color) {
-        Geometry g = new Geometry("wireframe grid", new Grid(size, size, 1));
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        @NotNull Geometry g = new Geometry("wireframe grid", new Grid(size, size, 1));
+        @NotNull Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.getAdditionalRenderState().setWireframe(true);
         mat.setColor("Color", color);
         g.setMaterial(mat);
@@ -122,7 +127,7 @@ public class MDLTest extends SimpleApplication {
     protected void initInput() {
         flyCam.setDragToRotate(true);
         flyCam.setEnabled(false);
-        ChaseCamera chaseCam = new ChaseCamera(cam, rootNode, inputManager);
+        @NotNull ChaseCamera chaseCam = new ChaseCamera(cam, rootNode, inputManager);
         chaseCam.setSmoothMotion(false);
         chaseCam.setRotationSpeed(3);
         chaseCam.setInvertHorizontalAxis(false);
@@ -139,13 +144,15 @@ public class MDLTest extends SimpleApplication {
     }
 
     protected void loadMap(final String name) {
-        final Application application = this;
+        @NotNull final Application application = this;
         executor.submit(new Callable<Void>() {
+            @Nullable
             @Override
             public Void call() throws Exception {
                 try {
                     final Spatial mdl = assetManager.loadModel(name);
                     return application.enqueue(new Callable<Void>() {
+                        @Nullable
                         @Override
                         public Void call() {
                             modelNode.attachChild(mdl);
@@ -172,15 +179,15 @@ public class MDLTest extends SimpleApplication {
     @Override
     public void startCanvas(boolean waitFor) {
         super.startCanvas(waitFor);
-        final MDLTest app = this;
+        @NotNull final MDLTest app = this;
         Canvas canvas = ((JmeCanvasContext) context).getCanvas();
         canvas.setSize(settings.getWidth(), settings.getHeight());
         frame = new JFrame(FRAME_TITLE);
-        JMenuBar mb = new JMenuBar();
+        @NotNull JMenuBar mb = new JMenuBar();
         frame.setJMenuBar(mb);
-        JMenu fileMenu = new JMenu("File");
+        @NotNull JMenu fileMenu = new JMenu("File");
         mb.add(fileMenu);
-        JMenuItem clearItem = new JMenuItem("Detach all");
+        @NotNull JMenuItem clearItem = new JMenuItem("Detach all");
         clearItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -188,7 +195,7 @@ public class MDLTest extends SimpleApplication {
             }
         });
         fileMenu.add(clearItem);
-        JMenuItem openName = new JMenuItem("Open from game");
+        @NotNull JMenuItem openName = new JMenuItem("Open from game");
         openName.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
@@ -196,12 +203,12 @@ public class MDLTest extends SimpleApplication {
             }
         });
         fileMenu.add(openName);
-        JMenuItem openFile = new JMenuItem("Open from file");
+        @NotNull JMenuItem openFile = new JMenuItem("Open from file");
         openFile.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent ae) {
                 try {
-                    File[] f = new NativeFileChooser().setParent(frame).setTitle("Select model").choose();
+                    @Nullable File[] f = new NativeFileChooser().setParent(frame).setTitle("Select model").choose();
                     if (f == null) {
                         return;
                     }
@@ -232,15 +239,17 @@ public class MDLTest extends SimpleApplication {
     }
 
     protected void loadModel(final String name) {
-        final Geometry box = createBox(10);
+        @NotNull final Geometry box = createBox(10);
         modelNode.attachChild(box);
-        final Application application = this;
+        @NotNull final Application application = this;
         executor.submit(new Callable<Void>() {
+            @Nullable
             @Override
             public Void call() throws Exception {
                 try {
                     final Spatial mdl = assetManager.loadModel(name);
                     return application.enqueue(new Callable<Void>() {
+                        @Nullable
                         @Override
                         public Void call() {
                             modelNode.detachChild(box);
@@ -260,9 +269,10 @@ public class MDLTest extends SimpleApplication {
         });
     }
 
+    @NotNull
     protected Geometry createBox(float s) {
-        Geometry box = new Geometry("Box", new Box(0.5f * s, 0.5f * s, 0.5f * s));
-        Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        @NotNull Geometry box = new Geometry("Box", new Box(0.5f * s, 0.5f * s, 0.5f * s));
+        @NotNull Material mat = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         mat.setColor("Color", ColorRGBA.randomColor());
         Texture tex = assetManager.loadTexture("platform/materials/vgui/vtfnotloaded.vtf");
         mat.setTexture("ColorMap", tex);
@@ -272,12 +282,13 @@ public class MDLTest extends SimpleApplication {
 
     public static class ACFLocator implements AssetLocator {
 
+        @Nullable
         private final SimpleVFile source;
         private final int appID = 440; // TODO: Make configurable
         private String rootPath;
 
         public ACFLocator() {
-            ACF loading = null;
+            @Nullable ACF loading = null;
             try {
                 loading = ACF.fromManifest(appID);
             } catch (IOException ex) {
@@ -291,16 +302,17 @@ public class MDLTest extends SimpleApplication {
             rootPath = path;
         }
 
+        @Nullable
         @SuppressWarnings("rawtypes")
         @Override
-        public AssetInfo locate(AssetManager manager, AssetKey key) {
+        public AssetInfo locate(AssetManager manager, @NotNull AssetKey key) {
             if (source == null) {
                 throw new AssetLoadException(MessageFormat.format(
                         "Steam game {0} not installed, run steam://install/{0}",
                         appID));
             }
-            String search = rootPath + VFile.SEPARATOR + key.getName();
-            SimpleVFile found = source.query(search);
+            @NotNull String search = rootPath + VFile.SEPARATOR + key.getName();
+            @Nullable SimpleVFile found = source.query(search);
             if (found == null) {
                 throw new AssetNotFoundException(MessageFormat.format("{0} not found", search));
             }
@@ -317,6 +329,7 @@ public class MDLTest extends SimpleApplication {
                 this.source = source;
             }
 
+            @Nullable
             @Override
             public InputStream openStream() {
                 return source.openStream();
@@ -331,14 +344,15 @@ public class MDLTest extends SimpleApplication {
         public BSPLoader() {
         }
 
+        @NotNull
         @Override
-        public Object load(AssetInfo info) throws IOException {
+        public Object load(@NotNull AssetInfo info) throws IOException {
             AssetManager am = info.getManager();
             String name = info.getKey().getName();
             LOG.log(Level.INFO, "Loading {0}...", name);
-            BSP m = BSP.load(info.openStream());
+            @Nullable BSP m = BSP.load(info.openStream());
             LOG.log(Level.INFO, "Creating mesh...");
-            Mesh mesh = new Mesh();
+            @NotNull Mesh mesh = new Mesh();
             mesh.setMode(Mesh.Mode.Lines);
             mesh.setPointSize(2);
             FloatBuffer posBuf = m.getVertices();
@@ -352,9 +366,9 @@ public class MDLTest extends SimpleApplication {
             mesh.setStatic();
             mesh.updateBound();
             mesh.updateCounts();
-            Geometry geom = new Geometry(name + "-geom", mesh);
+            @NotNull Geometry geom = new Geometry(name + "-geom", mesh);
             geom.rotateUpTo(Vector3f.UNIT_Z.negate());
-            Material skin = new Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+            @NotNull Material skin = new Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md");
             skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
             skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"));
             geom.setMaterial(skin);
@@ -371,9 +385,10 @@ public class MDLTest extends SimpleApplication {
         public MDLLoader() {
         }
 
+        @NotNull
         @SuppressWarnings("rawtypes")
         @Override
-        public Object load(AssetInfo info) throws IOException {
+        public Object load(@NotNull AssetInfo info) throws IOException {
             AssetManager am = info.getManager();
             String name = info.getKey().getName();
             LOG.log(Level.INFO, "Loading {0}...\n", name);
@@ -381,33 +396,33 @@ public class MDLTest extends SimpleApplication {
             InputStream mdlStream = info.openStream();
             InputStream vvdStream = am.locateAsset(new AssetKey(name + ".vvd")).openStream();
             InputStream vtxStream = am.locateAsset(new AssetKey(name + ".dx90.vtx")).openStream();
-            StudioModel m = new StudioModel(mdlStream, vvdStream, vtxStream);
-            Mesh mesh = new Mesh();
-            FloatBuffer posBuf = m.getVertices();
+            @NotNull StudioModel m = new StudioModel(mdlStream, vvdStream, vtxStream);
+            @NotNull Mesh mesh = new Mesh();
+            @NotNull FloatBuffer posBuf = m.getVertices();
             if (posBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf);
             }
-            FloatBuffer normBuf = m.getNormals();
+            @NotNull FloatBuffer normBuf = m.getNormals();
             if (normBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Normal, 3, normBuf);
             }
-            FloatBuffer texBuf = m.getTextureCoordinates();
+            @NotNull FloatBuffer texBuf = m.getTextureCoordinates();
             if (texBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.TexCoord, 2, texBuf);
             }
-            FloatBuffer tanBuf = m.getTangents();
+            @NotNull FloatBuffer tanBuf = m.getTangents();
             if (tanBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Tangent, 4, tanBuf);
             }
-            IntBuffer idxBuf = m.getIndices();
+            @NotNull IntBuffer idxBuf = m.getIndices();
             if (idxBuf != null) {
                 mesh.setBuffer(VertexBuffer.Type.Index, 3, idxBuf);
             }
             mesh.setStatic();
             mesh.updateBound();
             mesh.updateCounts();
-            Geometry geom = new Geometry(name + "-geom", mesh);
-            Material skin = new Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+            @NotNull Geometry geom = new Geometry(name + "-geom", mesh);
+            @NotNull Material skin = new Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md");
             skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front);
             try {
                 skin.setTexture("ColorMap", am.loadTexture(name + ".vtf"));
@@ -427,12 +442,13 @@ public class MDLTest extends SimpleApplication {
         public VTFLoader() {
         }
 
+        @NotNull
         @Override
-        public Object load(AssetInfo info) throws IOException {
+        public Object load(@NotNull AssetInfo info) throws IOException {
             String name = info.getKey().getName();
             LOG.log(Level.INFO, "Loading {0}...\n", name);
-            VTF v = VTF.load(info.openStream());
-            BufferedImage bimg = (BufferedImage) v.getImage(0);
+            @Nullable VTF v = VTF.load(info.openStream());
+            @NotNull BufferedImage bimg = (BufferedImage) v.getImage(0);
             ByteBuffer buf = BufferUtils.createByteBuffer(bimg.getWidth() * bimg.getHeight() * 4);
             for (int y = bimg.getHeight() - 1; y >= 0; y--) {
                 for (int x = 0; x < bimg.getWidth(); x++) {
@@ -444,7 +460,7 @@ public class MDLTest extends SimpleApplication {
                 }
             }
             buf.flip();
-            Image img = new Image();
+            @NotNull Image img = new Image();
             img.setFormat(Image.Format.RGBA8);
             img.setWidth(bimg.getWidth());
             img.setHeight(bimg.getHeight());

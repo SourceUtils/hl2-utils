@@ -14,6 +14,8 @@ import org.jdesktop.swingx.JXTable;
 import org.jdesktop.swingx.JXTree;
 import org.jdesktop.swingx.decorator.AbstractHighlighter;
 import org.jdesktop.swingx.decorator.ComponentAdapter;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -42,6 +44,7 @@ import java.util.logging.Logger;
 public class DEMTest extends JPanel {
 
     private static final Logger LOG = Logger.getLogger(DEMTest.class.getName());
+    @NotNull
     public final JMenuBar menu;
     protected HexEditor hex;
     protected JTabbedPane tabs;
@@ -79,8 +82,9 @@ public class DEMTest extends JPanel {
             }});
         }});
         table.addHighlighter(new AbstractHighlighter() {
+            @NotNull
             @Override
-            protected Component doHighlight(final Component component, final ComponentAdapter adapter) {
+            protected Component doHighlight(@NotNull final Component component, @NotNull final ComponentAdapter adapter) {
                 if (adapter.row >= 0 && tableModel.messages.size() > 0 && adapter.row < tableModel.messages.size()) {
                     Message f = tableModel.messages.get(DEMTest.this.table.convertRowIndexToModel(adapter.row));
                     Color c;
@@ -115,14 +119,14 @@ public class DEMTest extends JPanel {
                 if (row == -1) return;
                 Message frame = tableModel.messages.get(table.convertRowIndexToModel(row));
                 hex.setData(frame.data);
-                DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
+                @NotNull DefaultMutableTreeNode root = new DefaultMutableTreeNode(frame);
                 recurse(frame.meta, root);
-                DefaultMutableTreeNode container = new DefaultMutableTreeNode();
+                @NotNull DefaultMutableTreeNode container = new DefaultMutableTreeNode();
                 container.add(root);
-                TreeModel tm = new DefaultTreeModel(container);
+                @NotNull TreeModel tm = new DefaultTreeModel(container);
                 tree.setModel(tm);
                 for (int i = -1; ++i < tree.getRowCount(); ) { // Expand all
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
+                    @NotNull DefaultMutableTreeNode node = (DefaultMutableTreeNode) tree.getPathForRow(i).getLastPathComponent();
                     if (node.getLevel() < 3) tree.expandRow(i);
                 }
             }
@@ -135,7 +139,7 @@ public class DEMTest extends JPanel {
                 Object lastPathComponent = selectionPath.getLastPathComponent();
                 Object o = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
                 if (o instanceof Packet) {
-                    Packet p = (Packet) o;
+                    @NotNull Packet p = (Packet) o;
                     try {
                         int offsetBytes = p.offset / 8;
                         int offsetBits = p.offset % 8;
@@ -176,9 +180,9 @@ public class DEMTest extends JPanel {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                JXFrame f = new JXFrame("netdecode");
+                @NotNull JXFrame f = new JXFrame("netdecode");
                 f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-                DEMTest demTest = new DEMTest();
+                @NotNull DEMTest demTest = new DEMTest();
                 f.add(demTest);
                 f.setJMenuBar(demTest.menu);
                 f.pack();
@@ -188,13 +192,13 @@ public class DEMTest extends JPanel {
         });
     }
 
-    protected void recurse(Iterable<?> i, DefaultMutableTreeNode root) {
+    protected void recurse(@NotNull Iterable<?> i, @NotNull DefaultMutableTreeNode root) {
         for (Object entry : i) {
             if (entry instanceof Pair) {
-                Pair p = (Pair) entry;
+                @NotNull Pair p = (Pair) entry;
                 expand(p, p.getKey(), p.getValue(), root);
             } else if (entry instanceof Map.Entry) {
-                Map.Entry e = (Map.Entry) entry;
+                @NotNull Map.Entry e = (Map.Entry) entry;
                 expand(e, e.getKey(), e.getValue(), root);
             } else {
                 root.add(new DefaultMutableTreeNode(entry));
@@ -202,9 +206,9 @@ public class DEMTest extends JPanel {
         }
     }
 
-    protected void expand(Object entry, Object k, Object v, DefaultMutableTreeNode root) {
+    protected void expand(Object entry, Object k, Object v, @NotNull DefaultMutableTreeNode root) {
         if (v instanceof Iterable) {
-            DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
+            @NotNull DefaultMutableTreeNode n = new DefaultMutableTreeNode(k);
             root.add(n);
             recurse((Iterable<?>) v, n);
         } else {
@@ -214,7 +218,7 @@ public class DEMTest extends JPanel {
 
     protected void open() {
         try {
-            final File[] fs = new NativeFileChooser().setTitle("Open DEM")
+            @Nullable final File[] fs = new NativeFileChooser().setTitle("Open DEM")
                     .setDirectory(new File(SteamUtils.getSteamApps(),
                             "common/Team Fortress 2/tf/."))
                     .addFilter(new BaseFileChooser.ExtensionFilter("Demo files",
@@ -222,33 +226,36 @@ public class DEMTest extends JPanel {
                     .choose();
             if (fs == null) return;
             new SwingWorker<HL2DEM, Message>() {
+                @NotNull
                 DefaultListModel<Pair> listEvt = new DefaultListModel<>();
+                @NotNull
                 DefaultListModel<Pair> listMsg = new DefaultListModel<>();
                 int incomplete = 0;
 
+                @NotNull
                 @Override
                 protected HL2DEM doInBackground() throws Exception {
                     tableModel.messages.clear();
-                    HL2DEM demo = HL2DEM.load(fs[0]);
-                    List<Message> frames = demo.getFrames(); // TODO: Stream
+                    @NotNull HL2DEM demo = HL2DEM.load(fs[0]);
+                    @NotNull List<Message> frames = demo.getFrames(); // TODO: Stream
                     publish(frames.toArray(new Message[frames.size()]));
                     return demo;
                 }
 
                 @Override
-                protected void process(final List<Message> chunks) {
-                    for (Message m : chunks) {
+                protected void process(@NotNull final List<Message> chunks) {
+                    for (@NotNull Message m : chunks) {
                         if (m.incomplete) incomplete++;
                         tableModel.messages.add(m);
                         switch (m.type) {
                             case Packet:
                             case Signon:
-                                for (Pair<Object, Object> ents : m.meta) {
+                                for (@NotNull Pair<Object, Object> ents : m.meta) {
                                     if (!(ents.getKey() instanceof Packet)) break;
                                     if (!(ents.getValue() instanceof Iterable)) break;
                                     for (Object o : (Iterable) ents.getValue()) {
                                         if (!(o instanceof Pair)) break;
-                                        Pair pair = (Pair) o;
+                                        @NotNull Pair pair = (Pair) o;
                                         switch (((Packet) ents.getKey()).type) {
                                             case svc_GameEvent:
                                                 listEvt.addElement(pair);
@@ -278,10 +285,10 @@ public class DEMTest extends JPanel {
                     }
                     LOG.info(String.format("Total incomplete messages: %d / %d", incomplete, demo.getFrames().size()));
                     while (tabs.getTabCount() > 1) tabs.remove(1); // Remove previous events and messages
-                    JScrollPane jsp = new JScrollPane(new JList<>(listEvt));
+                    @NotNull JScrollPane jsp = new JScrollPane(new JList<>(listEvt));
                     jsp.getVerticalScrollBar().setUnitIncrement(16);
                     tabs.add("Events", jsp);
-                    JScrollPane jsp2 = new JScrollPane(new JList<>(listMsg));
+                    @NotNull JScrollPane jsp2 = new JScrollPane(new JList<>(listMsg));
                     jsp2.getVerticalScrollBar().setUnitIncrement(16);
                     tabs.add("Messages", jsp2);
                     table.setModel(tableModel);
@@ -293,22 +300,25 @@ public class DEMTest extends JPanel {
     }
 
     protected void showCommands() {
-        StringBuilder sb = new StringBuilder();
-        for (Message m : tableModel.messages) {
+        @NotNull StringBuilder sb = new StringBuilder();
+        for (@NotNull Message m : tableModel.messages) {
             if (m.type != MessageType.ConsoleCmd) continue;
-            for (Pair p : m.meta) {
+            for (@NotNull Pair p : m.meta) {
                 sb.append('\n').append(p.getValue());
             }
         }
-        JScrollPane jsp = new JScrollPane(new JTextArea(sb.length() > 0 ? sb.substring(1) : ""));
+        @NotNull JScrollPane jsp = new JScrollPane(new JTextArea(sb.length() > 0 ? sb.substring(1) : ""));
         jsp.setPreferredSize(new Dimension(500, 500));
         JOptionPane.showMessageDialog(this, jsp);
     }
 
     protected class MessageModel extends AbstractTableModel {
 
+        @NotNull
         protected ArrayList<Message> messages = new ArrayList<>();
+        @NotNull
         protected String[] columns = {"Tick", "Type", "Size"};
+        @NotNull
         protected Class[] types = {Integer.class, Enum.class, Integer.class};
 
         @Override
@@ -336,6 +346,7 @@ public class DEMTest extends JPanel {
             return false;
         }
 
+        @Nullable
         @Override
         public Object getValueAt(final int rowIndex, final int columnIndex) {
             if (messages.isEmpty()) return null;
