@@ -6,9 +6,9 @@ import com.timepath.steam.io.storage.ACF;
 import com.timepath.steam.io.storage.Files;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.SimpleVFile.MissingFileHandler;
-import com.timepath.vfs.ftp.FTPFS;
-import com.timepath.vfs.fuse.FUSEFS;
-import com.timepath.vfs.http.HTTPFS;
+import com.timepath.vfs.provider.ftp.FtpProvider;
+import com.timepath.vfs.provider.fuse.FuseProvider;
+import com.timepath.vfs.provider.http.HttpProvider;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -94,20 +94,20 @@ class ArchiveHost {
             @Nullable ACF acf = ACF.fromManifest(appID);
             @Nullable Collection<? extends SimpleVFile> files = acf.list();
             try {
-                @NotNull HTTPFS http = new HTTPFS();
+                @NotNull HttpProvider http = new HttpProvider();
                 http.addAll(files);
                 new Thread(http).start();
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             try {
-                @NotNull FTPFS ftp = new FTPFS();
+                @NotNull FtpProvider ftp = new FtpProvider();
                 ftp.addAll(files);
                 new Thread(ftp).start();
             } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            @NotNull FUSEFS fuse = new FUSEFS("test");
+            @NotNull FuseProvider fuse = new FuseProvider("test");
             fuse.addAll(files);
             new Thread(fuse).start();
         } catch (@NotNull ClassNotFoundException | IOException ex) {
