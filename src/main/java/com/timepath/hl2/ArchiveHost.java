@@ -3,7 +3,7 @@ package com.timepath.hl2;
 import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.image.VTF;
 import com.timepath.steam.io.storage.ACF;
-import com.timepath.vfs.provider.Files;
+import com.timepath.vfs.provider.local.LocalFileProvider;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.SimpleVFile.MissingFileHandler;
 import com.timepath.vfs.server.ftp.FtpServer;
@@ -38,7 +38,7 @@ class ArchiveHost {
     public static void main(String[] args) {
         try {
             Class.forName(BSP.class.getName());
-            Files.registerMissingFileHandler(new MissingFileHandler() {
+            LocalFileProvider.registerMissingFileHandler(new MissingFileHandler() {
                 @Nullable
                 @Override
                 public SimpleVFile handle(@NotNull final SimpleVFile parent, @NotNull final String name) {
