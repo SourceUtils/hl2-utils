@@ -3,16 +3,12 @@ package com.timepath.hl2;
 import com.timepath.hl2.io.bsp.BSP;
 import com.timepath.hl2.io.image.VTF;
 import com.timepath.steam.io.storage.ACF;
-import com.timepath.steam.io.storage.Files;
 import com.timepath.vfs.SimpleVFile;
 import com.timepath.vfs.SimpleVFile.MissingFileHandler;
-import com.timepath.vfs.ftp.FTPFS;
-import com.timepath.vfs.fuse.FUSEFS;
-import com.timepath.vfs.http.HTTPFS;
-
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
+import com.timepath.vfs.server.ftp.FtpServer;
+import com.timepath.vfs.server.fuse.FuseServer;
+import com.timepath.vfs.server.http.HttpServer;
+import java.awt.Image;
 import java.awt.image.RenderedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -22,6 +18,9 @@ import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.imageio.ImageIO;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 /**
  * @author TimePath
@@ -30,17 +29,18 @@ class ArchiveHost {
 
     private static final Logger LOG = Logger.getLogger(ArchiveHost.class.getName());
 
-    private ArchiveHost() { }
+    private ArchiveHost() {
+    }
 
     public static void main(String[] args) {
         try {
             Class.forName(BSP.class.getName());
-            Files.registerMissingFileHandler(new MissingFileHandler() {
+            SimpleVFile.registerMissingFileHandler(new MissingFileHandler() {
                 @Override
                 public SimpleVFile handle(final SimpleVFile parent, final String name) {
-                    if(!name.endsWith(".png")) return null;
+                    if (!name.endsWith(".png")) return null;
                     final SimpleVFile vtf = parent.get(name.replace(".png", ".vtf"));
-                    if(vtf == null) return null;
+                    if (vtf == null) return null;
                     return new SimpleVFile() {
                         private SoftReference<byte[]> data = new SoftReference<>(null);
 
@@ -57,22 +57,22 @@ class ArchiveHost {
                         @Override
                         public InputStream openStream() {
                             byte[] arr = data.get();
-                            if(arr == null) {
+                            if (arr == null) {
                                 try {
                                     LOG.log(Level.INFO, "Converting {0}...", vtf);
                                     VTF v = VTF.load(vtf.openStream());
-                                    if(v == null) {
+                                    if (v == null) {
                                         return null;
                                     }
                                     Image image = v.getImage(Math.min(1, v.getMipCount() - 1));
-                                    if(image == null) {
+                                    if (image == null) {
                                         return null;
                                     }
                                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                                     ImageIO.write((RenderedImage) image, "png", baos);
                                     arr = baos.toByteArray();
                                     data = new SoftReference<>(arr);
-                                } catch(IOException e) {
+                                } catch (IOException e) {
                                     LOG.log(Level.SEVERE, null, e);
                                 } finally {
                                     LOG.log(Level.INFO, "Converted {0}", vtf);
@@ -87,34 +87,34 @@ class ArchiveHost {
             ACF acf = ACF.fromManifest(appID);
             Collection<? extends SimpleVFile> files = acf.list();
             try {
-                HTTPFS http = new HTTPFS();
+                HttpServer http = new HttpServer();
                 http.addAll(files);
                 new Thread(http).start();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
             try {
-                FTPFS ftp = new FTPFS();
+                FtpServer ftp = new FtpServer();
                 ftp.addAll(files);
                 new Thread(ftp).start();
-            } catch(IOException ex) {
+            } catch (IOException ex) {
                 LOG.log(Level.SEVERE, null, ex);
             }
-            FUSEFS fuse = new FUSEFS("test");
+            FuseServer fuse = new FuseServer("test");
             fuse.addAll(files);
             new Thread(fuse).start();
-        } catch(ClassNotFoundException | IOException ex) {
+        } catch (ClassNotFoundException | IOException ex) {
             LOG.log(Level.SEVERE, null, ex);
         }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
                 JOptionPane.showMessageDialog(null,
-                                              "Navigate to ftp://localhost:2121. The files will stop being hosted " +
-                                              "when you close all running instances",
-                                              "Files hosted",
-                                              JOptionPane.INFORMATION_MESSAGE,
-                                              null);
+                        "Navigate to ftp://localhost:2121. The files will stop being hosted " +
+                                "when you close all running instances",
+                        "Files hosted",
+                        JOptionPane.INFORMATION_MESSAGE,
+                        null);
             }
         });
     }
