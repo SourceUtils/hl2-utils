@@ -1,21 +1,35 @@
-description = ''
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
+    }
+    dependencies {
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:0.10.770'
+    }
+}
+
+apply plugin: "kotlin"
 
 repositories {
-  maven { url 'http://updates.jmonkeyengine.org/maven' }
+    mavenCentral()
+    maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'http://updates.jmonkeyengine.org/maven' }
 }
 
 dependencies {
-  compile 'org.swinglabs.swingx:swingx-all:1.6.5'
+    compile 'org.jetbrains.kotlin:kotlin-stdlib:0.10.770'
 
-  compile 'lib:pty4j-0.3.jar:135.999'
-  compile 'lib:purejavacomm.jar:135.999'
-  compile 'log4j:log4j:1.2.17'
-  compile 'com.google.guava:guava:17.0'
+    compile 'org.swinglabs.swingx:swingx-all:1.6.5'
 
-  compile 'com.jme3:jme3-core:3.0.10'
-  compile 'com.jme3:jme3-desktop:3.0.10'
-  compile 'com.jme3:jme3-lwjgl:3.0.10'
+    compile 'lib:pty4j-0.3.jar:135.999'
+    compile 'lib:purejavacomm.jar:135.999'
+    compile 'log4j:log4j:1.2.17'
+    compile 'com.google.guava:guava:17.0'
 
-  compile project(':data-examiner')
-  compile project(':hl2-toolkit')
+    compile 'com.jme3:jme3-core:3.0.10'
+    compile 'com.jme3:jme3-desktop:3.0.10'
+    compile 'com.jme3:jme3-lwjgl:3.0.10'
+
+    compile project(':hl2-toolkit')
+    compile project(':data-examiner')
 }
