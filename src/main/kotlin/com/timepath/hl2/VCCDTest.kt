@@ -99,13 +99,13 @@ class VCCDTest private() : JFrame() {
                     var i = 0
                     for (f in caps) {
                         LOG.log(Level.INFO, "Parsing {0}", f)
-                        val root = VDF.load(f.openStream())
+                        val root = VDF.load(f.openStream()!!)
                         for (node in root.getNodes()) {
                             val str = node.getCustom() as String
                             val channel = node.getValue("channel", CHAN_UNKNOWN) as String
                             LOG.log(Level.FINER, str)
                             crc.reset()
-                            crc.update(str.getBytes())
+                            crc.update(str.toByteArray())
                             map.put(crc.getValue().toInt(), StringPair(str, channel))
                         }
                         pb.setValue(++i)

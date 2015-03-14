@@ -16,7 +16,7 @@ object CFGSetup {
 
     throws(javaClass<IOException>())
     public platformStatic fun main(args: Array<String>) {
-        val dir = File("${SteamUtils.getSteamApps()}/common/Team Fortress 2/tf/custom/${SteamUtils.getUser()!!.getUser().toLowerCase().replaceAll("[^a-z0-9]", "")}/cfg")
+        val dir = File("${SteamUtils.getSteamApps()}/common/Team Fortress 2/tf/custom/${SteamUtils.getUser()!!.user!!.toLowerCase().replaceAll("[^a-z0-9]", "")}/cfg")
         dir.mkdirs()
         val classes = array("scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy")
         for (clazz in classes) {
