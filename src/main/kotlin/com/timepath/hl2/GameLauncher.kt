@@ -176,19 +176,19 @@ class GameLauncher private() {
             val bin = BVDF()
             bin.readExternal(DataUtils.mapFile(File(SteamUtils.getSteam(), "appcache/appinfo.vdf")))
             val root = bin.getRoot()
-            val gm = root.get(appID.toString())
-            val sections = gm.get("Sections")
-            val conf = sections.get("CONFIG")!!.get("config")
-            val installdir = conf.get("installdir")!!.value.toString()
+            val gm = root[appID.toString()]
+            val sections = gm["Sections"]
+            val conf = sections["CONFIG"]!!["config"]
+            val installdir = conf["installdir"]!!.value.toString()
             val dir = File(SteamUtils.getSteamApps(), "common/" + installdir)
-            val l = conf.get("launch")
+            val l = conf["launch"]
             val launch = HashMap<String, File>(l.getChildCount())
             var gameArgs: Array<String>? = null
             for (i in 0..l.getChildCount() - 1) {
                 val c = l.getChildAt(i) as BVDF.DataNode
-                gameArgs = (c.get("arguments")!!.value as String).split(" ")
-                val os = c.get("config")!!.get("oslist")!!.value as String // FIXME: Hopefully only one OS will be present
-                val exe = c.get("executable")!!.value as String
+                gameArgs = (c["arguments"]!!.value as String).split(" ")
+                val os = c["config"]!!["oslist"]!!.value as String // FIXME: Hopefully only one OS will be present
+                val exe = c["executable"]!!.value as String
                 launch.put(os, File(dir.getPath(), exe))
             }
             val get: String
@@ -198,7 +198,7 @@ class GameLauncher private() {
                 OS.Linux -> get = "linux"
                 else -> return null
             }
-            return Options(launch.get(get), *gameArgs!!)
+            return Options(launch[get], *gameArgs!!)
         }
 
         /**
@@ -210,7 +210,7 @@ class GameLauncher private() {
         private fun getUserOpts(appID: Int): String? {
             try {
                 val f = File(SteamUtils.getUserData(), "config/localconfig.vdf")
-                val game = VDF.load(f).get("UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID)
+                val game = VDF.load(f)["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID]
                 if (game == null) return null
                 var str: String? = game.getValue("LaunchOptions") as String
                 if (str == null) return null

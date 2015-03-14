@@ -32,14 +32,14 @@ public class StringAutoCompleter private(comp: JTextComponent, private val trie:
         if (n == null) {
             n = trie.root
         }
-        val strings = trie.get(java.lang.String.valueOf(text.charAt(text.length() - 1)), depth, n!!)
+        val strings = trie[(text.charAt(text.length() - 1)).toString(), depth, n!!]
         if (strings == null) {
             return false
         }
         if (strings.size() <= 1) {
             if (strings.isEmpty()) {
                 return false
-            } else if (strings.get(0).toLowerCase() == text) {
+            } else if (strings[0].toLowerCase() == text) {
                 return false
             }
         }

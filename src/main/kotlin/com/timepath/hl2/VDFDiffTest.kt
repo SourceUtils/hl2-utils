@@ -49,7 +49,7 @@ class VDFDiffTest protected() : JFrame() {
                         try {
                             val n1 = VDF.load(ByteArrayInputStream(text1.getText().getBytes(StandardCharsets.UTF_8)))
                             val n2 = VDF.load(ByteArrayInputStream(text2.getText().getBytes(StandardCharsets.UTF_8)))
-                            n1.getNodes().get(0).rdiff2(n2.getNodes().get(0))
+                            n1.getNodes()[0].rdiff2(n2.getNodes()[0])
                         } catch (ex: IOException) {
                             LOG.log(Level.SEVERE, null, ex)
                         }

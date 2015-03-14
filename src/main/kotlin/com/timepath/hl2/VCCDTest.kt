@@ -126,7 +126,7 @@ class VCCDTest private() : JFrame() {
             //            logger.log(Level.INFO, "hashmap does not contain {0}", hash);
             return null
         }
-        return hashmap.get(hash).name
+        return hashmap[hash].name
     }
 
     private fun initMenu() {

@@ -117,7 +117,7 @@ public class DEMTest protected() : JPanel() {
             override fun valueChanged(e: ListSelectionEvent) {
                 val row = table.getSelectedRow()
                 if (row == -1) return
-                val frame = tableModel.messages.get(table.convertRowIndexToModel(row))
+                val frame = tableModel.messages[table.convertRowIndexToModel(row)]
                 hex.setData(frame.data)
                 val root = DefaultMutableTreeNode(frame)
                 recurse(frame.meta, root)
@@ -319,7 +319,7 @@ public class DEMTest protected() : JPanel() {
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
             if (messages.isEmpty()) return null
-            val m = messages.get(rowIndex)
+            val m = messages[rowIndex]
             when (columnIndex) {
                 0 -> return m.tick
                 1 -> return m.type

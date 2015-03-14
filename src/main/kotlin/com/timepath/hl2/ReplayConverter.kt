@@ -35,7 +35,7 @@ class ReplayConverter {
         public fun patch(input: File, output: File) {
             val demo = HL2DEM.load(input, false)
             val messages = demo.getFrames()
-            val last = messages.get(messages.size() - 1)
+            val last = messages.last()
             if (last.type != MessageType.Stop) {
                 // Insert artificial stop
                 val stop = Message(demo, MessageType.Stop, last.tick)

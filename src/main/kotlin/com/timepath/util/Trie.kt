@@ -17,10 +17,10 @@ public class Trie {
         for (i in 0..s.length() - 1) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
-                n = n.get(c)
+                n = n[c]
             } else {
                 n.put(c, TrieMapping())
-                n = n.get(c)
+                n = n[c]
             }
         }
         n.put(null, null) // Terminator
@@ -43,7 +43,7 @@ public class Trie {
         LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", array(s, depth, n))
         if (cache.containsKey(path)) {
             LOG.info("Fom cache")
-            return cache.get(path)
+            return cache[path]
         }
         val results = LinkedList<String>()
         var i = 0
@@ -82,7 +82,7 @@ public class Trie {
                         results.add(tm.toString())
                     } else {
                         LOG.log(Level.INFO, "      {0}", ch)
-                        val tm2 = tm.get(ch)
+                        val tm2 = tm[ch]
                         LOG.log(Level.INFO, "        {0}", tm2)
                         local2.add(tm2)
                         if (j == (depth - 1)) {
@@ -103,7 +103,7 @@ public class Trie {
         for (i in 0..s.length() - 1) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
-                n = n.get(c)
+                n = n[c]
             } else {
                 return false
             }
@@ -119,7 +119,7 @@ public class Trie {
                 // Return null if a letter is not present in the tree
                 return null
             }
-            n = n.get(c)
+            n = n[c]
         }
         return n
     }
@@ -156,7 +156,7 @@ public class Trie {
             t.add("abc")
             t.add("ace")
             t.add("abed")
-            LOG.info(t.get("a", 3).toString())
+            LOG.info(t["a", 3].toString())
         }
     }
 }

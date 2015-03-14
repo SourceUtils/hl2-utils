@@ -46,11 +46,11 @@ public class ExternalScoreboard private() : ExternalConsole() {
         val me = getPlayer("TimePath")
         output.append("\nAllies:\n")
         for (i in 0..me.getAllies().size() - 1) {
-            output.append("${me.getAllies().get(i)}\n")
+            output.append("${me.getAllies()[i]}\n")
         }
         output.append("\nEnemies:\n")
         for (i in 0..me.getEnemies().size() - 1) {
-            output.append("${me.getEnemies().get(i)}\n")
+            output.append("${me.getEnemies()[i]}\n")
         }
         output.append("\n")
     }

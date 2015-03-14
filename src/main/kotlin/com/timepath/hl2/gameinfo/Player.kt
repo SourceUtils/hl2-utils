@@ -72,7 +72,7 @@ public class Player(public var name: String?) {
         sb.append(" (e:{")
         val myEnemies = enemies
         for (i in enemies.indices) {
-            sb.append(myEnemies.get(i).name)
+            sb.append(myEnemies[i].name)
             if ((i + 1) < enemies.size()) {
                 sb.append(", ")
             }
@@ -80,7 +80,7 @@ public class Player(public var name: String?) {
         sb.append("}, a:{")
         val myAllies = allies
         for (i in allies.indices) {
-            sb.append(myAllies.get(i).name)
+            sb.append(myAllies[i].name)
             if ((i + 1) < allies.size()) {
                 sb.append(", ")
             }

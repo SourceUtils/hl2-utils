@@ -40,7 +40,7 @@ object CVarList {
                     c!!.name = name
                     c!!.value = value
                 } else {
-                    c = map.get(name)
+                    c = map[name]
                 }
                 val extra = kvMatcher.group(3)
                 if (!extra.isEmpty()) {
