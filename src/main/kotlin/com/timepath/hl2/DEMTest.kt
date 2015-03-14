@@ -142,10 +142,9 @@ public class DEMTest protected() : JPanel() {
                 val lastPathComponent = selectionPath.getLastPathComponent()
                 val o = (lastPathComponent as DefaultMutableTreeNode).getUserObject()
                 if (o is Packet) {
-                    val p = o as Packet
                     try {
-                        val offsetBytes = p.offset / 8
-                        val offsetBits = p.offset % 8
+                        val offsetBytes = o.offset / 8
+                        val offsetBits = o.offset % 8
                         hex.seek((offsetBytes - (offsetBytes % 16)).toLong()) // Start of row
                         hex.caretLocation = (offsetBytes.toLong())
                         hex.bitShift = (offsetBits)
@@ -204,7 +203,7 @@ public class DEMTest protected() : JPanel() {
         if (v is Iterable<*>) {
             val n = DefaultMutableTreeNode(k)
             root.add(n)
-            recurse(v as Iterable<*>, n)
+            recurse(v, n)
         } else {
             root.add(DefaultMutableTreeNode(entry))
         }

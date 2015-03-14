@@ -101,7 +101,8 @@ private() : JFrame() {
         val renderer = object : DefaultTreeCellRenderer() {
 
             override fun getTreeCellRendererComponent(tree: JTree, value: Any, sel: Boolean, expanded: Boolean, leaf: Boolean, row: Int, hasFocus: Boolean): Component {
-                return super.getTreeCellRendererComponent(tree, value, sel, expanded, ((value as TreeNode).getParent() != null) && (value as TreeNode).getParent() != tree.getModel().getRoot(), row, hasFocus)
+                val tn = value as TreeNode
+                return super.getTreeCellRendererComponent(tree, value, sel, expanded, (tn.getParent() != null) && tn.getParent() != tree.getModel().getRoot(), row, hasFocus)
             }
 
             public fun init(): TreeCellRenderer {
@@ -409,7 +410,7 @@ private() : JFrame() {
                 }
                 val userObject = (p.getLastPathComponent() as DefaultMutableTreeNode).getUserObject()
                 if (userObject is DisplayableCharacter) {
-                    toCopy = (userObject as DisplayableCharacter).c
+                    toCopy = userObject.c
                     jPopupMenu1!!.show(jTree, evt.getX(), evt.getY())
                 }
             }
@@ -465,19 +466,20 @@ private() : JFrame() {
         if (selection == null) {
             return
         }
-        val other = if ((evt.getSource() == jTree1)) jTree2 else (if ((evt.getSource() == jTree2)) jTree1 else null)
-        if (other != null) {
-            other.setSelectionRow(-1)
-        }
+        when (evt.getSource()) {
+            jTree1 -> jTree2
+            jTree2 -> jTree1
+            else -> null
+        }?.setSelectionRow(-1)
         val node = selection.getLastPathComponent()
-        if (!(node is DefaultMutableTreeNode)) {
+        if (node !is DefaultMutableTreeNode) {
             return
         }
-        val obj = (node as DefaultMutableTreeNode).getUserObject()
-        if (!(obj is VBF.BitmapGlyph)) {
+        val obj = node.getUserObject()
+        if (obj !is VBF.BitmapGlyph) {
             return
         }
-        currentGlyph = obj as VBF.BitmapGlyph
+        currentGlyph = obj
         canvas!!.select(currentGlyph)
         if (currentGlyph!!.getBounds() == null) {
             currentGlyph!!.setBounds(Rectangle())

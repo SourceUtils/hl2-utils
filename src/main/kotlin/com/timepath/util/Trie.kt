@@ -47,16 +47,14 @@ public class Trie {
         }
         val results = LinkedList<String>()
         var i = 0
-        var c: Char? = null
         run {
-            i = 0
             while (i < s.length()) {
-                c = s.charAt(i)
+                val c = s.charAt(i)
                 if (!n.containsKey(c)) {
                     // Return null if a letter is not present in the tree
                     return null
                 }
-                n = n.get(c)
+                n = n[c]
                 i++
             }
         }
