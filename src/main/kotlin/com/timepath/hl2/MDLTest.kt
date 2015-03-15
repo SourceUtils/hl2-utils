@@ -1,8 +1,6 @@
 package com.timepath.hl2
 
 import javax.swing.*
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.awt.image.BufferedImage
@@ -63,75 +61,74 @@ public class MDLTest protected() : SimpleApplication() {
     }
 
     protected fun attachCoordinateAxes(pos: Vector3f, length: Float, width: Int) {
-        var arrow = Arrow(Vector3f.UNIT_X.mult(length))
-        arrow.setLineWidth(width.toFloat())
-        putShape(arrow, ColorRGBA.Red).setLocalTranslation(pos)
-        arrow = Arrow(Vector3f.UNIT_Y.mult(length))
-        arrow.setLineWidth(width.toFloat())
-        putShape(arrow, ColorRGBA.Green).setLocalTranslation(pos)
-        arrow = Arrow(Vector3f.UNIT_Z.mult(length))
-        arrow.setLineWidth(width.toFloat())
-        putShape(arrow, ColorRGBA.Blue).setLocalTranslation(pos)
+        for ((vec, color) in mapOf(
+                Vector3f.UNIT_X to ColorRGBA.Red,
+                Vector3f.UNIT_Y to ColorRGBA.Green,
+                Vector3f.UNIT_Z to ColorRGBA.Blue)) {
+            putShape(Arrow(vec.mult(length)).let {
+                it.setLineWidth(width.toFloat())
+                it
+            }, color).setLocalTranslation(pos)
+        }
     }
 
     protected fun putShape(shape: Mesh, color: ColorRGBA): Geometry {
         val g = Geometry("coordinate axis", shape)
-        val mat = Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-        mat.getAdditionalRenderState().setWireframe(true)
-        mat.setColor("Color", color)
-        g.setMaterial(mat)
+        g.setMaterial(Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md").let {
+            it.getAdditionalRenderState().setWireframe(true)
+            it.setColor("Color", color)
+            it
+        })
         rootNode.attachChild(g)
         return g
     }
 
     protected fun attachGrid(pos: Vector3f, size: Int, color: ColorRGBA) {
         val g = Geometry("wireframe grid", Grid(size, size, 1f))
-        val mat = Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md")
-        mat.getAdditionalRenderState().setWireframe(true)
-        mat.setColor("Color", color)
-        g.setMaterial(mat)
+        g.setMaterial(Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md").let {
+            it.getAdditionalRenderState().setWireframe(true)
+            it.setColor("Color", color)
+            it
+        })
         g.center().move(pos)
         rootNode.attachChild(g)
     }
 
     protected fun initInput() {
-        flyCam.setDragToRotate(true)
-        flyCam.setEnabled(false)
-        val chaseCam = ChaseCamera(cam, rootNode, inputManager)
-        chaseCam.setSmoothMotion(false)
-        chaseCam.setRotationSpeed(3f)
-        chaseCam.setInvertHorizontalAxis(false)
-        chaseCam.setInvertVerticalAxis(true)
-        chaseCam.setMinVerticalRotation(-FastMath.HALF_PI + FastMath.ZERO_TOLERANCE)
-        chaseCam.setDefaultVerticalRotation(FastMath.HALF_PI / 2)
-        chaseCam.setMaxVerticalRotation(FastMath.HALF_PI)
-        chaseCam.setDefaultHorizontalRotation(FastMath.HALF_PI - (FastMath.HALF_PI / 2))
-        chaseCam.setDefaultDistance(100f)
-        chaseCam.setMaxDistance(300f)
-        chaseCam.setMaxDistance(30000f)
-        cam.setFrustumFar(30000f)
-        chaseCam.setZoomSensitivity(250f)
+        with(flyCam) {
+            setDragToRotate(true)
+            setEnabled(false)
+        }
+        with(ChaseCamera(cam, rootNode, inputManager)) {
+            setSmoothMotion(false)
+            setRotationSpeed(3f)
+            setInvertHorizontalAxis(false)
+            setInvertVerticalAxis(true)
+            setMinVerticalRotation(-FastMath.HALF_PI + FastMath.ZERO_TOLERANCE)
+            setDefaultVerticalRotation(FastMath.HALF_PI / 2)
+            setMaxVerticalRotation(FastMath.HALF_PI)
+            setDefaultHorizontalRotation(FastMath.HALF_PI - (FastMath.HALF_PI / 2))
+            setDefaultDistance(100f)
+            setMaxDistance(300f)
+            setMaxDistance(30000f)
+            setZoomSensitivity(250f)
+        }
+        with(cam) {
+            setFrustumFar(30000f)
+        }
     }
 
     protected fun loadMap(name: String) {
         val application = this
-        executor.submit<Void>(object : Callable<Void> {
-            throws(javaClass<Exception>())
-            override fun call(): Void? {
-                try {
-                    val mdl = assetManager.loadModel(name)
-                    return application.enqueue<Void>(object : Callable<Void> {
-                        override fun call(): Void? {
-                            modelNode.attachChild(mdl)
-                            frame.setTitle(FRAME_TITLE + " - " + mdl.getUserData<Any>("source"))
-                            return null
-                        }
-                    }).get()
-                } catch (ex: Exception) {
-                    LOG.log(Level.SEVERE, null, ex)
-                }
-
-                return null
+        executor.submit(Callable {
+            try {
+                val mdl = assetManager.loadModel(name)
+                application.enqueue {
+                    modelNode.attachChild(mdl)
+                    frame.setTitle("$FRAME_TITLE - ${mdl.getUserData<Any>("source")}")
+                }.get()
+            } catch (ex: Exception) {
+                LOG.log(Level.SEVERE, null, ex)
             }
         })
     }
@@ -155,34 +152,26 @@ public class MDLTest protected() : SimpleApplication() {
         val fileMenu = JMenu("File")
         mb.add(fileMenu)
         val clearItem = JMenuItem("Detach all")
-        clearItem.addActionListener(object : ActionListener {
-            override fun actionPerformed(ae: ActionEvent) {
-                app.modelNode.detachAllChildren()
-            }
-        })
+        clearItem.addActionListener {
+            app.modelNode.detachAllChildren()
+        }
         fileMenu.add(clearItem)
         val openName = JMenuItem("Open from game")
-        openName.addActionListener(object : ActionListener {
-            override fun actionPerformed(ae: ActionEvent) {
-                app.loadModel(JOptionPane.showInputDialog(frame, "Enter model name"))
-            }
-        })
+        openName.addActionListener {
+            app.loadModel(JOptionPane.showInputDialog(frame, "Enter model name"))
+        }
         fileMenu.add(openName)
         val openFile = JMenuItem("Open from file")
-        openFile.addActionListener(object : ActionListener {
-            override fun actionPerformed(ae: ActionEvent) {
-                try {
-                    val f = NativeFileChooser().setParent(frame).setTitle("Select model").choose()
-                    if (f == null) {
-                        return
-                    }
+        openFile.addActionListener {
+            try {
+                val f = NativeFileChooser().setParent(frame).setTitle("Select model").choose()
+                if (f != null) {
                     app.loadModel(f[0].getPath())
-                } catch (ex: IOException) {
-                    Logger.getLogger(javaClass<MDLTest>().getName()).log(Level.SEVERE, null, ex)
                 }
-
+            } catch (ex: IOException) {
+                Logger.getLogger(javaClass<MDLTest>().getName()).log(Level.SEVERE, null, ex)
             }
-        })
+        }
         fileMenu.add(openFile)
         frame.addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent) {
@@ -205,27 +194,19 @@ public class MDLTest protected() : SimpleApplication() {
         val box = createBox(10f)
         modelNode.attachChild(box)
         val application = this
-        executor.submit<Void>(object : Callable<Void> {
-            throws(javaClass<Exception>())
-            override fun call(): Void? {
-                try {
-                    val mdl = assetManager.loadModel(name)
-                    return application.enqueue<Void>(object : Callable<Void> {
-                        override fun call(): Void? {
-                            modelNode.detachChild(box)
-                            modelNode.attachChild(mdl)
-                            frame.setTitle(FRAME_TITLE + " - " + mdl.getUserData<Any>("source"))
-                            return null
-                        }
-                    }).get()
-                } catch (ex: InterruptedException) {
-                    LOG.log(Level.SEVERE, null, ex)
-                } catch (ex: Exception) {
-                    LOG.log(Level.SEVERE, null, ex)
-                    JOptionPane.showMessageDialog(frame, "Nope", "Nope", JOptionPane.ERROR_MESSAGE)
-                }
-
-                return null
+        executor.submit(Callable {
+            try {
+                val mdl = assetManager.loadModel(name)
+                application.enqueue {
+                    modelNode.detachChild(box)
+                    modelNode.attachChild(mdl)
+                    frame.setTitle("$FRAME_TITLE - ${mdl.getUserData<Any>("source")}")
+                }.get()
+            } catch (ex: InterruptedException) {
+                LOG.log(Level.SEVERE, null, ex)
+            } catch (ex: Exception) {
+                LOG.log(Level.SEVERE, null, ex)
+                JOptionPane.showMessageDialog(frame, "Nope", "Nope", JOptionPane.ERROR_MESSAGE)
             }
         })
     }
@@ -241,8 +222,6 @@ public class MDLTest protected() : SimpleApplication() {
     }
 
     class object {
-
-
         private val LOG_JME = Logger.getLogger("com.jme3")
 
         public platformStatic fun main(args: Array<String>) {
@@ -296,13 +275,10 @@ public class ACFLocator : AssetLocator {
         return SourceModelAssetInfo(manager, key as AssetKey<Any>, found)
     }
 
-    private class SourceModelAssetInfo
-    [SuppressWarnings("rawtypes")]
-    (manager: AssetManager, key: AssetKey<Any>, private val source: SimpleVFile) : AssetInfo(manager, key) {
-
-        override fun openStream(): InputStream {
-            return source.openStream()!!
-        }
+    private class SourceModelAssetInfo(manager: AssetManager,
+                                       key: AssetKey<Any>,
+                                       private val source: SimpleVFile) : AssetInfo(manager, key) {
+        override fun openStream() = source.openStream()!!
     }
 }
 
@@ -313,23 +289,23 @@ public class BSPLoader : AssetLoader {
         val am = info.getManager()
         val name = info.getKey().getName()
         LOG.log(Level.INFO, "Loading {0}...", name)
-        val m = BSP.load(info.openStream())
+        val m = BSP.load(info.openStream())!!
         LOG.log(Level.INFO, "Creating mesh...")
         val mesh = Mesh()
         mesh.setMode(Mesh.Mode.Lines)
         mesh.setPointSize(2f)
-        val posBuf = m!!.vertices
+        val posBuf = m.vertices
         if (posBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf)
         }
-        val idxBuf = m!!.indices
+        val idxBuf = m.indices
         if (idxBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Index, 2, idxBuf)
         }
         mesh.setStatic()
         mesh.updateBound()
         mesh.updateCounts()
-        val geom = Geometry(name + "-geom", mesh)
+        val geom = Geometry("$name-geom", mesh)
         geom.rotateUpTo(Vector3f.UNIT_Z.negate())
         val skin = Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md")
         skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front)
@@ -352,12 +328,12 @@ public class MDLLoader : AssetLoader {
     throws(javaClass<IOException>())
     override fun load(info: AssetInfo): Any {
         val am = info.getManager()
-        var name = info.getKey().getName()
+        val name = info.getKey().getName()
         LOG.log(Level.INFO, "Loading {0}...\n", name)
-        name = name.substring(0, name.lastIndexOf('.'))
+        val basename = name.substringBeforeLast('.')
         val mdlStream = info.openStream()
-        val vvdStream = am.locateAsset(AssetKey(name + ".vvd")).openStream()
-        val vtxStream = am.locateAsset(AssetKey(name + ".dx90.vtx")).openStream()
+        val vvdStream = am.locateAsset(AssetKey("$basename.vvd")).openStream()
+        val vtxStream = am.locateAsset(AssetKey("$basename.dx90.vtx")).openStream()
         val m = StudioModel(mdlStream, vvdStream, vtxStream)
         val mesh = Mesh()
         val posBuf = m.getVertices()
@@ -383,17 +359,17 @@ public class MDLLoader : AssetLoader {
         mesh.setStatic()
         mesh.updateBound()
         mesh.updateCounts()
-        val geom = Geometry(name + "-geom", mesh)
+        val geom = Geometry("$basename-geom", mesh)
         val skin = Material(info.getManager(), "Common/MatDefs/Misc/Unshaded.j3md")
         skin.getAdditionalRenderState().setFaceCullMode(RenderState.FaceCullMode.Front)
         try {
-            skin.setTexture("ColorMap", am.loadTexture(name + ".vtf"))
+            skin.setTexture("ColorMap", am.loadTexture("$basename.vtf"))
         } catch (anfe: AssetNotFoundException) {
             skin.setTexture("ColorMap", am.loadTexture("hl2/materials/debug/debugempty.vtf"))
         }
 
         geom.setMaterial(skin)
-        geom.setUserData("source", name)
+        geom.setUserData("source", basename)
         return geom
     }
 
@@ -415,23 +391,24 @@ public class VTFLoader : AssetLoader {
         run {
             var y = bimg.getHeight() - 1
             while (y >= 0) {
-                for (x in 0..bimg.getWidth() - 1) {
+                for (x in bimg.getWidth().indices) {
                     val pixel = bimg.getRGB(x, y)
-                    buf.put(((pixel shr 16) and 255).toByte()) // Red
-                    buf.put(((pixel shr 8) and 255).toByte()) // Green
-                    buf.put((pixel and 255).toByte()) // Blue
-                    buf.put(((pixel shr 24) and 255).toByte()) // Alpha
+                    buf.put(((pixel shr 16) and 0xFF).toByte()) // Red
+                    buf.put(((pixel shr 8) and 0xFF).toByte()) // Green
+                    buf.put(((pixel shr 0) and 0xFF).toByte()) // Blue
+                    buf.put(((pixel shr 24) and 0xFF).toByte()) // Alpha
                 }
                 y--
             }
         }
         buf.flip()
-        val img = Image()
-        img.setFormat(Image.Format.RGBA8)
-        img.setWidth(bimg.getWidth())
-        img.setHeight(bimg.getHeight())
-        img.setData(buf)
-        return img
+        return Image().let {
+            it.setFormat(Image.Format.RGBA8)
+            it.setWidth(bimg.getWidth())
+            it.setHeight(bimg.getHeight())
+            it.setData(buf)
+            it
+        }
     }
 
     class object {
