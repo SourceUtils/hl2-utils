@@ -1,34 +1,35 @@
 buildscript {
+    ext.kotlin_version = '0.10.770'
+    ext.jme_version = '3.0.10'
     repositories {
         mavenCentral()
-        maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
     dependencies {
-        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:0.10.770'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
-apply plugin: "kotlin"
+apply plugin: 'kotlin'
 
 repositories {
-    mavenCentral()
-    maven { url 'http://oss.sonatype.org/content/repositories/snapshots' }
     maven { url 'http://updates.jmonkeyengine.org/maven' }
 }
 
 dependencies {
-    compile 'org.jetbrains.kotlin:kotlin-stdlib:0.10.770'
+    compile "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
 
     compile 'org.swinglabs.swingx:swingx-all:1.6.5'
 
     compile 'lib:pty4j-0.3.jar:135.999'
+    // pty4j should depend on these, but does not in the jetbrains repository
     compile 'lib:purejavacomm.jar:135.999'
     compile 'log4j:log4j:1.2.17'
     compile 'com.google.guava:guava:17.0'
 
-    compile 'com.jme3:jme3-core:3.0.10'
-    compile 'com.jme3:jme3-desktop:3.0.10'
-    compile 'com.jme3:jme3-lwjgl:3.0.10'
+    compile "com.jme3:jme3-core:$jme_version"
+    compile "com.jme3:jme3-desktop:$jme_version"
+    compile "com.jme3:jme3-lwjgl:$jme_version"
 
     compile project(':hl2-toolkit')
     compile project(':data-examiner')

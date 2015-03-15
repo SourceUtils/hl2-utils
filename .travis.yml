@@ -1,6 +1,1 @@
 language: java
-before_install:
-  - wget -NP ~/.m2 https://raw.githubusercontent.com/TimePath/superpom/master/settings.xml
-install: mvn install -DskipTests=true
-script: mvn test
-
