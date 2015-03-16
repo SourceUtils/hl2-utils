@@ -6,7 +6,6 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser
 import com.timepath.steam.io.VDF
 import com.timepath.steam.io.storage.ACF
 import com.timepath.util.Trie
-import org.apache.commons.io.IOUtils
 
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -467,10 +466,10 @@ class VCCDTest private() : JFrame() {
     }
 
     private fun formattingHelp(evt: ActionEvent) {
-        var message = "Unable to load"
-        try {
-            message = IOUtils.toString(javaClass.getResource("/VCCDTest.txt"))
+        val message = try {
+            javaClass.getResource("/VCCDTest.txt").readText()
         } catch (ignored: IOException) {
+            "Unable to load"
         }
 
         val jsp = JScrollPane(JTextArea(message))
