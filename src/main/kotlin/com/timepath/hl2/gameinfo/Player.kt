@@ -7,8 +7,8 @@ import java.util.logging.Logger
  * @author TimePath
  */
 public class Player(public var name: String?) {
-    private val allies = LinkedList<Player>()
-    private val enemies = LinkedList<Player>()
+    val allies = LinkedList<Player>()
+    val enemies = LinkedList<Player>()
 
     fun addAllies(list: Iterable<Player>) {
         for (ally in list) {
@@ -87,20 +87,6 @@ public class Player(public var name: String?) {
         }
         sb.append("})")
         return sb.toString()
-    }
-
-    /**
-     * @return the allies
-     */
-    public fun getAllies(): List<Player> {
-        return allies
-    }
-
-    /**
-     * @return the enemies
-     */
-    public fun getEnemies(): List<Player> {
-        return enemies
     }
 
     private fun hasAlly(player: Player): Boolean {

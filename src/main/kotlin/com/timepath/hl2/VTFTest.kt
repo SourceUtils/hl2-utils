@@ -169,12 +169,8 @@ class AntiVtfFileFilter(private val name: String?, vararg val ignored: ImageForm
         return true
     }
 
-    override fun getDescription(): String {
-        if (name != null) {
-            return name
-        }
-        return "VTF (Not " + Arrays.toString(ignored) + ')'
-    }
+    override fun getDescription(): String
+            = name ?: "VTF (Not " + Arrays.toString(ignored) + ')'
 
     class object {
 

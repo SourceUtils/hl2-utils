@@ -336,23 +336,23 @@ public class MDLLoader : AssetLoader {
         val vtxStream = am.locateAsset(AssetKey("$basename.dx90.vtx")).openStream()
         val m = StudioModel(mdlStream, vvdStream, vtxStream)
         val mesh = Mesh()
-        val posBuf = m.getVertices()
+        val posBuf = m.vertices
         if (posBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Position, 3, posBuf)
         }
-        val normBuf = m.getNormals()
+        val normBuf = m.normals
         if (normBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Normal, 3, normBuf)
         }
-        val texBuf = m.getTextureCoordinates()
+        val texBuf = m.textureCoordinates
         if (texBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.TexCoord, 2, texBuf)
         }
-        val tanBuf = m.getTangents()
+        val tanBuf = m.tangents
         if (tanBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Tangent, 4, tanBuf)
         }
-        val idxBuf = m.getIndices()
+        val idxBuf = m.indices
         if (idxBuf != null) {
             mesh.setBuffer(VertexBuffer.Type.Index, 3, idxBuf)
         }

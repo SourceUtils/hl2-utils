@@ -65,7 +65,7 @@ private() : JFrame() {
                 }
                 jTree1!!.setSelectionRow(-1)
                 jTree2!!.setSelectionRow(-1)
-                val seek = canvas!!.getSelected()
+                val seek = canvas!!.selected.firstOrNull()
                 if (seek == null) {
                     return
                 }

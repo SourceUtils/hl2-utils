@@ -34,7 +34,7 @@ class ReplayConverter {
         throws(javaClass<Exception>())
         public fun patch(input: File, output: File) {
             val demo = HL2DEM.load(input, false)
-            val messages = demo.getFrames()
+            val messages = demo.frames
             val last = messages.last()
             if (last.type != MessageType.Stop) {
                 // Insert artificial stop
@@ -66,7 +66,7 @@ class ReplayConverter {
             val out = OrderedOutputStream(FileOutputStream(output))
             out.order(ByteOrder.LITTLE_ENDIAN)
             out.writeStruct<DemoHeader>(header)
-            for (message in demo.getFrames()) {
+            for (message in demo.frames) {
                 message.write(out)
             }
         }

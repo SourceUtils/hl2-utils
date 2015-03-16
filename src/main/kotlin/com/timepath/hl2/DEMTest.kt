@@ -222,7 +222,7 @@ public class DEMTest protected() : JPanel() {
                 override fun doInBackground(): HL2DEM {
                     tableModel.messages.clear()
                     val demo = HL2DEM.load(fs[0])
-                    val frames = demo.getFrames() // TODO: Stream
+                    val frames = demo.frames // TODO: Stream
                     publish(*frames.copyToArray())
                     return demo
                 }
@@ -260,7 +260,7 @@ public class DEMTest protected() : JPanel() {
                         return
                     }
 
-                    LOG.info(java.lang.String.format("Total incomplete messages: %d / %d", incomplete, demo.getFrames().size()))
+                    LOG.info("Total incomplete messages: ${incomplete} / ${demo.frames.size()}")
                     while (tabs.getTabCount() > 1) tabs.remove(1) // Remove previous events and messages
                     val jsp = JScrollPane(JList(listEvt))
                     jsp.getVerticalScrollBar().setUnitIncrement(16)
@@ -294,28 +294,18 @@ public class DEMTest protected() : JPanel() {
 
         var messages: ArrayList<Message> = ArrayList()
 
-        override fun getRowCount(): Int {
-            return messages.size()
-        }
+        override fun getRowCount() = messages.size()
 
         protected var columns: Array<String> = array<String>("Tick", "Type", "Size")
         protected var types: Array<Class<*>> = array(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
 
-        override fun getColumnCount(): Int {
-            return columns.size()
-        }
+        override fun getColumnCount()= columns.size()
 
-        override fun getColumnName(columnIndex: Int): String {
-            return columns[columnIndex]
-        }
+        override fun getColumnName(columnIndex: Int) = columns[columnIndex]
 
-        override fun getColumnClass(columnIndex: Int): Class<*> {
-            return types[columnIndex]
-        }
+        override fun getColumnClass(columnIndex: Int) = types[columnIndex]
 
-        override fun isCellEditable(rowIndex: Int, columnIndex: Int): Boolean {
-            return false
-        }
+        override fun isCellEditable(rowIndex: Int, columnIndex: Int) = false
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? {
             if (messages.isEmpty()) return null
@@ -328,14 +318,11 @@ public class DEMTest protected() : JPanel() {
             return null
         }
 
-        override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) {
-        }
+        override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) = Unit
 
-        override fun addTableModelListener(l: TableModelListener) {
-        }
+        override fun addTableModelListener(l: TableModelListener) = Unit
 
-        override fun removeTableModelListener(l: TableModelListener) {
-        }
+        override fun removeTableModelListener(l: TableModelListener) = Unit
     }
 
     class object {
