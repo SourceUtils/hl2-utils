@@ -184,7 +184,7 @@ class GameLauncher private() {
             val l = conf["launch"]
             val launch = HashMap<String, File>(l.getChildCount())
             var gameArgs: Array<String>? = null
-            for (i in 0..l.getChildCount() - 1) {
+            for (i in l.getChildCount().indices) {
                 val c = l.getChildAt(i) as BVDF.DataNode
                 gameArgs = (c["arguments"]!!.value as String).split(" ")
                 val os = c["config"]!!["oslist"]!!.value as String // FIXME: Hopefully only one OS will be present

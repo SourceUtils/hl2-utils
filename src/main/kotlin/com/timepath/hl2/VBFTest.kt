@@ -69,7 +69,7 @@ private() : JFrame() {
                 if (seek == null) {
                     return
                 }
-                for (i in 0..which.getModel().getChildCount(which.getModel().getRoot()) - 1) {
+                for (i in which.getModel().getChildCount(which.getModel().getRoot()).indices) {
                     val node = which.getModel().getChild(which.getModel().getRoot(), i) as DefaultMutableTreeNode
                     if (node.getUserObject() == seek) {
                         which.setSelectionRow(node.getParent().getIndex(node) + 1)
@@ -193,7 +193,7 @@ private() : JFrame() {
             data = VBF()
             canvas!!.setVBF(data!!)
         }
-        for (i in 0..256 - 1) {
+        for (i in 256.indices) {
             if (!data!!.hasGlyph(i)) {
                 g.setIndex(i.toByte())
                 break
@@ -341,7 +341,7 @@ private() : JFrame() {
     }
 
     private fun insertCharacters(model: DefaultTreeModel, child: MutableTreeNode, g: Int) {
-        for (i in 0..data!!.getTable().size - 1) {
+        for (i in data!!.getTable().size.indices) {
             val glyphIndex = data!!.getTable()[i].toInt()
             if (glyphIndex != g) {
                 continue
@@ -440,10 +440,10 @@ private() : JFrame() {
             val file = fs[0]
             val model = jTree1!!.getModel()
             val root = model.getRoot() as TreeNode
-            for (i in 0..root.getChildCount() - 1) {
+            for (i in root.getChildCount().indices) {
                 val node = root.getChildAt(i) as DefaultMutableTreeNode
                 val g = node.getUserObject() as VBF.BitmapGlyph
-                for (x in 0..node.getChildCount() - 1) {
+                for (x in node.getChildCount().indices) {
                     val character = node.getChildAt(x) as DefaultMutableTreeNode
                     val obj = character.getUserObject()
                     if (obj is DisplayableCharacter) {

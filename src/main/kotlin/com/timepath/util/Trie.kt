@@ -14,7 +14,7 @@ public class Trie {
 
     public fun add(s: String) {
         var n = root
-        for (i in 0..s.length() - 1) {
+        for (i in s.length().indices) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
                 n = n[c]
@@ -100,7 +100,7 @@ public class Trie {
 
     public fun contains(s: String): Boolean {
         var n = root
-        for (i in 0..s.length() - 1) {
+        for (i in s.length().indices) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
                 n = n[c]
@@ -113,7 +113,7 @@ public class Trie {
 
     public fun node(s: String): TrieMapping? {
         var n = root
-        for (i in 0..s.length() - 1) {
+        for (i in s.length().indices) {
             val c = s.charAt(i)
             if (!n.containsKey(c)) {
                 // Return null if a letter is not present in the tree

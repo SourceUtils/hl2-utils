@@ -274,7 +274,7 @@ private() : JFrame() {
 
     private fun jMenuItem2ActionPerformed(evt: ActionEvent) {
         val sb = StringBuilder()
-        for (i in 0..jTable1!!.getModel().getRowCount() - 1) {
+        for (i in jTable1!!.getModel().getRowCount().indices) {
             val row = jTable1!!.convertRowIndexToModel(i)
             sb.append(jTable1!!.getModel().getValueAt(row, 0)).append('\n')
         }
@@ -289,19 +289,19 @@ private() : JFrame() {
         val col: Int
         val rows = m.getRowCount()
         val cols = m.getColumnCount()
-        for (i in 0..cols - 1) {
+        for (i in cols.indices) {
             col = jTable1!!.convertColumnIndexToModel(i)
             sb.append(tab).append(m.getColumnName(col))
         }
         val line = "\n"
         sb.append(tab).append(line)
-        for (i in 0..cols - 1) {
+        for (i in cols.indices) {
             sb.append(tab).append("--")
         }
         sb.append(tab).append(line)
-        for (i in 0..rows - 1) {
+        for (i in rows.indices) {
             val row = jTable1!!.convertRowIndexToModel(i)
-            for (j in 0..cols - 1) {
+            for (j in cols.indices) {
                 col = jTable1!!.convertColumnIndexToModel(j)
                 var obj: Any? = m.getValueAt(row, col)
                 if (col == 0) {
@@ -366,7 +366,7 @@ private() : JFrame() {
         ExternalConsole.exec("sv_cheats 1", null)
         val m = jTable1!!.getModel()
         val rows = m.getRowCount()
-        for (i in 0..rows - 1) {
+        for (i in rows.indices) {
             val row = jTable1!!.convertRowIndexToModel(i)
             val j = 2
             val name = m.getValueAt(row, jTable1!!.convertColumnIndexToModel(0))
@@ -405,7 +405,7 @@ private() : JFrame() {
     private fun clear() {
         val dm = jTable1!!.getModel() as DefaultTableModel
         val rowCount = dm.getRowCount()
-        for (i in 0..rowCount - 1) {
+        for (i in rowCount.indices) {
             dm.removeRow(0)
         }
         filter()

@@ -374,7 +374,7 @@ class VCCDTest private() : JFrame() {
         }
         val entries = LinkedList<VCCD.VCCDEntry>()
         val model = jTable1!!.getModel()
-        for (i in 0..model.getRowCount() - 1) {
+        for (i in model.getRowCount().indices) {
             var crc = model.getValueAt(i, 0)
             if ((model.getValueAt(i, 1) != null) && !model.getValueAt(i, 1).toString().isEmpty()) {
                 crc = hexFormat(VCCD.hash(model.getValueAt(i, 1).toString()))
@@ -483,7 +483,7 @@ class VCCDTest private() : JFrame() {
     private fun export(evt: ActionEvent) {
         val sb = StringBuilder(jTable1!!.getRowCount() * 100) // rough estimate
         val model = jTable1!!.getModel()
-        for (i in 0..model.getRowCount() - 1) {
+        for (i in model.getRowCount().indices) {
             sb.append(MessageFormat.format("{0}\t{1}\n", model.getValueAt(i, 0), model.getValueAt(i, 2)))
         }
         val pane = JTextArea(sb.toString())
