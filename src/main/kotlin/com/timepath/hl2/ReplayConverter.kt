@@ -62,7 +62,7 @@ class ReplayConverter {
             val header = demo.header
             header.ticks = ticks
             header.frames = frames
-            header.playbackTime = ticks.toFloat() / (66.toFloat() + (2.toFloat() / 3.toFloat()))
+            header.playbackTime = ticks.toFloat() / (66f + (2f / 3f))
             val out = OrderedOutputStream(FileOutputStream(output))
             out.order(ByteOrder.LITTLE_ENDIAN)
             out.writeStruct<DemoHeader>(header)
