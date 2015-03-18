@@ -180,7 +180,7 @@ class GameLauncher private() {
             val sections = gm["Sections"]
             val conf = sections["CONFIG"]!!["config"]
             val installdir = conf["installdir"]!!.value.toString()
-            val dir = File(SteamUtils.getSteamApps(), "common/" + installdir)
+            val dir = File(SteamUtils.getSteamApps(), "common/$installdir")
             val l = conf["launch"]
             val launch = HashMap<String, File>(l.getChildCount())
             var gameArgs: Array<String>? = null
@@ -214,7 +214,7 @@ class GameLauncher private() {
                 if (game == null) return null
                 var str: String? = game.getValue("LaunchOptions") as String
                 if (str == null) return null
-                if (!str!!.contains("%command%")) str = "%command% " + str
+                if (!str!!.contains("%command%")) str = "%command% $str"
                 return str
             } catch (e: IOException) {
                 LOG.log(Level.SEVERE, null, e)
@@ -266,7 +266,7 @@ class GameLauncher private() {
                             } else {
                                 intern = false
                             }
-                            val bytes = ((if (intern) 1.toChar().toString() else "") + t + '\n').getBytes("UTF-8")
+                            val bytes = ("${if (intern) 1.toChar().toString() else ""}$t\n").toByteArray()
                             super.write(bytes, 0, bytes.size)
                         }
                     }

@@ -267,7 +267,7 @@ public class ACFLocator : AssetLocator {
         if (source == null) {
             throw AssetLoadException(MessageFormat.format("Steam game {0} not installed, run steam://install/{0}", appID))
         }
-        val search = rootPath + VFile.SEPARATOR + key.getName()
+        val search = "$rootPath${VFile.SEPARATOR}${key.getName()}"
         val found = source.query(search)
         if (found == null) {
             throw AssetNotFoundException(MessageFormat.format("{0} not found", search))

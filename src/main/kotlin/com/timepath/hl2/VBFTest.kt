@@ -375,8 +375,8 @@ private() : JFrame() {
     private fun load(s: String) {
         LOG.log(Level.INFO, "Loading {0}", s)
         val p = canvas
-        val vbf = File(s + ".vbf")
-        val vtf = File(s + ".vtf")
+        val vbf = File("$s.vbf")
+        val vtf = File("$s.vtf")
         if (vbf.exists()) {
             data = VBF(FileInputStream(vbf))
             p!!.setVBF(data!!)
@@ -503,7 +503,7 @@ private() : JFrame() {
             val block = Character.UnicodeBlock.of(c)
             val unprintable = Character.isISOControl(c) || (c == KeyEvent.CHAR_UNDEFINED) || (block == null) || block == Character.UnicodeBlock.SPECIALS
             if (unprintable) {
-                return "0x" + (if ((c <= 15)) "0" else "") + Integer.toHexString(c.toInt()).toUpperCase()
+                return "0x${if ((c <= 15)) "0" else ""}${Integer.toHexString(c.toInt()).toUpperCase()}"
             }
             return Character.toString(c)
         }

@@ -63,11 +63,11 @@ public class ExternalScoreboard private() : ExternalConsole() {
         val crit = weapon.endsWith("(crit)")
         weapon = weapon.substring(0, weapon.indexOf('.'))
         if (crit) {
-            weapon = '*' + weapon + '*'
+            weapon = "*$weapon*"
         }
         val sb = StringBuilder()
         sb.append(killer.name).append(" = ").append(weapon).append(" -> ").append(victim.name)
-        output.append(sb.toString() + "\n")
+        output.append("${sb.toString()}\n")
     }
 
     private fun getPlayer(name: String): Player {

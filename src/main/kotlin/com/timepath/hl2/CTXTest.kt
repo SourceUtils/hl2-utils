@@ -61,7 +61,7 @@ public class CTXTest protected() : JFrame() {
             val br = BufferedReader(InputStreamReader(CTX.decrypt(input.getText().getBytes(), FileInputStream(f[0]))))
             output.setText("")
             br.forEachLine {
-                output.append(it + '\n')
+                output.append("$it\n")
             }
         } catch (e: IOException) {
             LOG.log(Level.SEVERE, null, e)

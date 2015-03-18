@@ -20,11 +20,11 @@ object CFGSetup {
         dir.mkdirs()
         val classes = array("scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy")
         for (clazz in classes) {
-            val f = File(dir, clazz + ".cfg")
+            val f = File(dir, "$clazz.cfg")
             if (f.exists()) continue
             val out = createWriter(f)
-            out.println("// This file is executed when you play " + clazz)
-            out.println("exec reset // Set " + clazz + " specific settings after this line")
+            out.println("// This file is executed when you play $clazz")
+            out.println("exec reset // Set $clazz specific settings after this line")
             out.println()
         }
         val autoexec = File(dir, "autoexec.cfg")

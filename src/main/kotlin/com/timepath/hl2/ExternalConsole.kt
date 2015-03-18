@@ -132,16 +132,14 @@ public open class ExternalConsole protected() : JFrame() {
         appendOutput(str)
     }
 
-    private fun appendOutput(str: String) {
-        output.append(str + '\n')
-    }
+    private fun appendOutput(str: String) = output.append("$str\n")
 
     protected open fun parse(lines: String) {
         if (!lines.startsWith(">>>")) {
             return
         }
         val str = lines.substring(3)
-        System.out.println("Matching " + str)
+        System.out.println("Matching $str")
         val m = regex.matcher(str)
         if (!m.matches()) {
             System.out.println("Doesn't match")

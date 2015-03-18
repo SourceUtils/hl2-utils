@@ -136,7 +136,7 @@ class VtfFileFilter(private val vtfFormat: ImageFormat) : FileFilter() {
     }
 
     override fun getDescription(): String {
-        return "VTF (" + (if ((vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN)) "All" else vtfFormat.name()) + ')'
+        return "VTF (${if ((vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN)) "All" else vtfFormat.name()})"
     }
 
     class object {
@@ -170,7 +170,7 @@ class AntiVtfFileFilter(private val name: String?, vararg val ignored: ImageForm
     }
 
     override fun getDescription(): String
-            = name ?: "VTF (Not " + Arrays.toString(ignored) + ')'
+            = name ?: "VTF (Not ${Arrays.toString(ignored)})"
 
     class object {
 

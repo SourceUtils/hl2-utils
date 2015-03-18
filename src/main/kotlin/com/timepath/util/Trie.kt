@@ -86,7 +86,7 @@ public class Trie {
                         LOG.log(Level.INFO, "        {0}", tm2)
                         local2.add(tm2)
                         if (j == (depth - 1)) {
-                            results.add(tm.toString() + "...")
+                            results.add("${tm.toString()}...")
                         }
                     }
                 }

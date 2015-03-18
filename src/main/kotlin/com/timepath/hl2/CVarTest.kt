@@ -85,7 +85,7 @@ private() : JFrame() {
                     str = Pattern.quote(str)
                 }
                 if (!caseSensitiveCheckBox!!.isSelected()) {
-                    str = "(?i)" + str
+                    str = "(?i)$str"
                 }
                 var rf = RowFilter.regexFilter<TableModel, Any>(str, 0, 1, 2, 3, 4, 5, 6)
                 if (notCheckBox!!.isSelected()) {
@@ -305,7 +305,7 @@ private() : JFrame() {
                 col = jTable1!!.convertColumnIndexToModel(j)
                 var obj: Any? = m.getValueAt(row, col)
                 if (col == 0) {
-                    obj = "[" + obj + "](/r/tf2scripthelp/wiki/" + obj + "#todo \"TODO\")"
+                    obj = "[$obj](/r/tf2scripthelp/wiki/$obj#todo \"TODO\")"
                 }
                 sb.append(tab)
                 if (obj != null) {
@@ -375,9 +375,9 @@ private() : JFrame() {
             }
             val `val` = m.getValueAt(row, jTable1!!.convertColumnIndexToModel(2))
             if (`val` != null) {
-                val strVal = "\"" + `val` + '"'
+                val strVal = "\"$`val`"
                 sb.append(name).append(' ').append(strVal).append('\n')
-                ExternalConsole.exec(name.toString() + " " + strVal, null)
+                ExternalConsole.exec("${name.toString()} $strVal", null)
             }
         }
         sb.append("sv_cheats 0\n")

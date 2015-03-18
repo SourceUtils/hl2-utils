@@ -29,14 +29,14 @@ class VDFDiffTest protected() : JFrame() {
                 text1 = object : JTextArea() {
                     {
                         setTabSize(4)
-                        setText("\"A\" {\n" + "\t\"Modified\" {\n" + "\t\t\"Same\"\t\"yes\"\n" + "\t\t\"Similar\"\t\"one\"\n" + "\t\t\"Removed\"\t\"yes\"\n" + "\t}\n" + "\t\"Removed\" {}\n" + "\t\"Same\" {}\n" + "}\n")
+                        setText("\"A\" {\n\t\"Modified\" {\n\t\t\"Same\"\t\"yes\"\n\t\t\"Similar\"\t\"one\"\n\t\t\"Removed\"\t\"yes\"\n\t}\n\t\"Removed\" {}\n\t\"Same\" {}\n}\n")
                     }
                 }
                 setLeftComponent(JScrollPane(text1))
                 text2 = object : JTextArea() {
                     {
                         setTabSize(4)
-                        setText("\"B\" {\n" + "\t\"Modified\" {\n" + "\t\t\"Same\"\t\"yes\"\n" + "\t\t\"Similar\"\t\"two\"\n" + "\t\t\"Added\"\t\"yes\"\n" + "\t}\n" + "\t\"New\" {}\n" + "\t\"Same\" {}\n" + "}\n")
+                        setText("\"B\" {\n\t\"Modified\" {\n\t\t\"Same\"\t\"yes\"\n\t\t\"Similar\"\t\"two\"\n\t\t\"Added\"\t\"yes\"\n\t}\n\t\"New\" {}\n\t\"Same\" {}\n}\n")
                     }
                 }
                 setRightComponent(JScrollPane(text2))
