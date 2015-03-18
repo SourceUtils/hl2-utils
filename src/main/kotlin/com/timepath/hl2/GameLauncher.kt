@@ -18,7 +18,6 @@ import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
 
-import com.timepath.plaf.OS.get
 import kotlin.platform.platformStatic
 import kotlin.concurrent.thread
 
@@ -192,11 +191,10 @@ class GameLauncher private() {
                 val exe = c["executable"]!!.value as String
                 launch.put(os, File(dir.getPath(), exe))
             }
-            val get: String
-            when (get()) {
-                OS.Windows -> get = "windows"
-                OS.OSX -> get = "macos"
-                OS.Linux -> get = "linux"
+            val get: String = when (OS.get()) {
+                OS.Windows -> "windows"
+                OS.OSX -> "macos"
+                OS.Linux -> "linux"
                 else -> return null
             }
             return Options(launch[get], *gameArgs!!)
