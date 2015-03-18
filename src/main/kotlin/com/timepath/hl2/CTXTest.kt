@@ -2,8 +2,6 @@ package com.timepath.hl2
 
 import com.timepath.hl2.io.CTX
 import com.timepath.plaf.x.filechooser.NativeFileChooser
-import org.jdesktop.swingx.JXTextArea
-import org.jdesktop.swingx.JXTextField
 
 import javax.swing.*
 import java.awt.*
@@ -74,11 +72,9 @@ public class CTXTest protected() : JFrame() {
         private val LOG = Logger.getLogger(javaClass<CTXTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            EventQueue.invokeLater(object : Runnable {
-                override fun run() {
-                    CTXTest().setVisible(true)
-                }
-            })
+            EventQueue.invokeLater {
+                CTXTest().setVisible(true)
+            }
         }
     }
 }

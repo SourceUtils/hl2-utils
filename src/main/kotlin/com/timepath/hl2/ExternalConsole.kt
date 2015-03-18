@@ -18,6 +18,7 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
 import kotlin.platform.platformStatic
+import kotlin.concurrent.thread
 
 /**
  * http://www.perkin.org.uk/posts/how-to-fix-stdio-buffering.html
@@ -113,18 +114,15 @@ public open class ExternalConsole protected() : JFrame() {
 
     fun setIn(s: InputStream?) {
         output.setEnabled(s != null)
-        Thread(object : Runnable {
-            override fun run() {
-                try {
-                    s?.reader()?.forEachLine {
-                        update(it)
-                    }
-                } catch (ex: IOException) {
-                    Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+        thread {
+            try {
+                s?.reader()?.forEachLine {
+                    update(it)
                 }
-
+            } catch (ex: IOException) {
+                Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
             }
-        }).start()
+        }
     }
 
     fun update(str: String) {
@@ -204,18 +202,16 @@ public open class ExternalConsole protected() : JFrame() {
         }
 
         public fun setErr(s: InputStream) {
-            Thread(object : Runnable {
-                override fun run() {
-                    try {
-                        s.reader().forEachLine {
-                            System.err.println(it)
-                        }
-                        System.err.println("Stopped reading stderr")
-                    } catch (ex: IOException) {
-                        Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+            thread {
+                try {
+                    s.reader().forEachLine {
+                        System.err.println(it)
                     }
+                    System.err.println("Stopped reading stderr")
+                } catch (ex: IOException) {
+                    Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
                 }
-            }).start()
+            }
         }
     }
 }

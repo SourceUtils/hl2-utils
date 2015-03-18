@@ -169,11 +169,9 @@ private() : JFrame() {
         jMenu1.setText("File")
         jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
         jMenuItem1.setText("Open")
-        jMenuItem1.addActionListener(object : ActionListener {
-            override fun actionPerformed(e: ActionEvent) {
-                jMenuItem1ActionPerformed(e)
-            }
-        })
+        jMenuItem1.addActionListener {
+            jMenuItem1ActionPerformed(it)
+        }
         jMenu1.add(jMenuItem1)
         jMenuItem4.setText("Get cvarlist")
         jMenuItem4.addActionListener(object : ActionListener {
@@ -416,11 +414,9 @@ private() : JFrame() {
         private val LOG = Logger.getLogger(javaClass<CVarTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            SwingUtilities.invokeLater(object : Runnable {
-                override fun run() {
-                    CVarTest().setVisible(true)
-                }
-            })
+            SwingUtilities.invokeLater {
+                CVarTest().setVisible(true)
+            }
         }
     }
 }

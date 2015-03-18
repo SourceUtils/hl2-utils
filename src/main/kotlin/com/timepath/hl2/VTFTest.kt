@@ -19,6 +19,7 @@ import java.util.Arrays
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.platform.platformStatic
+import kotlin.concurrent.thread
 
 
 SuppressWarnings("serial")
@@ -183,34 +184,32 @@ object VTFTest {
     private val LOG = Logger.getLogger(javaClass<VTFTest>().getName())
 
     public platformStatic fun main(args: Array<String>) {
-        Thread(object : Runnable {
-            override fun run() {
-                val frame = JFrame("VTF Loader")
-                frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-                val jsp = JScrollPane()
-                jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
-                jsp.getVerticalScrollBar().setUnitIncrement(64)
-                frame.add(jsp)
-                val pane = JPanel()
-                pane.setLayout(BoxLayout(pane, BoxLayout.PAGE_AXIS))
-                jsp.setViewportView(pane)
-                val chooser = JFileChooser()
-                val generic = VtfFileFilter(ImageFormat.IMAGE_FORMAT_UNKNOWN)
-                chooser.addChoosableFileFilter(generic)
-                chooser.addChoosableFileFilter(VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1))
-                chooser.addChoosableFileFilter(VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT5))
-                chooser.addChoosableFileFilter(AntiVtfFileFilter(null, ImageFormat.IMAGE_FORMAT_DXT1, ImageFormat.IMAGE_FORMAT_DXT3, ImageFormat.IMAGE_FORMAT_DXT5))
-                chooser.addChoosableFileFilter(AntiVtfFileFilter("RGB", ImageFormat.IMAGE_FORMAT_DXT1, ImageFormat.IMAGE_FORMAT_DXT3, ImageFormat.IMAGE_FORMAT_DXT5, ImageFormat.IMAGE_FORMAT_ABGR8888, ImageFormat.IMAGE_FORMAT_ARGB8888, ImageFormat.IMAGE_FORMAT_BGRA8888, ImageFormat.IMAGE_FORMAT_BGRA4444, ImageFormat.IMAGE_FORMAT_BGRA5551, ImageFormat.IMAGE_FORMAT_RGBA16161616, ImageFormat.IMAGE_FORMAT_RGBA16161616F, ImageFormat.IMAGE_FORMAT_RGBA32323232F, ImageFormat.IMAGE_FORMAT_RGBA8888))
-                chooser.setFileFilter(generic)
-                val preview = ImagePreviewPanel(frame)
-                chooser.setAccessory(preview)
-                chooser.addPropertyChangeListener(preview)
-                chooser.setControlButtonsAreShown(false)
-                pane.add(chooser)
-                frame.setVisible(true)
-                frame.pack()
-                frame.setLocationRelativeTo(null)
-            }
-        }).start()
+        thread {
+            val frame = JFrame("VTF Loader")
+            frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+            val jsp = JScrollPane()
+            jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED)
+            jsp.getVerticalScrollBar().setUnitIncrement(64)
+            frame.add(jsp)
+            val pane = JPanel()
+            pane.setLayout(BoxLayout(pane, BoxLayout.PAGE_AXIS))
+            jsp.setViewportView(pane)
+            val chooser = JFileChooser()
+            val generic = VtfFileFilter(ImageFormat.IMAGE_FORMAT_UNKNOWN)
+            chooser.addChoosableFileFilter(generic)
+            chooser.addChoosableFileFilter(VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT1))
+            chooser.addChoosableFileFilter(VtfFileFilter(ImageFormat.IMAGE_FORMAT_DXT5))
+            chooser.addChoosableFileFilter(AntiVtfFileFilter(null, ImageFormat.IMAGE_FORMAT_DXT1, ImageFormat.IMAGE_FORMAT_DXT3, ImageFormat.IMAGE_FORMAT_DXT5))
+            chooser.addChoosableFileFilter(AntiVtfFileFilter("RGB", ImageFormat.IMAGE_FORMAT_DXT1, ImageFormat.IMAGE_FORMAT_DXT3, ImageFormat.IMAGE_FORMAT_DXT5, ImageFormat.IMAGE_FORMAT_ABGR8888, ImageFormat.IMAGE_FORMAT_ARGB8888, ImageFormat.IMAGE_FORMAT_BGRA8888, ImageFormat.IMAGE_FORMAT_BGRA4444, ImageFormat.IMAGE_FORMAT_BGRA5551, ImageFormat.IMAGE_FORMAT_RGBA16161616, ImageFormat.IMAGE_FORMAT_RGBA16161616F, ImageFormat.IMAGE_FORMAT_RGBA32323232F, ImageFormat.IMAGE_FORMAT_RGBA8888))
+            chooser.setFileFilter(generic)
+            val preview = ImagePreviewPanel(frame)
+            chooser.setAccessory(preview)
+            chooser.addPropertyChangeListener(preview)
+            chooser.setControlButtonsAreShown(false)
+            pane.add(chooser)
+            frame.setVisible(true)
+            frame.pack()
+            frame.setLocationRelativeTo(null)
+        }
     }
 }

@@ -67,11 +67,9 @@ class VDFDiffTest protected() : JFrame() {
         private val LOG = Logger.getLogger(javaClass<VDFDiffTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            SwingUtilities.invokeLater(object : Runnable {
-                override fun run() {
-                    VDFDiffTest().setVisible(true)
-                }
-            })
+            SwingUtilities.invokeLater {
+                VDFDiffTest().setVisible(true)
+            }
         }
     }
 }

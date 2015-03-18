@@ -329,18 +329,16 @@ public class DEMTest protected() : JPanel() {
         private val LOG = Logger.getLogger(javaClass<DEMTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            EventQueue.invokeLater(object : Runnable {
-                override fun run() {
-                    val f = JXFrame("netdecode")
-                    f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-                    val demTest = DEMTest()
-                    f.add(demTest)
-                    f.setJMenuBar(demTest.menu)
-                    f.pack()
-                    f.setLocationRelativeTo(null)
-                    f.setVisible(true)
-                }
-            })
+            EventQueue.invokeLater {
+                val f = JXFrame("netdecode")
+                f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+                val demTest = DEMTest()
+                f.add(demTest)
+                f.setJMenuBar(demTest.menu)
+                f.pack()
+                f.setLocationRelativeTo(null)
+                f.setVisible(true)
+            }
         }
     }
 }

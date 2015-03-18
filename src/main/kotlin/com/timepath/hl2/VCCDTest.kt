@@ -79,45 +79,43 @@ class VCCDTest private() : JFrame() {
     }
 
     private fun generateHash() {
-        Thread(object : Runnable {
-            override fun run() {
-                val frame = JFrame("Generating hash codes...")
-                val pb = JProgressBar()
-                pb.setIndeterminate(true)
-                frame.add(pb)
-                frame.setMinimumSize(Dimension(300, 50))
-                frame.setLocationRelativeTo(null)
-                frame.setVisible(true)
-                val map = HashMap<Int, StringPair>()
-                LOG.info("Generating hash codes ...")
-                try {
-                    val crc = CRC32()
-                    val caps = ACF.fromManifest(440)!!.find("game_sounds")
-                    pb.setMaximum(caps.size())
-                    pb.setIndeterminate(false)
-                    var i = 0
-                    for (f in caps) {
-                        LOG.log(Level.INFO, "Parsing {0}", f)
-                        val root = VDF.load(f.openStream()!!)
-                        for (node in root.getNodes()) {
-                            val str = node.getCustom() as String
-                            val channel = node.getValue("channel", CHAN_UNKNOWN) as String
-                            LOG.log(Level.FINER, str)
-                            crc.reset()
-                            crc.update(str.toByteArray())
-                            map.put(crc.getValue().toInt(), StringPair(str, channel))
-                        }
-                        pb.setValue(++i)
+        Thread {
+            val frame = JFrame("Generating hash codes...")
+            val pb = JProgressBar()
+            pb.setIndeterminate(true)
+            frame.add(pb)
+            frame.setMinimumSize(Dimension(300, 50))
+            frame.setLocationRelativeTo(null)
+            frame.setVisible(true)
+            val map = HashMap<Int, StringPair>()
+            LOG.info("Generating hash codes ...")
+            try {
+                val crc = CRC32()
+                val caps = ACF.fromManifest(440)!!.find("game_sounds")
+                pb.setMaximum(caps.size())
+                pb.setIndeterminate(false)
+                var i = 0
+                for (f in caps) {
+                    LOG.log(Level.INFO, "Parsing {0}", f)
+                    val root = VDF.load(f.openStream()!!)
+                    for (node in root.getNodes()) {
+                        val str = node.getCustom() as String
+                        val channel = node.getValue("channel", CHAN_UNKNOWN) as String
+                        LOG.log(Level.FINER, str)
+                        crc.reset()
+                        crc.update(str.toByteArray())
+                        map.put(crc.getValue().toInt(), StringPair(str, channel))
                     }
-                } catch (ex: IOException) {
-                    LOG.log(Level.WARNING, "Error generating hash codes", ex)
+                    pb.setValue(++i)
                 }
-
-                hashmap.putAll(map)
-                persistHashmap(hashmap)
-                frame.dispose()
+            } catch (ex: IOException) {
+                LOG.log(Level.WARNING, "Error generating hash codes", ex)
             }
-        }).start()
+
+            hashmap.putAll(map)
+            persistHashmap(hashmap)
+            frame.dispose()
+        }
     }
 
     private fun attemptDecode(hash: Int): String? {
@@ -586,13 +584,11 @@ class VCCDTest private() : JFrame() {
                 LOG.log(Level.SEVERE, null, ex)
             }
 
-            EventQueue.invokeLater(object : Runnable {
-                override fun run() {
-                    val c = VCCDTest()
-                    c.setLocationRelativeTo(null)
-                    c.setVisible(true)
-                }
-            })
+            EventQueue.invokeLater {
+                val c = VCCDTest()
+                c.setLocationRelativeTo(null)
+                c.setVisible(true)
+            }
         }
 
         private fun persistHashmap(map: Map<Int, StringPair>) {

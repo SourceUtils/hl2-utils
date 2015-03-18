@@ -514,11 +514,9 @@ private() : JFrame() {
         private val LOG = Logger.getLogger(javaClass<VBFTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            EventQueue.invokeLater(object : Runnable {
-                override fun run() {
-                    VBFTest().setVisible(true)
-                }
-            })
+            EventQueue.invokeLater {
+                VBFTest().setVisible(true)
+            }
         }
     }
 }

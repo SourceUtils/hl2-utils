@@ -20,6 +20,7 @@ import java.util.logging.Logger
 
 import com.timepath.plaf.OS.get
 import kotlin.platform.platformStatic
+import kotlin.concurrent.thread
 
 /**
  * Starts a game and relay server.
@@ -310,23 +311,20 @@ class GameLauncher private() {
             }
             acceptor.setDaemon(true)
             acceptor.start()
-            Thread(object : Runnable {
-                override fun run() {
-                    try {
-                        main.join()
-                    } catch (e: InterruptedException) {
-                        LOG.log(Level.SEVERE, null, e)
-                    }
-
-                    LOG.info("Reaping")
-                    try {
-                        sock.close()
-                    } catch (e: IOException) {
-                        LOG.log(Level.SEVERE, null, e)
-                    }
-
+            thread(name = "Reaper") {
+                try {
+                    main.join()
+                } catch (e: InterruptedException) {
+                    LOG.log(Level.SEVERE, null, e)
                 }
-            }, "Reaper").start()
+
+                LOG.info("Reaping")
+                try {
+                    sock.close()
+                } catch (e: IOException) {
+                    LOG.log(Level.SEVERE, null, e)
+                }
+            }
         }
 
         private open class Options(var script: File? = null, vararg var args: String) {
