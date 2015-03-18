@@ -13,6 +13,8 @@ import java.io.*
 import java.util.logging.Level
 import java.util.logging.Logger
 import kotlin.platform.platformStatic
+import org.jdesktop.swingx.JXTextField
+import org.jdesktop.swingx.JXTextArea
 
 /**
  * @author TimePath
@@ -56,7 +58,7 @@ public class CTXTest protected() : JFrame() {
         try {
             val f = NativeFileChooser().setTitle("Select CTX").setMultiSelectionEnabled(false).choose()
             if (f == null) return
-            val br = BufferedReader(InputStreamReader(CTX.decrypt(input.getText().getBytes(), FileInputStream(f[0]))))
+            val br = BufferedReader(InputStreamReader(CTX.decrypt(input.getText().toByteArray(), FileInputStream(f[0]))))
             output.setText("")
             br.forEachLine {
                 output.append("$it\n")
