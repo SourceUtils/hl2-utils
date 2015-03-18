@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutionException
 import java.util.logging.Level
 import java.util.logging.Logger
 
-import com.timepath.Pair
 import com.timepath.hex.HexEditor
 import com.timepath.hl2.io.demo.HL2DEM
 import com.timepath.hl2.io.demo.Message
@@ -189,7 +188,7 @@ public class DEMTest protected() : JPanel() {
         for (entry in i) {
             if (entry is Pair<*, *>) {
                 val p = entry as Pair<Any, Any>
-                expand(p, p.getKey(), p.getValue(), root)
+                expand(p, p.first, p.second, root)
             } else if (entry is Map.Entry<*, *>) {
                 val e = entry as Map.Entry<Any, Any>
                 expand(e, e.getKey(), e.getValue(), root)
@@ -233,12 +232,12 @@ public class DEMTest protected() : JPanel() {
                         tableModel.messages.add(m)
                         when (m.type) {
                             MessageType.Packet, MessageType.Signon -> for (ents in m.meta) {
-                                if (ents.getKey() !is Packet) break
-                                if (ents.getValue() !is Iterable<*>) break
-                                for (o in ents.getValue() as Iterable<*>) {
+                                if (ents.first !is Packet) break
+                                if (ents.second !is Iterable<*>) break
+                                for (o in ents.second as Iterable<*>) {
                                     if (o !is Pair<*, *>) break
                                     val pair = o as Pair<Any, Any>?
-                                    when ((ents.getKey() as Packet).type) {
+                                    when ((ents.first as Packet).type) {
                                         Packet.Type.svc_GameEvent -> listEvt.addElement(pair)
                                         Packet.Type.svc_UserMessage -> listMsg.addElement(pair)
                                     }
@@ -282,7 +281,7 @@ public class DEMTest protected() : JPanel() {
         for (m in tableModel.messages) {
             if (m.type != MessageType.ConsoleCmd) continue
             for (p in m.meta) {
-                sb.append('\n').append(p.getValue())
+                sb.append('\n').append(p.second)
             }
         }
         val jsp = JScrollPane(JTextArea(if (sb.length() > 0) sb.substring(1) else ""))
