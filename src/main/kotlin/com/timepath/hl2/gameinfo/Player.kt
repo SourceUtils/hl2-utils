@@ -97,7 +97,7 @@ public class Player(public var name: String?) {
         return enemies.contains(player)
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<Player>().getName())
 

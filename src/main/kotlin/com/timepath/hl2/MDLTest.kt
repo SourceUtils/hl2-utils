@@ -221,7 +221,7 @@ public class MDLTest protected() : SimpleApplication() {
         return box
     }
 
-    class object {
+    companion object {
         private val LOG_JME = Logger.getLogger("com.jme3")
 
         public platformStatic fun main(args: Array<String>) {
@@ -247,7 +247,7 @@ public class ACFLocator : AssetLocator {
     private val appID = 440 // TODO: Make configurable
     private var rootPath: String? = null
 
-    {
+    init {
         var loading: ACF? = null
         try {
             loading = ACF.fromManifest(appID)
@@ -316,7 +316,7 @@ public class BSPLoader : AssetLoader {
         return geom
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<BSPLoader>().getName())
     }
@@ -332,8 +332,8 @@ public class MDLLoader : AssetLoader {
         LOG.log(Level.INFO, "Loading {0}...\n", name)
         val basename = name.substringBeforeLast('.')
         val mdlStream = info.openStream()
-        val vvdStream = am.locateAsset(AssetKey("$basename.vvd")).openStream()
-        val vtxStream = am.locateAsset(AssetKey("$basename.dx90.vtx")).openStream()
+        val vvdStream = am.locateAsset(AssetKey<InputStream>("$basename.vvd")).openStream()
+        val vtxStream = am.locateAsset(AssetKey<InputStream>("$basename.dx90.vtx")).openStream()
         val m = StudioModel(mdlStream, vvdStream, vtxStream)
         val mesh = Mesh()
         val posBuf = m.vertices
@@ -373,7 +373,7 @@ public class MDLLoader : AssetLoader {
         return geom
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<MDLLoader>().getName())
     }
@@ -411,7 +411,7 @@ public class VTFLoader : AssetLoader {
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<VTFLoader>().getName())
     }

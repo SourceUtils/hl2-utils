@@ -34,7 +34,7 @@ public open class ExternalConsole protected() : JFrame() {
     private var pw: PrintWriter? = null
     private var sock: Socket? = null
 
-    {
+    init {
         output = JTextArea()
         output.setFont(Font("Monospaced", Font.PLAIN, 15))
         output.setEnabled(false)
@@ -165,7 +165,7 @@ public open class ExternalConsole protected() : JFrame() {
         engine.getContext().setWriter(pw)
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<ExternalConsole>().getName())
         private val regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*")

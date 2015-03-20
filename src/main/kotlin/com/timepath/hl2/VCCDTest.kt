@@ -41,7 +41,7 @@ class VCCDTest private() : JFrame() {
     private var jTextField3: JTextField? = null
     private var jTextField4: JTextField? = null
 
-    {
+    init {
         // Load known mappings from preferences
         try {
             for (channel in prefs.childrenNames()) {
@@ -91,7 +91,7 @@ class VCCDTest private() : JFrame() {
             LOG.info("Generating hash codes ...")
             try {
                 val crc = CRC32()
-                val caps = ACF.fromManifest(440)!!.find("game_sounds")
+                val caps = ACF.fromManifest(440).find("game_sounds")
                 pb.setMaximum(caps.size())
                 pb.setIndeterminate(false)
                 var i = 0
@@ -130,7 +130,7 @@ class VCCDTest private() : JFrame() {
         val menuBar = JMenuBar()
         val jMenu1 = JMenu("File")
         jMenu1.add(object : JMenuItem("New") {
-            {
+            init {
                 setMnemonic('N')
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
@@ -141,7 +141,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Open") {
-            {
+            init {
                 setMnemonic('O')
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
@@ -152,7 +152,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Import") {
-            {
+            init {
                 setMnemonic('I')
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
@@ -163,7 +163,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Export") {
-            {
+            init {
                 setMnemonic('X')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -173,7 +173,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Export all") {
-            {
+            init {
                 setMnemonic('E')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -183,7 +183,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Generate hash codes") {
-            {
+            init {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
                         generateHash(e)
@@ -192,7 +192,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Save") {
-            {
+            init {
                 setMnemonic('S')
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
@@ -203,7 +203,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu1.add(object : JMenuItem("Save As...") {
-            {
+            init {
                 setMnemonic('V')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -215,7 +215,7 @@ class VCCDTest private() : JFrame() {
         menuBar.add(jMenu1)
         val jMenu2 = JMenu("Edit")
         jMenu2.add(object : JMenuItem("Insert row") {
-            {
+            init {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -225,7 +225,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu2.add(object : JMenuItem("Delete row") {
-            {
+            init {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -235,7 +235,7 @@ class VCCDTest private() : JFrame() {
             }
         })
         jMenu2.add(object : JMenuItem("Goto") {
-            {
+            init {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
                         gotoRow(e)
@@ -245,14 +245,14 @@ class VCCDTest private() : JFrame() {
         })
         menuBar.add(jMenu2)
         menuBar.add(object : JMenu("Settings") {
-            {
+            init {
                 consoleMode = JCheckBoxMenuItem("Console compatible")
                 add(consoleMode)
             }
         })
         val jMenu3 = JMenu("Help")
         jMenu3.add(object : JMenuItem("Formatting") {
-            {
+            init {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
@@ -270,7 +270,7 @@ class VCCDTest private() : JFrame() {
         setTitle("Caption Editor")
         getContentPane().setLayout(BoxLayout(getContentPane(), BoxLayout.Y_AXIS))
         getContentPane().add(object : JPanel() {
-            {
+            init {
                 setBorder(BorderFactory.createTitledBorder("CRC32"))
                 setMaximumSize(Dimension(2147483647, 83))
                 setLayout(BorderLayout())
@@ -557,7 +557,7 @@ class VCCDTest private() : JFrame() {
     private class StringPair(var name:
                              String?, var channel: String)
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<VCCDTest>().getName())
         private val prefs = Preferences.userRoot().node("timepath").node("hl2-caption-editor")

@@ -24,7 +24,7 @@ public class CTXTest protected() : JFrame() {
     protected var input: JXTextField
     protected var output: JXTextArea
 
-    {
+    init {
         this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
         input = JXTextField(CTX.TF2)
         input.setToolTipText("")
@@ -69,7 +69,7 @@ public class CTXTest protected() : JFrame() {
 
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<CTXTest>().getName())
 

@@ -145,7 +145,7 @@ public class Trie {
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<Trie>().getName())
 

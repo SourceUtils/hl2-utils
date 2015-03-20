@@ -41,7 +41,7 @@ class GameLauncher private() {
         private val pw: PrintWriter
         private val scan: Scanner
 
-        {
+        init {
             scan = Scanner(`in`)
             pw = PrintWriter(out, true)
         }
@@ -64,10 +64,10 @@ class GameLauncher private() {
         }
     }
 
-    class object {
+    companion object {
 
         private val DEFAULT = object : Options() {
-            {
+            init {
                 val base = File(SteamUtils.getSteamApps(), "common/Team Fortress 2")
                 var executable: String? = null
                 when (OS.get()) {

@@ -14,7 +14,7 @@ SuppressWarnings("serial")
 public class ExternalScoreboard private() : ExternalConsole() {
     private val players = LinkedList<Player>()
 
-            ;{
+    init {
         setTitle("External killfeed")
     }
 
@@ -81,7 +81,7 @@ public class ExternalScoreboard private() : ExternalConsole() {
         return p
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<ExternalScoreboard>().getName())
 

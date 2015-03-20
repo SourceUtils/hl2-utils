@@ -47,7 +47,7 @@ private() : JFrame() {
     private var xSpinner: JSpinner? = null
     private var ySpinner: JSpinner? = null
 
-    {
+    init {
         initComponents()
         addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent) {
@@ -495,7 +495,7 @@ private() : JFrame() {
 
         public val c: Char
 
-        {
+        init {
             c = i.toChar()
         }
 
@@ -509,7 +509,7 @@ private() : JFrame() {
         }
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<VBFTest>().getName())
 

@@ -48,15 +48,15 @@ public class DEMTest protected() : JPanel() {
     protected var tree: JXTree
     protected var tableModel: MessageModel
 
-    {
+    init {
         setLayout(BorderLayout())
         add(object : JSplitPane() {
-            {
+            init {
                 setResizeWeight(1.0)
                 setContinuousLayout(true)
                 setOneTouchExpandable(true)
                 table = object : JXTable() {
-                    {
+                    init {
                         setAutoCreateRowSorter(true)
                         setColumnControlVisible(true)
                         setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED)
@@ -67,16 +67,16 @@ public class DEMTest protected() : JPanel() {
                 }
                 setLeftComponent(JScrollPane(table))
                 setRightComponent(object : JSplitPane() {
-                    {
+                    init {
                         setOrientation(JSplitPane.VERTICAL_SPLIT)
                         setResizeWeight(1.0)
                         setContinuousLayout(true)
                         setOneTouchExpandable(true)
                         tabs = object : JTabbedPane() {
-                            {
+                            init {
                                 setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1))
                                 tree = object : JXTree() {
-                                    {
+                                    init {
                                         setModel(DefaultTreeModel(DefaultMutableTreeNode("root")))
                                         setRootVisible(false)
                                         setShowsRootHandles(true)
@@ -156,12 +156,12 @@ public class DEMTest protected() : JPanel() {
             }
         })
         menu = object : JMenuBar() {
-            {
+            init {
                 add(object : JMenu("File") {
-                    {
+                    init {
                         setMnemonic('F')
                         add(object : JMenuItem("Open") {
-                            {
+                            init {
                                 addActionListener(object : ActionListener {
                                     override fun actionPerformed(e: ActionEvent) {
                                         open()
@@ -170,7 +170,7 @@ public class DEMTest protected() : JPanel() {
                             }
                         })
                         add(object : JMenuItem("Dump commands") {
-                            {
+                            init {
                                 addActionListener(object : ActionListener {
                                     override fun actionPerformed(e: ActionEvent) {
                                         showCommands()
@@ -324,7 +324,7 @@ public class DEMTest protected() : JPanel() {
         override fun removeTableModelListener(l: TableModelListener) = Unit
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<DEMTest>().getName())
 

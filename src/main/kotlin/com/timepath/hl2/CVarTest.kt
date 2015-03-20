@@ -46,7 +46,7 @@ private() : JFrame() {
     private var notCheckBox: JCheckBox? = null
     private var regexCheckBox: JCheckBox? = null
 
-    {
+    init {
         initComponents()
         sorter = TableRowSorter(jTable1!!.getModel())
         val comparator = object : Comparator<String> {
@@ -409,7 +409,7 @@ private() : JFrame() {
         filter()
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<CVarTest>().getName())
 

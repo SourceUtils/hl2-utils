@@ -19,7 +19,7 @@ import java.util.logging.Logger
 SuppressWarnings("serial")
 abstract class AutoCompleter(val textComponent: JTextComponent) {
     val list: JList<String> = object : JList<String>() {
-        {
+        init {
             setFocusable(false)
             setRequestFocusEnabled(false)
         }
@@ -37,9 +37,9 @@ abstract class AutoCompleter(val textComponent: JTextComponent) {
         }
     }
     val popup: JPopupMenu = object : JPopupMenu() {
-        {
+        init {
             val scroll = object : JScrollPane(list) {
-                {
+                init {
                     setBorder(null)
                     getVerticalScrollBar().setFocusable(false)
                     getHorizontalScrollBar().setFocusable(false)
@@ -51,7 +51,7 @@ abstract class AutoCompleter(val textComponent: JTextComponent) {
     }
     public val rowCount: Int = 10
 
-    {
+    init {
         textComponent.putClientProperty(COMPLETION, this)
         textComponent.getDocument().addDocumentListener(documentListener)
         textComponent.registerKeyboardAction(shift(-1), KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0), JComponent.WHEN_FOCUSED)
@@ -112,7 +112,7 @@ abstract class AutoCompleter(val textComponent: JTextComponent) {
      */
     protected abstract fun acceptedListItem(selected: String)
 
-    class object {
+    companion object {
 
         private val COMPLETION = "AUTOCOMPLETION"
         private val acceptAction = object : AbstractAction() {

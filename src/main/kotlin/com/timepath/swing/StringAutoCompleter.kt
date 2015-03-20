@@ -14,7 +14,7 @@ public class StringAutoCompleter private(comp: JTextComponent, private val trie:
     private var last = ""
     private var n: Trie.TrieMapping? = null
 
-    {
+    init {
         n = trie.root
     }
 
@@ -56,7 +56,7 @@ public class StringAutoCompleter private(comp: JTextComponent, private val trie:
         textComponent.setCaretPosition(selected.length())
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<StringAutoCompleter>().getName())
     }

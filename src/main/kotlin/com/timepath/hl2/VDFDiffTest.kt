@@ -20,21 +20,21 @@ class VDFDiffTest protected() : JFrame() {
     protected var text1: JTextArea
     protected var text2: JTextArea
 
-    {
+    init {
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
         setLayout(BorderLayout())
         add(object : JSplitPane() {
-            {
+            init {
                 setResizeWeight(.5)
                 text1 = object : JTextArea() {
-                    {
+                    init {
                         setTabSize(4)
                         setText("\"A\" {\n\t\"Modified\" {\n\t\t\"Same\"\t\"yes\"\n\t\t\"Similar\"\t\"one\"\n\t\t\"Removed\"\t\"yes\"\n\t}\n\t\"Removed\" {}\n\t\"Same\" {}\n}\n")
                     }
                 }
                 setLeftComponent(JScrollPane(text1))
                 text2 = object : JTextArea() {
-                    {
+                    init {
                         setTabSize(4)
                         setText("\"B\" {\n\t\"Modified\" {\n\t\t\"Same\"\t\"yes\"\n\t\t\"Similar\"\t\"two\"\n\t\t\"Added\"\t\"yes\"\n\t}\n\t\"New\" {}\n\t\"Same\" {}\n}\n")
                     }
@@ -43,7 +43,7 @@ class VDFDiffTest protected() : JFrame() {
             }
         })
         add(object : JButton("Diff") {
-            {
+            init {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
                         try {
@@ -62,7 +62,7 @@ class VDFDiffTest protected() : JFrame() {
         setLocationRelativeTo(null)
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<VDFDiffTest>().getName())
 

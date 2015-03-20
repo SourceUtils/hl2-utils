@@ -26,7 +26,7 @@ public data class CVar(
         return sb.toString()
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<CVar>().getName())
     }

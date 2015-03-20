@@ -30,7 +30,7 @@ class ImagePreviewPanel(private val parentFrame: JFrame) : JPanel(), PropertyCha
     private var image: Image? = null
     private var vtf: VTF? = null
 
-    {
+    init {
         setPreferredSize(Dimension(ACCSIZE, -1))
         bgColor = Color.PINK
         lod = JSpinner()
@@ -107,7 +107,7 @@ class ImagePreviewPanel(private val parentFrame: JFrame) : JPanel(), PropertyCha
         createImage(vtf)
     }
 
-    class object {
+    companion object {
 
         private val ACCSIZE = 256
         private val LOG = Logger.getLogger(javaClass<ImagePreviewPanel>().getName())
@@ -140,7 +140,7 @@ class VtfFileFilter(private val vtfFormat: ImageFormat) : FileFilter() {
         return "VTF (${if ((vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN)) "All" else vtfFormat.name()})"
     }
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<VtfFileFilter>().getName())
     }
@@ -170,10 +170,9 @@ class AntiVtfFileFilter(private val name: String?, vararg val ignored: ImageForm
         return true
     }
 
-    override fun getDescription(): String
-            = name ?: "VTF (Not ${Arrays.toString(ignored)})"
+    override fun getDescription(): String = name ?: "VTF (Not ${Arrays.toString(ignored)})"
 
-    class object {
+    companion object {
 
         private val LOG = Logger.getLogger(javaClass<AntiVtfFileFilter>().getName())
     }
