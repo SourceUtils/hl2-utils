@@ -401,7 +401,7 @@ private() : JFrame() {
             if (clicked == null) {
                 return
             }
-            if ((jTree.getSelectionPaths() == null) || !Arrays.asList<TreePath>(*jTree.getSelectionPaths()).contains(clicked)) {
+            if ((jTree.getSelectionPaths() == null) || clicked !in jTree.getSelectionPaths()) {
                 jTree.setSelectionPath(clicked)
             }
             for (p in jTree.getSelectionPaths()!!) {

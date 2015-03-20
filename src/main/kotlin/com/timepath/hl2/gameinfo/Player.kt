@@ -23,7 +23,7 @@ public class Player(public var name: String?) {
         if (other == this) {
             return
         }
-        if (!allies.contains(other)) {
+        if (other !in allies) {
             allies.add(other)
         }
         if (!other.hasAlly(this)) {
@@ -51,7 +51,7 @@ public class Player(public var name: String?) {
         if (other == this) {
             return
         }
-        if (!enemies.contains(other)) {
+        if (other !in enemies) {
             enemies.add(other)
         }
         if (!other.hasEnemy(this)) {
@@ -89,13 +89,9 @@ public class Player(public var name: String?) {
         return sb.toString()
     }
 
-    private fun hasAlly(player: Player): Boolean {
-        return allies.contains(player)
-    }
+    private fun hasAlly(player: Player) = player in allies
 
-    private fun hasEnemy(player: Player): Boolean {
-        return enemies.contains(player)
-    }
+    private fun hasEnemy(player: Player) = player in enemies
 
     companion object {
 
@@ -119,7 +115,7 @@ public class Player(public var name: String?) {
             val vEnemies = LinkedList(v.enemies)
             val kAllies = LinkedList(k.allies)
             val kEnemies = LinkedList(k.enemies)
-            if (k.allies.contains(v) || v.allies.contains(k)) {
+            if (v in k.allies || k in v.allies) {
                 // Traitor
                 for (kAlly in k.allies) {
                     kAlly.allies.remove(k)

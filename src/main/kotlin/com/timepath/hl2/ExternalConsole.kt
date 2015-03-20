@@ -181,7 +181,7 @@ public open class ExternalConsole protected() : JFrame() {
                     `in`.readLine() // first line is echoed
                     for (line in `in`.lines()) {
                         sb.append(line).append('\n')
-                        if (line.contains(breakline)) {
+                        if (breakline in line) {
                             break
                         }
                     }

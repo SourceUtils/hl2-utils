@@ -211,7 +211,7 @@ class GameLauncher private() {
                 if (game == null) return null
                 var str: String? = game.getValue("LaunchOptions") as String
                 if (str == null) return null
-                if (!str!!.contains("%command%")) str = "%command% $str"
+                if ("%command%" !in str!!) str = "%command% $str"
                 return str
             } catch (e: IOException) {
                 LOG.log(Level.SEVERE, null, e)
@@ -257,7 +257,7 @@ class GameLauncher private() {
                         val test = String(Arrays.copyOfRange(b, off, off + len)).split("\n")
                         for (t in test) {
                             val intern: Boolean
-                            if (queue.contains(t)) {
+                            if (t in queue) {
                                 queue.remove(t)
                                 intern = true
                             } else {

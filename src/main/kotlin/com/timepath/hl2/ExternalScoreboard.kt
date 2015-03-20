@@ -22,7 +22,7 @@ public class ExternalScoreboard private() : ExternalConsole() {
         output.setText("")
         val strings = lines.split("\n")
         for (s in strings) {
-            if (s.contains(" killed ")) {
+            if (" killed " in s) {
                 notify(s)
             }
             //            if(s.endsWith(" suicided.")) {
