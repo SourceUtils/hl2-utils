@@ -1,20 +1,5 @@
 package com.timepath.hl2
 
-import javax.swing.*
-import javax.swing.event.*
-import javax.swing.table.AbstractTableModel
-import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.DefaultTreeModel
-import java.awt.event.ActionEvent
-import java.awt.event.ActionListener
-import java.beans.PropertyVetoException
-import java.io.File
-import java.io.IOException
-import java.util.ArrayList
-import java.util.concurrent.ExecutionException
-import java.util.logging.Level
-import java.util.logging.Logger
-
 import com.timepath.hex.HexEditor
 import com.timepath.hl2.io.demo.HL2DEM
 import com.timepath.hl2.io.demo.Message
@@ -28,11 +13,21 @@ import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.JXTree
 import org.jdesktop.swingx.decorator.AbstractHighlighter
 import org.jdesktop.swingx.decorator.ComponentAdapter
-import java.awt.Color
-import java.awt.Component
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.EventQueue
+import java.awt.*
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.beans.PropertyVetoException
+import java.io.File
+import java.io.IOException
+import java.util.ArrayList
+import java.util.concurrent.ExecutionException
+import java.util.logging.Level
+import java.util.logging.Logger
+import javax.swing.*
+import javax.swing.event.*
+import javax.swing.table.AbstractTableModel
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeModel
 import kotlin.platform.platformStatic
 
 
@@ -184,17 +179,11 @@ public class DEMTest protected() : JPanel() {
         }
     }
 
-    protected fun recurse(i: Iterable<*>, root: DefaultMutableTreeNode) {
-        for (entry in i) {
-            if (entry is Pair<*, *>) {
-                val p = entry as Pair<Any, Any>
-                expand(p, p.first, p.second, root)
-            } else if (entry is Map.Entry<*, *>) {
-                val e = entry as Map.Entry<Any, Any>
-                expand(e, e.getKey(), e.getValue(), root)
-            } else {
-                root.add(DefaultMutableTreeNode(entry))
-            }
+    protected fun recurse(i: Iterable<*>, root: DefaultMutableTreeNode): Unit = i.forEach { entry ->
+        when (entry) {
+            is Pair<*, *> -> expand(entry, entry.first!!, entry.second!!, root)
+            is Map.Entry<*, *> -> expand(entry, entry.getKey()!!, entry.getValue()!!, root)
+            else -> root.add(DefaultMutableTreeNode(entry))
         }
     }
 
@@ -298,7 +287,7 @@ public class DEMTest protected() : JPanel() {
         protected var columns: Array<String> = array<String>("Tick", "Type", "Size")
         protected var types: Array<Class<*>> = array(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
 
-        override fun getColumnCount()= columns.size()
+        override fun getColumnCount() = columns.size()
 
         override fun getColumnName(columnIndex: Int) = columns[columnIndex]
 

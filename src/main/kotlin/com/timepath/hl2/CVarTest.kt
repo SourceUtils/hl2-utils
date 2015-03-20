@@ -134,70 +134,90 @@ private() : JFrame() {
         jLabel2.setText(" Total convars/concommands: ")
         statusBar1.add(jLabel2)
         jLabel1!!.setText("0")
-        statusBar1.add(jLabel1)
+        statusBar1.add(jLabel1!!)
         statusBar1.add(jSeparator1)
         jLabel4.setText("Showing: ")
         statusBar1.add(jLabel4)
         jLabel5!!.setText("0")
-        statusBar1.add(jLabel5)
+        statusBar1.add(jLabel5!!)
         jLabel3.setText("Find:")
         regexCheckBox!!.setMnemonic('R')
         regexCheckBox!!.setText("Regular Expression")
         regexCheckBox!!.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                regexCheckBoxActionPerformed(e)
+                regexCheckBoxActionPerformed()
             }
         })
         caseSensitiveCheckBox!!.setMnemonic('M')
         caseSensitiveCheckBox!!.setText("Match Case")
         caseSensitiveCheckBox!!.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                caseSensitiveCheckBoxActionPerformed(e)
+                caseSensitiveCheckBoxActionPerformed()
             }
         })
         notCheckBox!!.setMnemonic('M')
         notCheckBox!!.setText("Not")
         notCheckBox!!.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                notCheckBoxActionPerformed(e)
+                notCheckBoxActionPerformed()
             }
         })
         val jPanel1Layout = GroupLayout(jPanel1)
         jPanel1.setLayout(jPanel1Layout)
-        jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(jPanel1Layout.createSequentialGroup().addContainerGap().addComponent(jLabel3).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(jTextField1).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(notCheckBox).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(caseSensitiveCheckBox).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(regexCheckBox)))
-        jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(jPanel1Layout.createSequentialGroup().addGap(0, 0, 0).addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(jTextField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(jLabel3).addComponent(regexCheckBox).addComponent(caseSensitiveCheckBox).addComponent(notCheckBox)).addGap(0, 0, 0)))
+        jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jLabel3)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jTextField1!!)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(notCheckBox!!)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(caseSensitiveCheckBox!!)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(regexCheckBox!!)))
+        jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(0, 0, 0)
+                        .addGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(jTextField1!!, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel3)
+                                .addComponent(regexCheckBox!!)
+                                .addComponent(caseSensitiveCheckBox!!)
+                                .addComponent(notCheckBox!!))
+                        .addGap(0, 0, 0)))
         jMenu1.setText("File")
         jMenuItem1.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
         jMenuItem1.setText("Open")
         jMenuItem1.addActionListener {
-            jMenuItem1ActionPerformed(it)
+            jMenuItem1ActionPerformed()
         }
         jMenu1.add(jMenuItem1)
         jMenuItem4.setText("Get cvarlist")
         jMenuItem4.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem4ActionPerformed(e)
+                jMenuItem4ActionPerformed()
             }
         })
         jMenu1.add(jMenuItem4)
         jMenuItem6.setText("Get differences")
         jMenuItem6.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem6ActionPerformed(e)
+                jMenuItem6ActionPerformed()
             }
         })
         jMenu1.add(jMenuItem6)
         jMenuItem5.setText("Reset cvars")
         jMenuItem5.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem5ActionPerformed(e)
+                jMenuItem5ActionPerformed()
             }
         })
         jMenu1.add(jMenuItem5)
         jMenuItem7.setText("Clear")
         jMenuItem7.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem7ActionPerformed(e)
+                jMenuItem7ActionPerformed()
             }
         })
         jMenu1.add(jMenuItem7)
@@ -206,14 +226,14 @@ private() : JFrame() {
         jMenuItem2.setText("Copy names")
         jMenuItem2.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem2ActionPerformed(e)
+                jMenuItem2ActionPerformed()
             }
         })
         jMenu2.add(jMenuItem2)
         jMenuItem3.setText("Copy markdown")
         jMenuItem3.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem3ActionPerformed(e)
+                jMenuItem3ActionPerformed()
             }
         })
         jMenu2.add(jMenuItem3)
@@ -230,7 +250,7 @@ private() : JFrame() {
         return CVarList.analyzeList(scanner, HashMap<String, CVar>())
     }
 
-    private fun jMenuItem1ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem1ActionPerformed() {
         try {
             val f = NativeFileChooser().setTitle("Select cvarlist").choose()
             if (f != null) {
@@ -262,15 +282,15 @@ private() : JFrame() {
 
     }
 
-    private fun regexCheckBoxActionPerformed(evt: ActionEvent) {
+    private fun regexCheckBoxActionPerformed() {
         filter()
     }
 
-    private fun caseSensitiveCheckBoxActionPerformed(evt: ActionEvent) {
+    private fun caseSensitiveCheckBoxActionPerformed() {
         filter()
     }
 
-    private fun jMenuItem2ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem2ActionPerformed() {
         val sb = StringBuilder()
         for (i in jTable1!!.getModel().getRowCount().indices) {
             val row = jTable1!!.convertRowIndexToModel(i)
@@ -280,7 +300,7 @@ private() : JFrame() {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection)
     }
 
-    private fun jMenuItem3ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem3ActionPerformed() {
         val m = jTable1!!.getModel()
         val sb = StringBuilder()
         val tab = "|"
@@ -324,7 +344,7 @@ private() : JFrame() {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection)
     }
 
-    private fun jMenuItem4ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem4ActionPerformed() {
         clear()
         var ret: String? = null
         val limit = 5
@@ -345,7 +365,7 @@ private() : JFrame() {
         }
         val selection = StringSelection(ret)
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection)
-        val map = analyze(Scanner(ret))
+        val map = analyze(Scanner(ret!!))
         for (entry in map.entrySet()) {
             val v = entry.getValue()
             val chunks = array<Any?>(v.name, v.value, v.defaultValue, v.minimum, v.maximum, Arrays.toString(v.tags.copyToArray()), v.desc)
@@ -354,11 +374,11 @@ private() : JFrame() {
         filter()
     }
 
-    private fun notCheckBoxActionPerformed(evt: ActionEvent) {
+    private fun notCheckBoxActionPerformed() {
         filter()
     }
 
-    private fun jMenuItem5ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem5ActionPerformed() {
         val sb = StringBuilder()
         sb.append("sv_cheats 1\n")
         ExternalConsole.exec("sv_cheats 1", null)
@@ -366,7 +386,6 @@ private() : JFrame() {
         val rows = m.getRowCount()
         for (i in rows.indices) {
             val row = jTable1!!.convertRowIndexToModel(i)
-            val j = 2
             val name = m.getValueAt(row, jTable1!!.convertColumnIndexToModel(0))
             if ("sv_cheats" == name.toString()) {
                 continue
@@ -384,7 +403,7 @@ private() : JFrame() {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection)
     }
 
-    private fun jMenuItem6ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem6ActionPerformed() {
         clear()
         val ret = ExternalConsole.exec("differences; echo --end of differences--", "--end of differences--")
         val map = analyze(Scanner(ret))
@@ -396,7 +415,7 @@ private() : JFrame() {
         filter()
     }
 
-    private fun jMenuItem7ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem7ActionPerformed() {
         clear()
     }
 

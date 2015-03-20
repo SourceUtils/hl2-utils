@@ -55,7 +55,7 @@ object CFGSetup {
             }
             out.println()
         }
-        JOptionPane.showMessageDialog(null, "CFG files created")
+        JOptionPane.showMessageDialog(JOptionPane.getRootFrame(), "CFG files created")
         Desktop.getDesktop().open(dir)
     }
 

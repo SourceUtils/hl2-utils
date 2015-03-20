@@ -161,7 +161,7 @@ public open class ExternalConsole protected() : JFrame() {
 
     fun setOut(s: OutputStream?) {
         input.setEnabled(s != null)
-        pw = PrintWriter(s, true)
+        pw = PrintWriter(s!!, true)
         engine.getContext().setWriter(pw)
     }
 

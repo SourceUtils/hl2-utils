@@ -7,9 +7,7 @@ import com.timepath.plaf.OS
 import com.timepath.steam.SteamUtils
 import com.timepath.steam.io.VDF
 import com.timepath.steam.io.bvdf.BVDF
-
-import javax.swing.*
-import java.awt.*
+import java.awt.Dimension
 import java.io.*
 import java.net.InetAddress
 import java.net.ServerSocket
@@ -17,9 +15,9 @@ import java.net.SocketTimeoutException
 import java.util.*
 import java.util.logging.Level
 import java.util.logging.Logger
-
-import kotlin.platform.platformStatic
+import javax.swing.*
 import kotlin.concurrent.thread
+import kotlin.platform.platformStatic
 
 /**
  * Starts a game and relay server.
@@ -54,8 +52,8 @@ class GameLauncher private() {
 
         /**
          * @param line
-         *         the line to print
-         *
+        *         the line to print
+        *
          * @return false if error
          */
         open fun print(line: String): Boolean {
@@ -69,14 +67,14 @@ class GameLauncher private() {
         private val DEFAULT = object : Options() {
             init {
                 val base = File(SteamUtils.getSteamApps(), "common/Team Fortress 2")
-                var executable: String? = null
-                when (OS.get()) {
-                    OS.Windows -> executable = "hl2.exe"
-                    OS.OSX -> executable = "hl2_osx"
-                    OS.Linux -> executable = "hl2.sh"
+                val executable = when (OS.get()) {
+                    OS.Windows -> "hl2.exe"
+                    OS.OSX -> "hl2_osx"
+                    OS.Linux -> "hl2.sh"
+                    else -> throw NoWhenBranchMatchedException()
                 }
                 script = File(base, executable)
-                args = array<String>("-game", "tf", "-steam")
+                args = array("-game", "tf", "-steam")
             }
         }
         private val LOG = Logger.getLogger(javaClass<GameLauncher>().getName())
@@ -105,7 +103,7 @@ class GameLauncher private() {
          * Prompt user for execution command.
          *
          * @return tokenized args
-         *
+        *
          * @throws IOException
          */
         throws(javaClass<IOException>())
@@ -138,10 +136,10 @@ class GameLauncher private() {
          * Split command, replace %command% with args.
          *
          * @param command
-         *         command string
+        *         command string
          * @param args
-         *         %command% replacement
-         *
+        *         %command% replacement
+        *
          * @return
          */
         private fun tokenize(command: String, vararg args: String): Array<out String> {
@@ -176,12 +174,12 @@ class GameLauncher private() {
             val bin = BVDF()
             bin.readExternal(DataUtils.mapFile(File(SteamUtils.getSteam(), "appcache/appinfo.vdf")))
             val root = bin.getRoot()
-            val gm = root[appID.toString()]
-            val sections = gm["Sections"]
-            val conf = sections["CONFIG"]!!["config"]
+            val gm = root[appID.toString()]!!
+            val sections = gm["Sections"]!!
+            val conf = sections["CONFIG"]!!["config"]!!
             val installdir = conf["installdir"]!!.value.toString()
             val dir = File(SteamUtils.getSteamApps(), "common/$installdir")
-            val l = conf["launch"]
+            val l = conf["launch"]!!
             val launch = HashMap<String, File>(l.getChildCount())
             var gameArgs: Array<String>? = null
             for (i in l.getChildCount().indices) {
@@ -202,8 +200,8 @@ class GameLauncher private() {
 
         /**
          * @param appID
-         *         steam application ID
-         *
+        *         steam application ID
+        *
          * @return user launch options prepended with %command% if not present
          */
         private fun getUserOpts(appID: Int): String? {
@@ -226,14 +224,14 @@ class GameLauncher private() {
          * Starts the process.
          *
          * @param cmd
-         *         command to exec
+        *         command to exec
          * @param env
-         *         env vars
+        *         env vars
          * @param dir
-         *         working directory to run game from
+        *         working directory to run game from
          * @param port
-         *         port to listen on
-         *
+        *         port to listen on
+        *
          * @throws IOException
          */
         throws(javaClass<IOException>())
@@ -266,7 +264,7 @@ class GameLauncher private() {
                                 intern = false
                             }
                             val bytes = ("${if (intern) 1.toChar().toString() else ""}$t\n").toByteArray()
-                            super.write(bytes, 0, bytes.size)
+                            super.write(bytes, 0, bytes.size())
                         }
                     }
                     flush()

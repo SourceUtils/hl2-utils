@@ -187,7 +187,7 @@ private() : JFrame() {
         })
     }
 
-    private fun createGlyph(evt: ActionEvent) {
+    private fun createGlyph() {
         val g = VBF.BitmapGlyph()
         if (data == null) {
             data = VBF()
@@ -238,7 +238,7 @@ private() : JFrame() {
         jMenuItem4.setText("Copy")
         jMenuItem4.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                jMenuItem4ActionPerformed(e)
+                jMenuItem4ActionPerformed()
             }
         })
         jPopupMenu1!!.add(jMenuItem4)
@@ -282,15 +282,15 @@ private() : JFrame() {
         jPanel3.setBorder(BorderFactory.createTitledBorder("Position"))
         jPanel3.setLayout(BoxLayout(jPanel3, BoxLayout.LINE_AXIS))
         xSpinner!!.setModel(SpinnerNumberModel(0, 0, null, 1))
-        jPanel3.add(xSpinner)
+        jPanel3.add(xSpinner!!)
         ySpinner!!.setModel(SpinnerNumberModel(0, 0, null, 1))
-        jPanel3.add(ySpinner)
+        jPanel3.add(ySpinner!!)
         jPanel5.setBorder(BorderFactory.createTitledBorder("Dimensions"))
         jPanel5.setLayout(BoxLayout(jPanel5, BoxLayout.LINE_AXIS))
         widthSpinner!!.setModel(SpinnerNumberModel(0, 0, null, 1))
-        jPanel5.add(widthSpinner)
+        jPanel5.add(widthSpinner!!)
         heightSpinner!!.setModel(SpinnerNumberModel(0, 0, null, 1))
-        jPanel5.add(heightSpinner)
+        jPanel5.add(heightSpinner!!)
         val jPanel2Layout = GroupLayout(jPanel2)
         jPanel2.setLayout(jPanel2Layout)
         jPanel2Layout.setHorizontalGroup(jPanel2Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(jPanel5, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, java.lang.Short.MAX_VALUE.toInt()).addComponent(jPanel3, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, java.lang.Short.MAX_VALUE.toInt()))
@@ -300,7 +300,7 @@ private() : JFrame() {
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 249, java.lang.Short.MAX_VALUE.toInt()).addComponent(jSplitPane2, GroupLayout.DEFAULT_SIZE, 249, java.lang.Short.MAX_VALUE.toInt()))
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup().addComponent(jSplitPane2, GroupLayout.DEFAULT_SIZE, 301, java.lang.Short.MAX_VALUE.toInt()).addPreferredGap(LayoutStyle.ComponentPlacement.RELATED).addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, 148, GroupLayout.PREFERRED_SIZE)))
         jSplitPane1.setLeftComponent(jPanel1)
-        val canvasLayout = GroupLayout(canvas)
+        val canvasLayout = GroupLayout(canvas!!)
         canvas!!.setLayout(canvasLayout)
         canvasLayout.setHorizontalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 373, java.lang.Short.MAX_VALUE.toInt()))
         canvasLayout.setVerticalGroup(canvasLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 449, java.lang.Short.MAX_VALUE.toInt()))
@@ -313,7 +313,7 @@ private() : JFrame() {
         jMenuItem1.setText("Open")
         jMenuItem1.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                open(e)
+                open()
             }
         })
         jMenu1.add(jMenuItem1)
@@ -322,7 +322,7 @@ private() : JFrame() {
         jMenuItem2.setText("Save")
         jMenuItem2.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                save(e)
+                save()
             }
         })
         jMenu1.add(jMenuItem2)
@@ -331,7 +331,7 @@ private() : JFrame() {
         jMenuItem3.setText("Create glyph")
         jMenuItem3.addActionListener(object : ActionListener {
             override fun actionPerformed(e: ActionEvent) {
-                createGlyph(e)
+                createGlyph()
             }
         })
         jMenu2.add(jMenuItem3)
@@ -341,7 +341,7 @@ private() : JFrame() {
     }
 
     private fun insertCharacters(model: DefaultTreeModel, child: MutableTreeNode, g: Int) {
-        for (i in data!!.getTable().size.indices) {
+        for (i in data!!.getTable().size().indices) {
             val glyphIndex = data!!.getTable()[i].toInt()
             if (glyphIndex != g) {
                 continue
@@ -358,7 +358,7 @@ private() : JFrame() {
         model.reload()
     }
 
-    private fun jMenuItem4ActionPerformed(evt: ActionEvent) {
+    private fun jMenuItem4ActionPerformed() {
         val selection = StringSelection(java.lang.String.valueOf(toCopy))
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection)
     }
@@ -417,7 +417,7 @@ private() : JFrame() {
         }
     }
 
-    private fun open(evt: ActionEvent) {
+    private fun open() {
         try {
             val fs = NativeFileChooser().setParent(this).setTitle("Select vbf").addFilter(BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf")).addFilter(BaseFileChooser.ExtensionFilter("Valve Texture File", ".vtf")).choose()
             if (fs == null) {
@@ -431,7 +431,7 @@ private() : JFrame() {
 
     }
 
-    private fun save(evt: ActionEvent) {
+    private fun save() {
         try {
             val fs = NativeFileChooser().setParent(this).setTitle("Select save location").addFilter(BaseFileChooser.ExtensionFilter("Valve Bitmap Font", ".vbf")).setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG).choose()
             if (fs == null) {

@@ -262,8 +262,7 @@ public class ACFLocator : AssetLocator {
         rootPath = path
     }
 
-    SuppressWarnings("rawtypes")
-    override fun locate(manager: AssetManager, key: AssetKey<out Any?>): AssetInfo {
+    override fun locate(manager: AssetManager, key: AssetKey<*>): AssetInfo {
         if (source == null) {
             throw AssetLoadException(MessageFormat.format("Steam game {0} not installed, run steam://install/{0}", appID))
         }
@@ -272,11 +271,11 @@ public class ACFLocator : AssetLocator {
         if (found == null) {
             throw AssetNotFoundException(MessageFormat.format("{0} not found", search))
         }
-        return SourceModelAssetInfo(manager, key as AssetKey<Any>, found)
+        return SourceModelAssetInfo(manager, key, found)
     }
 
     private class SourceModelAssetInfo(manager: AssetManager,
-                                       key: AssetKey<Any>,
+                                       key: AssetKey<*>,
                                        private val source: SimpleVFile) : AssetInfo(manager, key) {
         override fun openStream() = source.openStream()!!
     }

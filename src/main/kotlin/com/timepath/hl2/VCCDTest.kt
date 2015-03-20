@@ -26,6 +26,7 @@ import java.util.logging.Logger
 import java.util.prefs.BackingStoreException
 import java.util.prefs.Preferences
 import java.util.zip.CRC32
+import kotlin.concurrent.thread
 import kotlin.platform.platformStatic
 
 /**
@@ -79,7 +80,7 @@ class VCCDTest private() : JFrame() {
     }
 
     private fun generateHash() {
-        Thread {
+        thread {
             val frame = JFrame("Generating hash codes...")
             val pb = JProgressBar()
             pb.setIndeterminate(true)
@@ -135,7 +136,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        createNew(e)
+                        createNew()
                     }
                 })
             }
@@ -146,7 +147,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        loadCaptions(e)
+                        loadCaptions()
                     }
                 })
             }
@@ -157,7 +158,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        importCaptions(e)
+                        importCaptions()
                     }
                 })
             }
@@ -167,7 +168,7 @@ class VCCDTest private() : JFrame() {
                 setMnemonic('X')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        export(e)
+                        export()
                     }
                 })
             }
@@ -177,7 +178,7 @@ class VCCDTest private() : JFrame() {
                 setMnemonic('E')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        exportAll(e)
+                        exportAll()
                     }
                 })
             }
@@ -186,7 +187,7 @@ class VCCDTest private() : JFrame() {
             init {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        generateHash(e)
+                        generateHash()
                     }
                 })
             }
@@ -197,7 +198,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        saveCaptions(e)
+                        saveCaptions()
                     }
                 })
             }
@@ -207,7 +208,7 @@ class VCCDTest private() : JFrame() {
                 setMnemonic('V')
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        saveCaptionsAs(e)
+                        saveCaptionsAs()
                     }
                 })
             }
@@ -219,7 +220,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        insertRow(e)
+                        insertRow()
                     }
                 })
             }
@@ -229,7 +230,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, InputEvent.CTRL_MASK))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        deleteRow(e)
+                        deleteRow()
                     }
                 })
             }
@@ -238,7 +239,7 @@ class VCCDTest private() : JFrame() {
             init {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        gotoRow(e)
+                        gotoRow()
                     }
                 })
             }
@@ -247,7 +248,7 @@ class VCCDTest private() : JFrame() {
         menuBar.add(object : JMenu("Settings") {
             init {
                 consoleMode = JCheckBoxMenuItem("Console compatible")
-                add(consoleMode)
+                add(consoleMode!!)
             }
         })
         val jMenu3 = JMenu("Help")
@@ -256,7 +257,7 @@ class VCCDTest private() : JFrame() {
                 setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0))
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
-                        formattingHelp(e)
+                        formattingHelp()
                     }
                 })
             }
@@ -275,11 +276,13 @@ class VCCDTest private() : JFrame() {
                 setMaximumSize(Dimension(2147483647, 83))
                 setLayout(BorderLayout())
                 jTextField3 = JTextField()
-                add(jTextField3, BorderLayout.PAGE_START)
-                jTextField4 = JTextField()
-                jTextField4!!.setEditable(false)
-                jTextField4!!.setText("The CRC will appear here")
-                add(jTextField4, BorderLayout.PAGE_END)
+                add(jTextField3!!, BorderLayout.PAGE_START)
+                jTextField4 = JTextField().let {
+                    it.setEditable(false)
+                    it.setText("The CRC will appear here")
+                    it
+                }
+                add(jTextField4!!, BorderLayout.PAGE_END)
             }
         })
         jTable1 = JTable()
@@ -311,7 +314,7 @@ class VCCDTest private() : JFrame() {
         pack()
     }
 
-    private fun loadCaptions(evt: ActionEvent) {
+    private fun loadCaptions() {
         try {
             val fc = NativeFileChooser()
             fc.setTitle("Open")
@@ -387,18 +390,18 @@ class VCCDTest private() : JFrame() {
         }
         persistHashmap(hashmap)
         try {
-            VCCD.save(entries, FileOutputStream(saveFile), consoleMode!!.isSelected(), consoleMode!!.isSelected())
+            VCCD.save(entries, FileOutputStream(saveFile!!), consoleMode!!.isSelected(), consoleMode!!.isSelected())
         } catch (ex: IOException) {
             LOG.log(Level.SEVERE, null, ex)
         }
 
     }
 
-    private fun saveCaptions(evt: ActionEvent) {
+    private fun saveCaptions() {
         save(false)
     }
 
-    private fun importCaptions(evt: ActionEvent) {
+    private fun importCaptions() {
         try {
             val fc = NativeFileChooser()
             fc.setTitle("Import")
@@ -433,12 +436,12 @@ class VCCDTest private() : JFrame() {
 
     }
 
-    private fun insertRow(evt: ActionEvent) {
+    private fun insertRow() {
         val model = jTable1!!.getModel() as DefaultTableModel
         model.addRow(array<Any>(0, "", ""))
     }
 
-    private fun deleteRow(evt: ActionEvent) {
+    private fun deleteRow() {
         val model = jTable1!!.getModel() as DefaultTableModel
         var newRow = Math.min(jTable1!!.getSelectedRow(), jTable1!!.getRowCount() - 1)
         if (jTable1!!.getSelectedRow() == (jTable1!!.getRowCount() - 1)) {
@@ -451,7 +454,7 @@ class VCCDTest private() : JFrame() {
         }
     }
 
-    private fun createNew(evt: ActionEvent) {
+    private fun createNew() {
         val model = jTable1!!.getModel() as DefaultTableModel
         run {
             var i = model.getRowCount() - 1
@@ -463,7 +466,7 @@ class VCCDTest private() : JFrame() {
         model.addRow(array<Any>(0, "", ""))
     }
 
-    private fun formattingHelp(evt: ActionEvent) {
+    private fun formattingHelp() {
         val message = try {
             javaClass.getResource("/VCCDTest.txt").readText()
         } catch (ignored: IOException) {
@@ -478,7 +481,7 @@ class VCCDTest private() : JFrame() {
         dialog.setVisible(true)
     }
 
-    private fun export(evt: ActionEvent) {
+    private fun export() {
         val sb = StringBuilder(jTable1!!.getRowCount() * 100) // rough estimate
         val model = jTable1!!.getModel()
         for (i in model.getRowCount().indices) {
@@ -513,7 +516,7 @@ class VCCDTest private() : JFrame() {
         return intValue
     }
 
-    private fun gotoRow(evt: ActionEvent) {
+    private fun gotoRow() {
         var row = showInputDialog()
         if (row < 0) {
             return
@@ -525,15 +528,11 @@ class VCCDTest private() : JFrame() {
         jTable1!!.scrollRectToVisible(jTable1!!.getCellRect(row, 0, true))
     }
 
-    private fun saveCaptionsAs(evt: ActionEvent) {
+    private fun saveCaptionsAs() {
         save(true)
     }
 
-    private fun generateHash(evt: ActionEvent) {
-        generateHash()
-    }
-
-    private fun exportAll(evt: ActionEvent) {
+    private fun exportAll() {
         try {
             val fc = NativeFileChooser()
             fc.setDialogType(BaseFileChooser.DialogType.SAVE_DIALOG)
@@ -545,7 +544,7 @@ class VCCDTest private() : JFrame() {
                 return
             }
             saveFile = fs[0]
-            prefs.exportSubtree(FileOutputStream(saveFile))
+            prefs.exportSubtree(FileOutputStream(saveFile!!))
         } catch (ex: IOException) {
             LOG.log(Level.SEVERE, null, ex)
         } catch (ex: BackingStoreException) {
@@ -595,7 +594,7 @@ class VCCDTest private() : JFrame() {
             for (entry in map.entrySet()) {
                 val key = entry.getKey()
                 val value = entry.getValue().name
-                if ((key == null) || (value == null)) {
+                if (value == null) {
                     continue
                 }
                 prefs.node(entry.getValue().channel).putInt(value, key)
