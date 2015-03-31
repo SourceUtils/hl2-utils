@@ -1,11 +1,11 @@
 package com.timepath.hl2
 
-import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
-import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableModel
-import javax.swing.table.TableRowSorter
+import com.timepath.hl2.cvar.CVar
+import com.timepath.hl2.cvar.CVarList
+import com.timepath.plaf.x.filechooser.NativeFileChooser
+import com.timepath.swing.StatusBar
+import java.awt.Color
+import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -18,13 +18,12 @@ import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
 import java.util.regex.PatternSyntaxException
-
-import com.timepath.hl2.cvar.CVar
-import com.timepath.hl2.cvar.CVarList
-import com.timepath.plaf.x.filechooser.NativeFileChooser
-import com.timepath.swing.StatusBar
-import java.awt.Color
-import java.awt.Toolkit
+import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableModel
+import javax.swing.table.TableRowSorter
 import kotlin.platform.platformStatic
 
 

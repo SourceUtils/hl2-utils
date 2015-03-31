@@ -1,10 +1,9 @@
 package com.timepath.swing
 
 import com.timepath.util.Trie
-
-import javax.swing.text.JTextComponent
 import java.util.Collections
 import java.util.logging.Logger
+import javax.swing.text.JTextComponent
 
 /**
  * @author TimePath

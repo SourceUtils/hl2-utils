@@ -1,18 +1,5 @@
 package com.timepath.hl2
 
-import javax.swing.*
-import java.awt.event.WindowAdapter
-import java.awt.event.WindowEvent
-import java.awt.image.BufferedImage
-import java.io.IOException
-import java.io.InputStream
-import java.text.MessageFormat
-import java.util.concurrent.Callable
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.ScheduledThreadPoolExecutor
-import java.util.logging.Level
-import java.util.logging.Logger
-
 import com.jme3.app.SimpleApplication
 import com.jme3.asset.*
 import com.jme3.asset.plugins.FileLocator
@@ -22,7 +9,10 @@ import com.jme3.material.RenderState
 import com.jme3.math.ColorRGBA
 import com.jme3.math.FastMath
 import com.jme3.math.Vector3f
-import com.jme3.scene.*
+import com.jme3.scene.Geometry
+import com.jme3.scene.Mesh
+import com.jme3.scene.Node
+import com.jme3.scene.VertexBuffer
 import com.jme3.scene.debug.Arrow
 import com.jme3.scene.debug.Grid
 import com.jme3.scene.shape.Box
@@ -37,8 +27,20 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser
 import com.timepath.steam.io.storage.ACF
 import com.timepath.vfs.SimpleVFile
 import com.timepath.vfs.VFile
-import kotlin.properties.Delegates
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
+import java.awt.image.BufferedImage
+import java.io.IOException
+import java.io.InputStream
+import java.text.MessageFormat
+import java.util.concurrent.Callable
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.ScheduledThreadPoolExecutor
+import java.util.logging.Level
+import java.util.logging.Logger
+import javax.swing.*
 import kotlin.platform.platformStatic
+import kotlin.properties.Delegates
 
 public class MDLTest protected() : SimpleApplication() {
     protected val executor: ExecutorService = ScheduledThreadPoolExecutor(4)

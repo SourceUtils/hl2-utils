@@ -1,10 +1,9 @@
 package com.timepath.hl2
 
 import com.timepath.steam.SteamUtils
-
-import javax.swing.*
-import java.awt.*
+import java.awt.Desktop
 import java.io.*
+import javax.swing.JOptionPane
 import kotlin.platform.platformStatic
 
 /**

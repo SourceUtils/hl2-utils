@@ -1,9 +1,7 @@
 package com.timepath.hl2
 
 import com.timepath.steam.io.VDF
-
-import javax.swing.*
-import java.awt.*
+import java.awt.BorderLayout
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.ByteArrayInputStream
@@ -11,6 +9,7 @@ import java.io.IOException
 import java.nio.charset.StandardCharsets
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.swing.*
 import kotlin.platform.platformStatic
 
 /**

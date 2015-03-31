@@ -1,12 +1,8 @@
 package com.timepath.hl2
 
-import javax.script.Invocable
-import javax.script.ScriptEngine
-import javax.script.ScriptEngineManager
-import javax.script.ScriptException
-import javax.swing.*
-import javax.swing.text.DefaultCaret
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.Font
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowAdapter
@@ -17,8 +13,14 @@ import java.net.Socket
 import java.util.logging.Level
 import java.util.logging.Logger
 import java.util.regex.Pattern
-import kotlin.platform.platformStatic
+import javax.script.Invocable
+import javax.script.ScriptEngine
+import javax.script.ScriptEngineManager
+import javax.script.ScriptException
+import javax.swing.*
+import javax.swing.text.DefaultCaret
 import kotlin.concurrent.thread
+import kotlin.platform.platformStatic
 
 /**
  * http://www.perkin.org.uk/posts/how-to-fix-stdio-buffering.html

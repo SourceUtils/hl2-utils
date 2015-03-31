@@ -6,12 +6,6 @@ import com.timepath.plaf.x.filechooser.NativeFileChooser
 import com.timepath.steam.io.VDF
 import com.timepath.steam.io.storage.ACF
 import com.timepath.util.Trie
-
-import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
-import javax.swing.table.DefaultTableModel
-import javax.swing.table.TableCellEditor
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
@@ -26,6 +20,11 @@ import java.util.logging.Logger
 import java.util.prefs.BackingStoreException
 import java.util.prefs.Preferences
 import java.util.zip.CRC32
+import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.table.DefaultTableModel
+import javax.swing.table.TableCellEditor
 import kotlin.concurrent.thread
 import kotlin.platform.platformStatic
 

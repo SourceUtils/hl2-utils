@@ -2,11 +2,6 @@ package com.timepath.hl2
 
 import com.timepath.hl2.io.image.ImageFormat
 import com.timepath.hl2.io.image.VTF
-
-import javax.swing.*
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import javax.swing.filechooser.FileFilter
 import java.awt.*
 import java.awt.image.BufferedImage
 import java.beans.PropertyChangeEvent
@@ -18,8 +13,12 @@ import java.io.IOException
 import java.util.Arrays
 import java.util.logging.Level
 import java.util.logging.Logger
-import kotlin.platform.platformStatic
+import javax.swing.*
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+import javax.swing.filechooser.FileFilter
 import kotlin.concurrent.thread
+import kotlin.platform.platformStatic
 
 
 SuppressWarnings("serial")

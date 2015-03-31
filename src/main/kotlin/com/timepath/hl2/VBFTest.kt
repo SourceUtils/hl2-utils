@@ -6,13 +6,6 @@ import com.timepath.hl2.swing.VBFCanvas
 import com.timepath.plaf.x.filechooser.BaseFileChooser
 import com.timepath.plaf.x.filechooser.NativeFileChooser
 import com.timepath.swing.ReorderableJTree
-
-import javax.swing.*
-import javax.swing.event.ChangeEvent
-import javax.swing.event.ChangeListener
-import javax.swing.event.TreeSelectionEvent
-import javax.swing.event.TreeSelectionListener
-import javax.swing.tree.*
 import java.awt.*
 import java.awt.datatransfer.StringSelection
 import java.awt.event.*
@@ -20,9 +13,14 @@ import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
-import java.util.Arrays
 import java.util.logging.Level
 import java.util.logging.Logger
+import javax.swing.*
+import javax.swing.event.ChangeEvent
+import javax.swing.event.ChangeListener
+import javax.swing.event.TreeSelectionEvent
+import javax.swing.event.TreeSelectionListener
+import javax.swing.tree.*
 import kotlin.platform.platformStatic
 
 /**
