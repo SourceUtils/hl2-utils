@@ -80,7 +80,7 @@ private() : JFrame() {
                 if (currentGlyph == null) {
                     return
                 }
-                val r = currentGlyph!!.getBounds()
+                val r = currentGlyph!!.bounds
                 xSpinner!!.setValue(r.x)
                 ySpinner!!.setValue(r.y)
                 widthSpinner!!.setValue(r.width)
@@ -120,10 +120,10 @@ private() : JFrame() {
                     return
                 }
                 val current = (xSpinner!!.getValue() as Number).toInt()
-                currentGlyph!!.getBounds().x = current
+                currentGlyph!!.bounds.x = current
                 doRepaint(Math.min(old, current), (ySpinner!!.getValue() as Number).toInt(), Math.max(old, current) + (widthSpinner!!.getValue() as Number).toInt(), (heightSpinner!!.getValue() as Number).toInt())
                 old = current
-                val wide = if ((image != null)) image!!.width else data!!.getWidth().toInt()
+                val wide = if ((image != null)) image!!.width else data!!.width.toInt()
                 if (spinners) {
                     (widthSpinner!!.getModel() as SpinnerNumberModel).setMaximum(wide - (xSpinner!!.getValue() as Number).toInt())
                 }
@@ -138,10 +138,10 @@ private() : JFrame() {
                     return
                 }
                 val current = (widthSpinner!!.getValue() as Number).toInt()
-                currentGlyph!!.getBounds().width = current
+                currentGlyph!!.bounds.width = current
                 doRepaint((xSpinner!!.getValue() as Number).toInt(), (ySpinner!!.getValue() as Number).toInt(), Math.max(old, current), (heightSpinner!!.getValue() as Number).toInt())
                 old = current
-                val wide = if ((image != null)) image!!.width else data!!.getWidth().toInt()
+                val wide = if ((image != null)) image!!.width else data!!.width.toInt()
                 if (spinners) {
                     (xSpinner!!.getModel() as SpinnerNumberModel).setMaximum(wide - (widthSpinner!!.getValue() as Number).toInt())
                 }
@@ -156,10 +156,10 @@ private() : JFrame() {
                     return
                 }
                 val current = (ySpinner!!.getValue() as Number).toInt()
-                currentGlyph!!.getBounds().y = current
+                currentGlyph!!.bounds.y = current
                 doRepaint((xSpinner!!.getValue() as Number).toInt(), Math.min(old, current), (widthSpinner!!.getValue() as Number).toInt(), Math.max(old, current) + (heightSpinner!!.getValue() as Number).toInt())
                 old = current
-                val high = if ((image != null)) image!!.width else data!!.getHeight().toInt()
+                val high = if ((image != null)) image!!.width else data!!.height.toInt()
                 if (spinners) {
                     (heightSpinner!!.getModel() as SpinnerNumberModel).setMaximum(high - (ySpinner!!.getValue() as Number).toInt())
                 }
@@ -174,10 +174,10 @@ private() : JFrame() {
                     return
                 }
                 val current = (heightSpinner!!.getValue() as Number).toInt()
-                currentGlyph!!.getBounds().height = current
+                currentGlyph!!.bounds.height = current
                 doRepaint((xSpinner!!.getValue() as Number).toInt(), (ySpinner!!.getValue() as Number).toInt(), (widthSpinner!!.getValue() as Number).toInt(), Math.max(old, current))
                 old = current
-                val high = if ((image != null)) image!!.width else data!!.getHeight().toInt()
+                val high = if ((image != null)) image!!.width else data!!.height.toInt()
                 if (spinners) {
                     (ySpinner!!.getModel() as SpinnerNumberModel).setMaximum(high - (heightSpinner!!.getValue() as Number).toInt())
                 }
@@ -192,20 +192,20 @@ private() : JFrame() {
             canvas!!.setVBF(data!!)
         }
         for (i in 256.indices) {
-            if (!data!!.hasGlyph(i)) {
-                g.setIndex(i.toByte())
+            if (i !in data!!) {
+                g.index = i.toByte()
                 break
             }
-            if (i == data!!.getGlyphs().size()) {
-                g.setIndex((i + 1).toByte())
+            if (i == data!!.glyphs.size()) {
+                g.index = (i + 1).toByte()
             }
         }
-        data!!.getGlyphs().add(g)
+        data!!.glyphs.add(g)
         insertGlyph(jTree1!!.getModel() as DefaultTreeModel, g)
     }
 
     private fun doRepaint(x: Int, y: Int, w: Int, h: Int) {
-        canvas!!.repaint()//x, y, h, h);
+        canvas!!.repaint() //x, y, h, h)
     }
 
     private fun initComponents() {
@@ -339,8 +339,8 @@ private() : JFrame() {
     }
 
     private fun insertCharacters(model: DefaultTreeModel, child: MutableTreeNode, g: Int) {
-        for (i in data!!.getTable().size().indices) {
-            val glyphIndex = data!!.getTable()[i].toInt()
+        for (i in data!!.table.size().indices) {
+            val glyphIndex = data!!.table[i].toInt()
             if (glyphIndex != g) {
                 continue
             }
@@ -352,7 +352,7 @@ private() : JFrame() {
     private fun insertGlyph(model: DefaultTreeModel, glyph: VBF.BitmapGlyph) {
         val child = DefaultMutableTreeNode(glyph)
         model.insertNodeInto(child, model.getRoot() as MutableTreeNode, model.getChildCount(model.getRoot()))
-        insertCharacters(model, child, glyph.getIndex().toInt())
+        insertCharacters(model, child, glyph.index.toInt())
         model.reload()
     }
 
@@ -381,7 +381,7 @@ private() : JFrame() {
             val model = jTree1!!.getModel() as DefaultTreeModel
             val root = model.getRoot() as DefaultMutableTreeNode
             root.removeAllChildren()
-            for (g in data!!.getGlyphs()) {
+            for (g in data!!.glyphs) {
                 insertGlyph(model, g)
             }
         }
@@ -445,10 +445,10 @@ private() : JFrame() {
                     val character = node.getChildAt(x) as DefaultMutableTreeNode
                     val obj = character.getUserObject()
                     if (obj is DisplayableCharacter) {
-                        data!!.getTable().set(obj.c.toInt(), g.getIndex())
+                        data!!.table.set(obj.c.toInt(), g.index)
                     } else if (obj is DefaultMutableTreeNode) {
                         // XXX: hack
-                        data!!.getTable().set((obj.getUserObject() as DisplayableCharacter).c.toInt(), g.getIndex())
+                        data!!.table.set((obj.getUserObject() as DisplayableCharacter).c.toInt(), g.index)
                     }
                 }
             }
@@ -479,10 +479,7 @@ private() : JFrame() {
         }
         currentGlyph = obj
         canvas!!.select(currentGlyph)
-        if (currentGlyph!!.getBounds() == null) {
-            currentGlyph!!.setBounds(Rectangle())
-        }
-        val r = currentGlyph!!.getBounds()
+        val r = currentGlyph!!.bounds
         xSpinner!!.setValue(r.x)
         ySpinner!!.setValue(r.y)
         widthSpinner!!.setValue(r.width)
@@ -491,17 +488,17 @@ private() : JFrame() {
 
     private class DisplayableCharacter(i: Int) {
 
-        public val c: Char
-
-        init {
-            c = i.toChar()
-        }
+        public val c: Char = i.toChar()
 
         override fun toString(): String {
             val block = Character.UnicodeBlock.of(c)
             val unprintable = Character.isISOControl(c) || (c == KeyEvent.CHAR_UNDEFINED) || (block == null) || block == Character.UnicodeBlock.SPECIALS
             if (unprintable) {
-                return "0x${if ((c <= 15)) "0" else ""}${Integer.toHexString(c.toInt()).toUpperCase()}"
+                val prefix = when {
+                    c <= 15 -> "0"
+                    else -> ""
+                }
+                return "0x$prefix${Integer.toHexString(c.toInt()).toUpperCase()}"
             }
             return Character.toString(c)
         }
@@ -512,7 +509,7 @@ private() : JFrame() {
         private val LOG = Logger.getLogger(javaClass<VBFTest>().getName())
 
         public platformStatic fun main(args: Array<String>) {
-            EventQueue.invokeLater {
+            SwingUtilities.invokeLater {
                 VBFTest().setVisible(true)
             }
         }
