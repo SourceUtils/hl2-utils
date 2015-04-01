@@ -7,12 +7,16 @@ import com.timepath.plaf.OS
 import com.timepath.steam.SteamUtils
 import com.timepath.steam.io.VDF
 import com.timepath.steam.io.bvdf.BVDF
+import org.jetbrains.kotlin.utils.printAndReturn
 import java.awt.Dimension
 import java.io.*
 import java.net.InetAddress
 import java.net.ServerSocket
 import java.net.SocketTimeoutException
-import java.util.*
+import java.util.Arrays
+import java.util.HashMap
+import java.util.LinkedList
+import java.util.StringTokenizer
 import java.util.logging.Level
 import java.util.logging.Logger
 import javax.swing.*
@@ -27,33 +31,32 @@ import kotlin.platform.platformStatic
  */
 class GameLauncher private() {
 
-    private open class Proxy
     /**
      * Pipes in to out.
      *
-     * @param in
-     * @param out
+     * @param input
+     * @param output
      * @param name
      */
-    (`in`: InputStream, out: OutputStream, private val name: String) : Runnable {
-        private val pw: PrintWriter
-        private val scan: Scanner
+    private open class Proxy(private val input: InputStream,
+                             output: OutputStream,
+                             private val name: String) : Runnable {
+        private val pw = PrintWriter(output, true)
 
-        init {
-            scan = Scanner(`in`)
-            pw = PrintWriter(out, true)
-        }
-
-        SuppressWarnings("empty-statement")
         override fun run() {
-            while (scan.hasNextLine() && print(scan.nextLine()))
-                LOG.log(Level.INFO, "Stopped proxying {0}", name)
+            input.reader().useLines { lines ->
+                for (line in lines) {
+                    if (!print(line))
+                        break
+                }
+            }
+            LOG.log(Level.INFO, "Stopped proxying {0}", name)
         }
 
         /**
          * @param line
-        *         the line to print
-        *
+         *         the line to print
+         *
          * @return false if error
          */
         open fun print(line: String): Boolean {
@@ -77,24 +80,23 @@ class GameLauncher private() {
                 args = array("-game", "tf", "-steam")
             }
         }
-        private val LOG = Logger.getLogger(javaClass<GameLauncher>().getName())
+        internal val LOG = Logger.getLogger(javaClass<GameLauncher>().getName())
 
-        throws(javaClass<IOException>())
         public platformStatic fun main(args: Array<String>) {
             LOG.info(Arrays.toString(args))
-            var command: Array<out String> = args
-            if (args.size() == 0) {
-                // Interactive
-                val choose = choose()
-                if (choose == null) {
-                    return
+            val command = when {
+                args.isEmpty() -> {
+                    // Interactive
+                    val choose = choose()
+                    if (choose == null) return
+                    choose!!
                 }
-                command = choose
+                else -> args
             }
             // Args are tokenized correctly at this point, set up env vars
             val env = HashMap(System.getenv())
-            if (!env.containsKey("TERM")) env.put("TERM", "xterm") // Default TERM variable
-            val dir: String? = null // TODO
+            env.getOrPut("TERM", { "xterm" }) // Default TERM variable)
+            val dir: String = "." // TODO
             // Run
             start(command, env, dir, 12345)
         }
@@ -103,7 +105,7 @@ class GameLauncher private() {
          * Prompt user for execution command.
          *
          * @return tokenized args
-        *
+         *
          * @throws IOException
          */
         throws(javaClass<IOException>())
@@ -121,7 +123,7 @@ class GameLauncher private() {
             executableField.setMinimumSize(Dimension(300, executableField.getMinimumSize().height))
             executableField.setPreferredSize(executableField.getMinimumSize())
             p.add(executableField)
-            val opts = array<String>("Launch", "Auto", "Cancel")
+            val opts = array("Launch", "Auto", "Cancel")
             val ret = JOptionPane.showOptionDialog(frame, p, "Game Launcher", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, opts, opts[0])
             frame.dispose()
             if (ret == 2 || ret < 0) return null // Cancel
@@ -129,44 +131,30 @@ class GameLauncher private() {
             // Launch
             val line = executableField.getText()
             if (line == null || line.isEmpty()) return null
-            return tokenize(line, *DEFAULT.full())
+            return tokenize(line, DEFAULT.full())
         }
 
         /**
          * Split command, replace %command% with args.
          *
          * @param command
-        *         command string
+         *         command string
          * @param args
-        *         %command% replacement
-        *
+         *         %command% replacement
+         *
          * @return
          */
-        private fun tokenize(command: String, vararg args: String): Array<out String> {
+        private fun tokenize(command: String, args: Array<out String>): Array<out String> {
             LOG.log(Level.INFO, "Tokenize: {0}, {1}", array<Any>(command, Arrays.toString(args)))
             val st = StringTokenizer(command)
-            val cmdarray = arrayOfNulls<String>(st.countTokens())
-            run {
-                var i = 0
-                while (st.hasMoreTokens()) {
-                    cmdarray[i] = st.nextToken()
-                    i++
+            val tokens = st.toList().filterIsInstance(javaClass<String>())
+            return tokens.flatMap {
+                if (it == "%command%") {
+                    args.toList()
+                } else {
+                    listOf(it)
                 }
-            }
-            val newcmd = arrayOfNulls<String>((cmdarray.size() + args.size()) - 1)
-            run {
-                var i = 0
-                var j = -1
-                while (i < cmdarray.size()) {
-                    if ("%command%" == cmdarray[i]) {
-                        for (arg in args) newcmd[i + ++j] = arg
-                    } else {
-                        newcmd[i + j] = cmdarray[i]
-                    }
-                    i++
-                }
-            }
-            return newcmd.requireNoNulls()
+            }.copyToArray()
         }
 
         throws(javaClass<IOException>())
@@ -200,8 +188,8 @@ class GameLauncher private() {
 
         /**
          * @param appID
-        *         steam application ID
-        *
+         *         steam application ID
+         *
          * @return user launch options prepended with %command% if not present
          */
         private fun getUserOpts(appID: Int): String? {
@@ -224,14 +212,14 @@ class GameLauncher private() {
          * Starts the process.
          *
          * @param cmd
-        *         command to exec
+         *         command to exec
          * @param env
-        *         env vars
+         *         env vars
          * @param dir
-        *         working directory to run game from
+         *         working directory to run game from
          * @param port
-        *         port to listen on
-        *
+         *         port to listen on
+         *
          * @throws IOException
          */
         throws(javaClass<IOException>())
@@ -239,7 +227,7 @@ class GameLauncher private() {
             LOG.log(Level.INFO, "Starting {0}", array<Any>(Arrays.toString(cmd)))
             LOG.log(Level.INFO, "Env: {0}", env)
             LOG.log(Level.INFO, "Dir: {0}", dir)
-            val proc = PtyProcess.exec(cmd, env, dir, false)
+            val proc = PtyProcess.exec(cmd, env, dir, true)
             val sock = ServerSocket(port, 0, InetAddress.getByName(null))
             val truePort = sock.getLocalPort()
             LOG.log(Level.INFO, "Listening on port {0}", truePort)
