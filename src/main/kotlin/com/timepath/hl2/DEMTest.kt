@@ -201,9 +201,9 @@ public class DEMTest protected() : JPanel() {
         try {
             val fs = NativeFileChooser().setTitle("Open DEM").setDirectory(File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/.")).addFilter(BaseFileChooser.ExtensionFilter("Demo files", "dem")).choose()
             if (fs == null) return
-            object : SwingWorker<HL2DEM, Message>() {
-                var listEvt = DefaultListModel<Pair<Any, Any>>()
-                var listMsg = DefaultListModel<Pair<Any, Any>>()
+             object : SwingWorker<HL2DEM, Message>() {
+                var listEvt = DefaultListModel<Pair<*, *>>()
+                var listMsg = DefaultListModel<Pair<*, *>>()
                 var incomplete = 0
 
                 throws(javaClass<Exception>())
@@ -225,10 +225,9 @@ public class DEMTest protected() : JPanel() {
                                 if (ents.second !is Iterable<*>) break
                                 for (o in ents.second as Iterable<*>) {
                                     if (o !is Pair<*, *>) break
-                                    val pair = o as Pair<Any, Any>?
                                     when ((ents.first as Packet).type) {
-                                        Packet.Type.svc_GameEvent -> listEvt.addElement(pair)
-                                        Packet.Type.svc_UserMessage -> listMsg.addElement(pair)
+                                        Packet.Type.svc_GameEvent -> listEvt.addElement(o)
+                                        Packet.Type.svc_UserMessage -> listMsg.addElement(o)
                                     }
                                 }
                             }
