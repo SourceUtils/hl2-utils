@@ -1,3 +1,5 @@
+apply from: 'https://raw.githubusercontent.com/SourceUtils/super/0cd495b8b8/common.gradle'
+
 buildscript {
     ext.kotlin_version = '0.11.91'
     ext.jme_version = '3.0.10'
@@ -33,6 +35,6 @@ dependencies {
     compile "com.jme3:jme3-desktop:$jme_version"
     compile "com.jme3:jme3-lwjgl:$jme_version"
 
-    compile project(':hl2-toolkit')
-    compile project(':data-examiner')
+    compile 'com.timepath:hl2-toolkit:1.0-SNAPSHOT'
+    compile 'com.timepath:data-examiner:1.0-SNAPSHOT'
 }
