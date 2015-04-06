@@ -7,7 +7,6 @@ import com.timepath.plaf.OS
 import com.timepath.steam.SteamUtils
 import com.timepath.steam.io.VDF
 import com.timepath.steam.io.bvdf.BVDF
-import org.jetbrains.kotlin.utils.printAndReturn
 import java.awt.Dimension
 import java.io.*
 import java.net.InetAddress

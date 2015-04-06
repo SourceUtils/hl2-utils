@@ -35,6 +35,9 @@ dependencies {
     compile "com.jme3:jme3-desktop:$jme_version"
     compile "com.jme3:jme3-lwjgl:$jme_version"
 
-    compile 'com.timepath:hl2-toolkit:1.0-SNAPSHOT'
     compile 'com.timepath:data-examiner:1.0-SNAPSHOT'
+    compile 'com.timepath:hl2-toolkit:1.0-SNAPSHOT'
+    compile 'com.timepath:java-vfs:1.0-SNAPSHOT'
+    compile 'com.timepath:java-xplaf:1.0-SNAPSHOT'
+    compile 'com.timepath:steam-toolkit:1.0-SNAPSHOT'
 }
