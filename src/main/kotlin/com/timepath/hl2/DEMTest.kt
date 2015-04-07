@@ -181,13 +181,13 @@ public class DEMTest protected() : JPanel() {
 
     protected fun recurse(i: Iterable<*>, root: DefaultMutableTreeNode): Unit = i.forEach { entry ->
         when (entry) {
-            is Pair<*, *> -> expand(entry, entry.first!!, entry.second!!, root)
-            is Map.Entry<*, *> -> expand(entry, entry.getKey()!!, entry.getValue()!!, root)
+            is Pair<*, *> -> expand(entry, entry.first, entry.second, root)
+            is Map.Entry<*, *> -> expand(entry, entry.getKey(), entry.getValue(), root)
             else -> root.add(DefaultMutableTreeNode(entry))
         }
     }
 
-    protected fun expand(entry: Any, k: Any, v: Any, root: DefaultMutableTreeNode) {
+    protected fun expand(entry: Any, k: Any?, v: Any?, root: DefaultMutableTreeNode) {
         if (v is Iterable<*>) {
             val n = DefaultMutableTreeNode(k)
             root.add(n)
