@@ -8,6 +8,7 @@ import com.timepath.io.OrderedOutputStream
 
 import java.io.File
 import java.io.FileOutputStream
+import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.platform.platformStatic
 
@@ -52,7 +53,7 @@ object ReplayConverter {
                     frames++
                 } else if (message.type == MessageType.Synctick && !flag) {
                     val injection = Message(demo, MessageType.ConsoleCmd, message.tick)
-                    injection.setData("tv_transmitall 1".getBytes())
+                    injection.data = ByteBuffer.wrap("tv_transmitall 1".toByteArray())
                     iterator.add(injection)
                     flag = true
                 }
