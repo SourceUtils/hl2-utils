@@ -31,7 +31,7 @@ class VBFTest
 /**
  * Creates new form VBFTest
  */
-private() : JFrame() {
+private constructor() : JFrame() {
     private var canvas: VBFCanvas? = null
     private var currentGlyph: VBF.BitmapGlyph? = null
     private var data: VBF? = null
@@ -67,7 +67,7 @@ private() : JFrame() {
                 if (seek == null) {
                     return
                 }
-                for (i in which.getModel().getChildCount(which.getModel().getRoot()).indices) {
+                for (i in 0..which.getModel().getChildCount(which.getModel().getRoot()) - 1) {
                     val node = which.getModel().getChild(which.getModel().getRoot(), i) as DefaultMutableTreeNode
                     if (node.getUserObject() == seek) {
                         which.setSelectionRow(node.getParent().getIndex(node) + 1)
@@ -191,7 +191,7 @@ private() : JFrame() {
             data = VBF()
             canvas!!.setVBF(data!!)
         }
-        for (i in 256.indices) {
+        for (i in 0..255) {
             if (i !in data!!) {
                 g.index = i.toByte()
                 break
@@ -339,7 +339,7 @@ private() : JFrame() {
     }
 
     private fun insertCharacters(model: DefaultTreeModel, child: MutableTreeNode, g: Int) {
-        for (i in data!!.table.size().indices) {
+        for (i in 0..data!!.table.size() - 1) {
             val glyphIndex = data!!.table[i].toInt()
             if (glyphIndex != g) {
                 continue
@@ -369,7 +369,7 @@ private() : JFrame() {
         mouseClicked(evt)
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     private fun load(s: String) {
         LOG.log(Level.INFO, "Loading {0}", s)
         val p = canvas
@@ -438,10 +438,10 @@ private() : JFrame() {
             val file = fs[0]
             val model = jTree1!!.getModel()
             val root = model.getRoot() as TreeNode
-            for (i in root.getChildCount().indices) {
+            for (i in 0..root.getChildCount() - 1) {
                 val node = root.getChildAt(i) as DefaultMutableTreeNode
                 val g = node.getUserObject() as VBF.BitmapGlyph
-                for (x in node.getChildCount().indices) {
+                for (x in 0..node.getChildCount() - 1) {
                     val character = node.getChildAt(x) as DefaultMutableTreeNode
                     val obj = character.getUserObject()
                     if (obj is DisplayableCharacter) {
@@ -495,7 +495,7 @@ private() : JFrame() {
             val unprintable = Character.isISOControl(c) || (c == KeyEvent.CHAR_UNDEFINED) || (block == null) || block == Character.UnicodeBlock.SPECIALS
             if (unprintable) {
                 val prefix = when {
-                    c <= 15 -> "0"
+                    c.toInt() <= 15 -> "0"
                     else -> ""
                 }
                 return "0x$prefix${Integer.toHexString(c.toInt()).toUpperCase()}"

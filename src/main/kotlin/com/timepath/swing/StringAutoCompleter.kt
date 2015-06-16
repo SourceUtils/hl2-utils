@@ -8,7 +8,7 @@ import javax.swing.text.JTextComponent
 /**
  * @author TimePath
  */
-public class StringAutoCompleter private(comp: JTextComponent, private val trie: Trie, private val depth: Int) : AutoCompleter(comp) {
+public class StringAutoCompleter private constructor(comp: JTextComponent, private val trie: Trie, private val depth: Int) : AutoCompleter(comp) {
     private var cached: Boolean = false
     private var last = ""
     private var n: Trie.TrieMapping? = null
@@ -42,8 +42,8 @@ public class StringAutoCompleter private(comp: JTextComponent, private val trie:
                 return false
             }
         }
-        Collections.sort<String>(strings)
-        list.setListData(strings.copyToArray())
+        Collections.sort(strings)
+        list.setListData(strings.toTypedArray())
         list.setSelectedIndex(0)
         cached = true
         return true

@@ -35,7 +35,7 @@ class CVarTest
 /**
  * Creates new form CVarTest
  */
-private() : JFrame() {
+private constructor() : JFrame() {
     private val sorter: TableRowSorter<TableModel>
     private var caseSensitiveCheckBox: JCheckBox? = null
     private var jLabel1: JLabel? = null
@@ -50,7 +50,11 @@ private() : JFrame() {
         sorter = TableRowSorter(jTable1!!.getModel())
         val comparator = object : Comparator<String> {
             override fun compare(o1: String, o2: String): Int {
-                return o1.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase().compareTo(o2.replaceFirst("\\+", "").replaceFirst("-", "").toLowerCase())
+                return (o1.replaceFirstLiteral("+", "")
+                        .replaceFirstLiteral("-", "")
+                        .toLowerCase()).compareTo(o2.replaceFirstLiteral("+", "")
+                        .replaceFirstLiteral("-", "")
+                        .toLowerCase())
             }
         }
         sorter.setComparator(0, comparator)
@@ -127,7 +131,7 @@ private() : JFrame() {
         val jMenuItem3 = JMenuItem()
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
         setTitle("CVar listing")
-        jTable1!!.setModel(DefaultTableModel(array<Array<Any>>(), array<String>("Name", "Value", "Default", "Min", "Max", "Tags", "Description")))
+        jTable1!!.setModel(DefaultTableModel(arrayOf<Array<Any>>(), arrayOf("Name", "Value", "Default", "Min", "Max", "Tags", "Description")))
         jScrollPane1.setViewportView(jTable1)
         statusBar1.setRollover(true)
         jLabel2.setText(" Total convars/concommands: ")
@@ -165,16 +169,16 @@ private() : JFrame() {
         jPanel1.setLayout(jPanel1Layout)
         jPanel1Layout.setHorizontalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel3)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jTextField1!!)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(notCheckBox!!)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(caseSensitiveCheckBox!!)
-                                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(regexCheckBox!!)))
+                        .addContainerGap()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jTextField1!!)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(notCheckBox!!)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(caseSensitiveCheckBox!!)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(regexCheckBox!!)))
         jPanel1Layout.setVerticalGroup(jPanel1Layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                 .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(0, 0, 0)
@@ -254,14 +258,13 @@ private() : JFrame() {
             val f = NativeFileChooser().setTitle("Select cvarlist").choose()
             if (f != null) {
                 val worker = object : SwingWorker<Void, Array<Any?>>() {
-                    throws(javaClass<Exception>())
                     override fun doInBackground(): Void? {
                         val rf = RandomAccessFile(f[0].getPath(), "r")
                         val scanner = Scanner(rf.getChannel())
                         val map = analyze(scanner)
                         for (entry in map.entrySet()) {
                             val v = entry.getValue()
-                            publish(array(v.name, v.value, v.defaultValue, v.minimum, v.maximum, Arrays.toString(v.tags.copyToArray()), v.desc))
+                            publish(arrayOf(v.name, v.value, v.defaultValue, v.minimum, v.maximum, Arrays.toString(v.tags.toTypedArray()), v.desc))
                         }
                         return null
                     }
@@ -291,7 +294,7 @@ private() : JFrame() {
 
     private fun jMenuItem2ActionPerformed() {
         val sb = StringBuilder()
-        for (i in jTable1!!.getModel().getRowCount().indices) {
+        for (i in 0..jTable1!!.getModel().getRowCount() - 1) {
             val row = jTable1!!.convertRowIndexToModel(i)
             sb.append(jTable1!!.getModel().getValueAt(row, 0)).append('\n')
         }
@@ -306,19 +309,19 @@ private() : JFrame() {
         val col: Int
         val rows = m.getRowCount()
         val cols = m.getColumnCount()
-        for (i in cols.indices) {
+        for (i in 0..cols - 1) {
             col = jTable1!!.convertColumnIndexToModel(i)
             sb.append(tab).append(m.getColumnName(col))
         }
         val line = "\n"
         sb.append(tab).append(line)
-        for (i in cols.indices) {
+        for (i in 0..cols - 1) {
             sb.append(tab).append("--")
         }
         sb.append(tab).append(line)
-        for (i in rows.indices) {
+        for (i in 0..rows - 1) {
             val row = jTable1!!.convertRowIndexToModel(i)
-            for (j in cols.indices) {
+            for (j in 0..cols - 1) {
                 col = jTable1!!.convertColumnIndexToModel(j)
                 var obj: Any? = m.getValueAt(row, col)
                 if (col == 0) {
@@ -327,10 +330,9 @@ private() : JFrame() {
                 sb.append(tab)
                 if (obj != null) {
                     if (obj is Array<Any>) {
-                        val arr = obj as Array<Any>
-                        sb.append(arr[0])
-                        for (k in 1..arr.size() - 1) {
-                            sb.append(", ").append(arr[k])
+                        sb.append(obj[0])
+                        for (k in 1..obj.size() - 1) {
+                            sb.append(", ").append(obj[k])
                         }
                     } else {
                         sb.append(obj)
@@ -367,7 +369,7 @@ private() : JFrame() {
         val map = analyze(Scanner(ret!!))
         for (entry in map.entrySet()) {
             val v = entry.getValue()
-            val chunks = array<Any?>(v.name, v.value, v.defaultValue, v.minimum, v.maximum, Arrays.toString(v.tags.copyToArray()), v.desc)
+            val chunks = arrayOf(v.name, v.value, v.defaultValue, v.minimum, v.maximum, Arrays.toString(v.tags.toTypedArray()), v.desc)
             (jTable1!!.getModel() as DefaultTableModel).addRow(chunks)
         }
         filter()
@@ -383,7 +385,7 @@ private() : JFrame() {
         ExternalConsole.exec("sv_cheats 1", null)
         val m = jTable1!!.getModel()
         val rows = m.getRowCount()
-        for (i in rows.indices) {
+        for (i in 0..rows - 1) {
             val row = jTable1!!.convertRowIndexToModel(i)
             val name = m.getValueAt(row, jTable1!!.convertColumnIndexToModel(0))
             if ("sv_cheats" == name.toString()) {
@@ -408,7 +410,7 @@ private() : JFrame() {
         val map = analyze(Scanner(ret))
         for (entry in map.entrySet()) {
             val `var` = entry.getValue()
-            val chunks = array(`var`.name, `var`.value, `var`.defaultValue, `var`.minimum, `var`.maximum, Arrays.toString(`var`.tags.copyToArray()), `var`.desc)
+            val chunks = arrayOf(`var`.name, `var`.value, `var`.defaultValue, `var`.minimum, `var`.maximum, Arrays.toString(`var`.tags.toTypedArray()), `var`.desc)
             (jTable1!!.getModel() as DefaultTableModel).addRow(chunks)
         }
         filter()
@@ -421,7 +423,7 @@ private() : JFrame() {
     private fun clear() {
         val dm = jTable1!!.getModel() as DefaultTableModel
         val rowCount = dm.getRowCount()
-        for (i in rowCount.indices) {
+        for (i in 0..rowCount - 1) {
             dm.removeRow(0)
         }
         filter()

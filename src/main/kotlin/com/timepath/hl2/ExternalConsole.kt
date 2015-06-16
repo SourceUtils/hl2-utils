@@ -28,7 +28,7 @@ import kotlin.platform.platformStatic
  * @author TimePath
  */
 SuppressWarnings("serial")
-public open class ExternalConsole protected() : JFrame() {
+public open class ExternalConsole protected constructor() : JFrame() {
     private val input: JTextField
     protected val output: JTextArea
     var engine = initScriptEngine()
@@ -107,7 +107,7 @@ public open class ExternalConsole protected() : JFrame() {
         return scriptEngine
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     protected fun connect(port: Int) {
         sock = Socket(InetAddress.getByName(null), port)
         setIn(sock!!.getInputStream())
@@ -147,7 +147,7 @@ public open class ExternalConsole protected() : JFrame() {
         }
         val fn = m.group(1)
         System.out.println(fn)
-        val args = m.group(2).split(",")
+        val args = m.group(2).splitBy(",")
         System.out.println(System.currentTimeMillis())
         val inv = engine as Invocable
         try {
@@ -196,7 +196,6 @@ public open class ExternalConsole protected() : JFrame() {
             return sb.toString()
         }
 
-        throws(javaClass<Exception>())
         public platformStatic fun main(args: Array<String>) {
             val ec = ExternalConsole()
             ec.connect(12345)

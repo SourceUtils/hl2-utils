@@ -35,7 +35,7 @@ import kotlin.platform.platformStatic
  * @author TimePath
  */
 SuppressWarnings("serial")
-public class DEMTest protected() : JPanel() {
+public class DEMTest protected constructor() : JPanel() {
     public val menu: JMenuBar
     protected var hex: HexEditor
     protected var tabs: JTabbedPane
@@ -206,12 +206,11 @@ public class DEMTest protected() : JPanel() {
                 var listMsg = DefaultListModel<Pair<*, *>>()
                 var incomplete = 0
 
-                throws(javaClass<Exception>())
                 override fun doInBackground(): HL2DEM {
                     tableModel.messages.clear()
                     val demo = HL2DEM.load(fs[0])
                     val frames = demo.frames // TODO: Stream
-                    publish(*frames.copyToArray())
+                    publish(*frames.toTypedArray<Message?>())
                     return demo
                 }
 
@@ -283,8 +282,8 @@ public class DEMTest protected() : JPanel() {
 
         override fun getRowCount() = messages.size()
 
-        protected var columns: Array<String> = array<String>("Tick", "Type", "Size")
-        protected var types: Array<Class<*>> = array(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
+        protected var columns: Array<String> = arrayOf("Tick", "Type", "Size")
+        protected var types: Array<Class<*>> = arrayOf(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
 
         override fun getColumnCount() = columns.size()
 

@@ -11,7 +11,7 @@ import kotlin.platform.platformStatic
  * @author TimePath
  */
 SuppressWarnings("serial")
-public class ExternalScoreboard private() : ExternalConsole() {
+public class ExternalScoreboard private constructor() : ExternalConsole() {
     private val players = LinkedList<Player>()
 
     init {
@@ -20,7 +20,7 @@ public class ExternalScoreboard private() : ExternalConsole() {
 
     override fun parse(lines: String) {
         output.setText("")
-        val strings = lines.split("\n")
+        val strings = lines.splitBy("\n")
         for (s in strings) {
             if (" killed " in s) {
                 notify(s)
@@ -45,20 +45,20 @@ public class ExternalScoreboard private() : ExternalConsole() {
         }
         val me = getPlayer("TimePath")
         output.append("\nAllies:\n")
-        for (i in me.allies.size().indices) {
+        for (i in 0..me.allies.size() - 1) {
             output.append("${me.allies[i]}\n")
         }
         output.append("\nEnemies:\n")
-        for (i in me.enemies.size().indices) {
+        for (i in 0..me.enemies.size() - 1) {
             output.append("${me.enemies[i]}\n")
         }
         output.append("\n")
     }
 
     private fun notify(s: String) {
-        val killer = getPlayer(s.split(" killed ")[0])
-        val victim = getPlayer(s.split(" killed ")[1].split(" with ")[0])
-        var weapon = s.split(" killed ")[1].split(" with ")[1]
+        val killer = getPlayer(s.splitBy(" killed ")[0])
+        val victim = getPlayer(s.splitBy(" killed ")[1].splitBy(" with ")[0])
+        var weapon = s.splitBy(" killed ")[1].splitBy(" with ")[1]
         Player.exchangeInfo(victim, killer)
         val crit = weapon.endsWith("(crit)")
         weapon = weapon.substring(0, weapon.indexOf('.'))
@@ -85,7 +85,7 @@ public class ExternalScoreboard private() : ExternalConsole() {
 
         private val LOG = Logger.getLogger(javaClass<ExternalScoreboard>().getName())
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         platformStatic fun main(args: Array<String>) {
             val es = ExternalScoreboard()
             es.connect(12345)

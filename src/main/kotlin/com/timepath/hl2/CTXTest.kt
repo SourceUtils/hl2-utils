@@ -22,7 +22,7 @@ import kotlin.platform.platformStatic
  * @author TimePath
  */
 SuppressWarnings("serial")
-public class CTXTest protected() : JFrame() {
+public class CTXTest protected constructor() : JFrame() {
     protected var input: JXTextField
     protected var output: JXTextArea
 

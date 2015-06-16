@@ -13,11 +13,11 @@ import kotlin.platform.platformStatic
  */
 object CFGSetup {
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     public platformStatic fun main(args: Array<String>) {
-        val dir = File("${SteamUtils.getSteamApps()}/common/Team Fortress 2/tf/custom/${SteamUtils.getUser()!!.user!!.toLowerCase().replaceAll("[^a-z0-9]", "")}/cfg")
+        val dir = File("${SteamUtils.getSteamApps()}/common/Team Fortress 2/tf/custom/${SteamUtils.getUser()!!.user!!.toLowerCase().replace("[^a-z0-9]".toRegex(), "")}/cfg")
         dir.mkdirs()
-        val classes = array("scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy")
+        val classes = arrayOf("scout", "soldier", "pyro", "demoman", "heavyweapons", "engineer", "medic", "sniper", "spy")
         for (clazz in classes) {
             val f = File(dir, "$clazz.cfg")
             if (f.exists()) continue
@@ -58,12 +58,12 @@ object CFGSetup {
         Desktop.getDesktop().open(dir)
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     private fun createReader(f: File): BufferedReader {
         return BufferedReader(InputStreamReader(BufferedInputStream(FileInputStream(f))))
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     private fun createWriter(f: File): PrintWriter {
         return PrintWriter(BufferedOutputStream(FileOutputStream(f)), true)
     }

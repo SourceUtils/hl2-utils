@@ -1,8 +1,9 @@
 apply from: 'https://raw.githubusercontent.com/SourceUtils/super/b9954f27cb/common.gradle'
 
 buildscript {
-    ext.kotlin_version = '0.11.91.1'
+    ext.kotlin_version = '0.12.200'
     ext.jme_version = '3.0.10'
+    ext.idea_version = '141.177.4'
     repositories {
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -24,12 +25,11 @@ dependencies {
 
     compile 'org.swinglabs.swingx:swingx-all:1.6.5'
 
-    def ptyVersion = '139.225.3'
-    compile "lib:pty4j-0.3.jar:$ptyVersion"
+    compile "lib:pty4j-0.4.12.jar:$idea_version"
     // pty4j should depend on these, but does not in the jetbrains repository
-    compile "lib:purejavacomm.jar:$ptyVersion"
-    compile 'log4j:log4j:1.2.17'
-    compile 'com.google.guava:guava:17.0'
+    compile "lib:purejavacomm.jar:$idea_version"
+    compile "lib:log4j.jar:$idea_version"
+    compile "lib:guava-17.0.jar:$idea_version"
 
     compile "com.jme3:jme3-core:$jme_version"
     compile "com.jme3:jme3-desktop:$jme_version"

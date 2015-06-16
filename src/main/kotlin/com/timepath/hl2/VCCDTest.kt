@@ -148,10 +148,10 @@ class VCCDTest : JFrame {
             add(JScrollPane(JTable().configure {
                 jTable1 = this
                 setAutoCreateRowSorter(true)
-                setModel(object : DefaultTableModel(array("CRC32", "Key", "Value"), 0) {
-                    val types = array(javaClass<Any>(), javaClass<String>(), javaClass<String>())
+                setModel(object : DefaultTableModel(arrayOf("CRC32", "Key", "Value"), 0) {
+                    val types = arrayOf(javaClass<Any>(), javaClass<String>(), javaClass<String>())
                     override fun getColumnClass(columnIndex: Int) = types[columnIndex]
-                    val canEdit = booleanArray(false, true, true)
+                    val canEdit = booleanArrayOf(false, true, true)
                     override fun isCellEditable(row: Int, column: Int) = canEdit[column]
                 })
                 setCursor(Cursor(Cursor.DEFAULT_CURSOR))
@@ -253,7 +253,7 @@ class VCCDTest : JFrame {
                 }
             }
             for (entry in entries) {
-                model.addRow(array(hexFormat(entry.hash), attemptDecode(entry.hash), entry.value))
+                model.addRow(arrayOf(hexFormat(entry.hash), attemptDecode(entry.hash), entry.value))
             }
             saveFile = files[0]
         } catch (ex: IOException) {
@@ -288,7 +288,7 @@ class VCCDTest : JFrame {
         }
         val entries = LinkedList<VCCD.VCCDEntry>()
         val model = jTable1.getModel()
-        for (i in model.getRowCount().indices) {
+        for (i in 0..model.getRowCount() - 1) {
             var crc = model.getValueAt(i, 0)
             if ((model.getValueAt(i, 1) != null) && !model.getValueAt(i, 1).toString().isEmpty()) {
                 crc = hexFormat(VCCD.hash(model.getValueAt(i, 1).toString()))
@@ -328,14 +328,14 @@ class VCCDTest : JFrame {
             val entries = VCCD.parse(FileInputStream(files[0]))
             LOG.log(Level.INFO, "Entries: {0}", entries.size())
             val model = jTable1.getModel() as DefaultTableModel
-            model.getRowCount().indices.reversed().forEach { model.removeRow(it) }
+            (0..model.getRowCount() - 1).reversed().forEach { model.removeRow(it) }
             entries.forEach {
                 val hash = it.hash
                 val token = it.key
                 if (hash !in hashmap) {
                     hashmap[hash] = StringPair(token, CHAN_UNKNOWN)
                 }
-                model.addRow(array(hexFormat(it.hash), it.key, it.value))
+                model.addRow(arrayOf(hexFormat(it.hash), it.key, it.value))
             }
             persistHashmap(hashmap)
         } catch (ex: IOException) {
@@ -346,7 +346,7 @@ class VCCDTest : JFrame {
 
     private fun insertRow() {
         val model = jTable1.getModel() as DefaultTableModel
-        model.addRow(array(0, "", ""))
+        model.addRow(arrayOf(0, "", ""))
     }
 
     private fun deleteRow() {
@@ -366,8 +366,8 @@ class VCCDTest : JFrame {
 
     private fun createNew() {
         val model = jTable1.getModel() as DefaultTableModel
-        model.getRowCount().indices.reversed().forEach { model.removeRow(it) }
-        model.addRow(array(0, "", ""))
+        (0..model.getRowCount() - 1).reversed().forEach { model.removeRow(it) }
+        model.addRow(arrayOf(0, "", ""))
     }
 
     private fun formattingHelp() {
@@ -390,7 +390,7 @@ class VCCDTest : JFrame {
     private fun export() {
         val sb = StringBuilder(jTable1.getRowCount() * 100) // Rough estimate
         val model = jTable1.getModel()
-        for (i in model.getRowCount().indices) {
+        for (i in 0..model.getRowCount() - 1) {
             sb.append("${model.getValueAt(i, 0)}\t${model.getValueAt(i, 2)}\n")
         }
         val pane = JTextArea(sb.toString()).configure {

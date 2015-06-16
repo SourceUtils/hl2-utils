@@ -60,7 +60,7 @@ class ImagePreviewPanel(private val parentFrame: JFrame) : JPanel(), PropertyCha
         add(this.frame, BorderLayout.EAST)
     }
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     private fun createImage(v: VTF?) {
         if (v != null) {
             val img = v.getImage(lod.getValue() as Int, frame.getValue() as Int)
@@ -94,7 +94,7 @@ class ImagePreviewPanel(private val parentFrame: JFrame) : JPanel(), PropertyCha
         }
     }
 
-    throws(javaClass<IOException>(), javaClass<FileNotFoundException>())
+    throws(IOException::class, FileNotFoundException::class)
     private fun load(selection: File?) {
         if (selection == null) {
             return
@@ -132,7 +132,7 @@ class VtfFileFilter(private val vtfFormat: ImageFormat) : FileFilter() {
         if (vtfFormat == ImageFormat.IMAGE_FORMAT_UNKNOWN) {
             return true
         }
-        return v!!.format == vtfFormat
+        return v.format == vtfFormat
     }
 
     override fun getDescription(): String {
@@ -162,7 +162,7 @@ class AntiVtfFileFilter(private val name: String?, vararg val ignored: ImageForm
             return false
         }
         for (format in ignored) {
-            if (v!!.format == format) {
+            if (v.format == format) {
                 return false
             }
         }

@@ -21,6 +21,7 @@ import java.util.logging.Logger
 import javax.swing.*
 import kotlin.concurrent.thread
 import kotlin.platform.platformStatic
+import kotlin.properties.Delegates
 
 /**
  * Starts a game and relay server.
@@ -28,7 +29,7 @@ import kotlin.platform.platformStatic
  *
  * @author TimePath
  */
-class GameLauncher private() {
+class GameLauncher private constructor() {
 
     /**
      * Pipes in to out.
@@ -66,30 +67,23 @@ class GameLauncher private() {
 
     companion object {
 
-        private val DEFAULT = object : Options() {
-            init {
-                val base = File(SteamUtils.getSteamApps(), "common/Team Fortress 2")
-                val executable = when (OS.get()) {
-                    OS.Windows -> "hl2.exe"
-                    OS.OSX -> "hl2_osx"
-                    OS.Linux -> "hl2.sh"
-                    else -> throw NoWhenBranchMatchedException()
-                }
-                script = File(base, executable)
-                args = array("-game", "tf", "-steam")
+        private val DEFAULT = run {
+            val base = File(SteamUtils.getSteamApps(), "common/Team Fortress 2")
+            val executable = when (OS.get()) {
+                OS.Windows -> "hl2.exe"
+                OS.OSX -> "hl2_osx"
+                OS.Linux -> "hl2.sh"
+                else -> throw NoWhenBranchMatchedException()
             }
+            Options(File(base, executable), listOf("-game", "tf", "-steam"))
         }
         internal val LOG = Logger.getLogger(javaClass<GameLauncher>().getName())
 
         public platformStatic fun main(args: Array<String>) {
             LOG.info(Arrays.toString(args))
             val command = when {
-                args.isEmpty() -> {
-                    // Interactive
-                    val choose = choose()
-                    if (choose == null) return
-                    choose!!
-                }
+            // Interactive
+                args.isEmpty() -> choose() ?: return
                 else -> args
             }
             // Args are tokenized correctly at this point, set up env vars
@@ -107,7 +101,7 @@ class GameLauncher private() {
          *
          * @throws IOException
          */
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         private fun choose(): Array<out String>? {
             val game = 440
             val userArgs = getUserOpts(game)
@@ -122,15 +116,15 @@ class GameLauncher private() {
             executableField.setMinimumSize(Dimension(300, executableField.getMinimumSize().height))
             executableField.setPreferredSize(executableField.getMinimumSize())
             p.add(executableField)
-            val opts = array("Launch", "Auto", "Cancel")
+            val opts = arrayOf("Launch", "Auto", "Cancel")
             val ret = JOptionPane.showOptionDialog(frame, p, "Game Launcher", JOptionPane.DEFAULT_OPTION, JOptionPane.PLAIN_MESSAGE, null, opts, opts[0])
             frame.dispose()
             if (ret == 2 || ret < 0) return null // Cancel
-            if (ret == 1) return autoDetect(game)!!.full() // Auto
+            if (ret == 1) return autoDetect(game)!!.full // Auto
             // Launch
             val line = executableField.getText()
             if (line == null || line.isEmpty()) return null
-            return tokenize(line, DEFAULT.full())
+            return tokenize(line, DEFAULT.full)
         }
 
         /**
@@ -144,7 +138,7 @@ class GameLauncher private() {
          * @return
          */
         private fun tokenize(command: String, args: Array<out String>): Array<out String> {
-            LOG.log(Level.INFO, "Tokenize: {0}, {1}", array<Any>(command, Arrays.toString(args)))
+            LOG.log(Level.INFO, "Tokenize: {0}, {1}", arrayOf(command, Arrays.toString(args)))
             val st = StringTokenizer(command)
             val tokens = st.toList().filterIsInstance(javaClass<String>())
             return tokens.flatMap {
@@ -153,10 +147,10 @@ class GameLauncher private() {
                 } else {
                     listOf(it)
                 }
-            }.copyToArray()
+            }.toTypedArray()
         }
 
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         private fun autoDetect(appID: Int): Options? {
             val bin = BVDF()
             bin.readExternal(DataUtils.mapFile(File(SteamUtils.getSteam(), "appcache/appinfo.vdf")))
@@ -168,10 +162,10 @@ class GameLauncher private() {
             val dir = File(SteamUtils.getSteamApps(), "common/$installdir")
             val l = conf["launch"]!!
             val launch = HashMap<String, File>(l.getChildCount())
-            var gameArgs: Array<String>? = null
-            for (i in l.getChildCount().indices) {
+            var gameArgs: List<String>? = null
+            for (i in 0..l.getChildCount() - 1) {
                 val c = l.getChildAt(i) as BVDF.DataNode
-                gameArgs = (c["arguments"]!!.value as String).split(" ")
+                gameArgs = (c["arguments"]!!.value as String).splitBy(" ")
                 val os = c["config"]!!["oslist"]!!.value as String // FIXME: Hopefully only one OS will be present
                 val exe = c["executable"]!!.value as String
                 launch.put(os, File(dir.getPath(), exe))
@@ -182,7 +176,7 @@ class GameLauncher private() {
                 OS.Linux -> "linux"
                 else -> return null
             }
-            return Options(launch[get], *gameArgs!!)
+            return Options(launch[get]!!, gameArgs!!)
         }
 
         /**
@@ -194,11 +188,9 @@ class GameLauncher private() {
         private fun getUserOpts(appID: Int): String? {
             try {
                 val f = File(SteamUtils.getUserData(), "config/localconfig.vdf")
-                val game = VDF.load(f)["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID]
-                if (game == null) return null
-                var str: String? = game.getValue("LaunchOptions") as String
-                if (str == null) return null
-                if ("%command%" !in str!!) str = "%command% $str"
+                val game = VDF.load(f)["UserLocalConfigStore", "Software", "Valve", "Steam", "apps", appID] ?: return null
+                var str = game.getValue("LaunchOptions") as? String ?: return null
+                if ("%command%" !in str) str = "%command% $str"
                 return str
             } catch (e: IOException) {
                 LOG.log(Level.SEVERE, null, e)
@@ -221,9 +213,9 @@ class GameLauncher private() {
          *
          * @throws IOException
          */
-        throws(javaClass<IOException>())
+        throws(IOException::class)
         private fun start(cmd: Array<out String>, env: Map<String, String>, dir: String?, port: Int) {
-            LOG.log(Level.INFO, "Starting {0}", array<Any>(Arrays.toString(cmd)))
+            LOG.log(Level.INFO, "Starting {0}", arrayOf<Any>(Arrays.toString(cmd)))
             LOG.log(Level.INFO, "Env: {0}", env)
             LOG.log(Level.INFO, "Dir: {0}", dir)
             val proc = PtyProcess.exec(cmd, env, dir, true)
@@ -238,10 +230,10 @@ class GameLauncher private() {
                  * <p>
                  * @throws IOException
                  */
-                throws(javaClass<IOException>())
+                throws(IOException::class)
                 override fun write(b: ByteArray, off: Int, len: Int) {
                     synchronized (queue) {
-                        val test = String(Arrays.copyOfRange(b, off, off + len)).split("\n")
+                        val test = String(Arrays.copyOfRange(b, off, off + len)).splitBy("\n")
                         for (t in test) {
                             val intern: Boolean
                             if (t in queue) {
@@ -264,36 +256,31 @@ class GameLauncher private() {
                 }
             }, "Subprocess")
             main.start()
-            val acceptor = object : Thread("Acceptor") {
-                override fun run() {
-                    while (true) {
-                        try {
-                            val client = sock.accept()
-                            aggregate.register(client.getOutputStream())
-                            val pipe = object : Proxy(client.getInputStream(), proc.getOutputStream(), "client <--> game") {
-                                override fun print(line: String): Boolean {
-                                    synchronized (queue) {
-                                        queue.add(line)
-                                    }
-                                    return super.print(line)
+            thread(name = "Acceptor", daemon = true) {
+                while (true) {
+                    try {
+                        val client = sock.accept()
+                        aggregate.register(client.getOutputStream())
+                        val pipe = object : Proxy(client.getInputStream(), proc.getOutputStream(), "client <--> game") {
+                            override fun print(line: String): Boolean {
+                                synchronized (queue) {
+                                    queue.add(line)
                                 }
+                                return super.print(line)
                             }
-                            val t = Thread(pipe)
-                            t.setDaemon(true)
-                            t.start()
-                        } catch (ignored: SocketTimeoutException) {
-                        } catch (e: IOException) {
-                            if (sock.isClosed()) {
-                                return
-                            }
-                            LOG.log(Level.SEVERE, null, e)
                         }
-
+                        val t = Thread(pipe)
+                        t.setDaemon(true)
+                        t.start()
+                    } catch (ignored: SocketTimeoutException) {
+                    } catch (e: IOException) {
+                        if (sock.isClosed()) {
+                            return@thread
+                        }
+                        LOG.log(Level.SEVERE, null, e)
                     }
                 }
             }
-            acceptor.setDaemon(true)
-            acceptor.start()
             thread(name = "Reaper") {
                 try {
                     main.join()
@@ -310,14 +297,8 @@ class GameLauncher private() {
             }
         }
 
-        private open class Options(var script: File? = null, vararg var args: String) {
-
-            public fun full(): Array<out String> {
-                val full = arrayOfNulls<String>(1 + args.size())
-                full[0] = script.toString()
-                System.arraycopy(args, 0, full, 1, args.size())
-                return full.requireNoNulls()
-            }
+        private open class Options(val script: File, val args: List<String>) {
+            val full by Delegates.lazy { (listOf(script.toString()) + args).toTypedArray() }
         }
     }
 }

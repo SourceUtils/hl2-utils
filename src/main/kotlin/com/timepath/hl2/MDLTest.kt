@@ -42,7 +42,7 @@ import javax.swing.*
 import kotlin.platform.platformStatic
 import kotlin.properties.Delegates
 
-public class MDLTest protected() : SimpleApplication() {
+public class MDLTest protected constructor() : SimpleApplication() {
     protected val executor: ExecutorService = ScheduledThreadPoolExecutor(4)
     protected var FRAME_TITLE: String = "HLMV"
     protected var frame: JFrame by Delegates.notNull()
@@ -269,10 +269,7 @@ public class ACFLocator : AssetLocator {
             throw AssetLoadException(MessageFormat.format("Steam game {0} not installed, run steam://install/{0}", appID))
         }
         val search = "$rootPath${VFile.SEPARATOR}${key.getName()}"
-        val found = source.query(search)
-        if (found == null) {
-            throw AssetNotFoundException(MessageFormat.format("{0} not found", search))
-        }
+        val found = source.query(search) ?: throw AssetNotFoundException(MessageFormat.format("{0} not found", search))
         return SourceModelAssetInfo(manager, key, found)
     }
 
@@ -285,7 +282,7 @@ public class ACFLocator : AssetLocator {
 
 public class BSPLoader : AssetLoader {
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     override fun load(info: AssetInfo): Any {
         val am = info.getManager()
         val name = info.getKey().getName()
@@ -326,7 +323,7 @@ public class BSPLoader : AssetLoader {
 public class MDLLoader : AssetLoader {
 
     SuppressWarnings("rawtypes")
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     override fun load(info: AssetInfo): Any {
         val am = info.getManager()
         val name = info.getKey().getName()
@@ -382,7 +379,7 @@ public class MDLLoader : AssetLoader {
 
 public class VTFLoader : AssetLoader {
 
-    throws(javaClass<IOException>())
+    throws(IOException::class)
     override fun load(info: AssetInfo): Any {
         val name = info.getKey().getName()
         LOG.log(Level.INFO, "Loading {0}...\n", name)
@@ -392,7 +389,7 @@ public class VTFLoader : AssetLoader {
         run {
             var y = bimg.getHeight() - 1
             while (y >= 0) {
-                for (x in bimg.getWidth().indices) {
+                for (x in 0..bimg.getWidth() - 1) {
                     val pixel = bimg.getRGB(x, y)
                     buf.put(((pixel shr 16) and 0xFF).toByte()) // Red
                     buf.put(((pixel shr 8) and 0xFF).toByte()) // Green

@@ -37,8 +37,8 @@ object CVarList {
                 val value = kvMatcher.group(2)
                 if (!map.containsKey(name)) {
                     c = CVar()
-                    c!!.name = name
-                    c!!.value = value
+                    c.name = name
+                    c.value = value
                 } else {
                     c = map[name]
                 }
@@ -60,13 +60,13 @@ object CVarList {
             } else if (cvarlistMatcher.find()) {
                 //                    LOG.info("cvarlist match");
                 c = CVar()
-                c!!.name = cvarlistMatcher.group(1)
-                c!!.value = cvarlistMatcher.group(2)
+                c.name = cvarlistMatcher.group(1)
+                c.value = cvarlistMatcher.group(2)
                 val tagMatcher = tag.matcher(cvarlistMatcher.group(3))
                 while (tagMatcher.find()) {
-                    c!!.tags.add(tagMatcher.group())
+                    c.tags.add(tagMatcher.group())
                 }
-                c!!.desc = cvarlistMatcher.group(4)
+                c.desc = cvarlistMatcher.group(4)
             } else if (descMatcher.find()) {
                 //                    LOG.info("Additional info match");
                 if (c == null) {
@@ -76,9 +76,9 @@ object CVarList {
                 val trimmed = descMatcher.group(1)
                 val description = line.startsWith(" - ")
                 if (description) {
-                    c!!.desc = trimmed
+                    c.desc = trimmed
                 } else {
-                    c!!.tags.addAll(Arrays.asList<String>(*trimmed.split(" ")))
+                    c.tags.addAll(trimmed.splitBy(" "))
                 }
             } else {
                 LOG.log(Level.INFO, "Unparsed: {0}", line)
@@ -87,7 +87,7 @@ object CVarList {
             if (map.containsKey(c!!.name)) {
                 LOG.log(Level.INFO, "Duplicate: {0}", line)
             }
-            map.put(c!!.name!!, c!!)
+            map.put(c.name!!, c)
         }
         return map
     }

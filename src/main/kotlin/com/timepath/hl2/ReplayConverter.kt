@@ -20,7 +20,6 @@ import kotlin.platform.platformStatic
  */
 object ReplayConverter {
 
-    throws(javaClass<Exception>())
     public platformStatic fun main(args: Array<String>) {
         if (args.size() < 2) {
             System.err.println("Usage: java ... input.dem output.dem")
@@ -31,7 +30,6 @@ object ReplayConverter {
         patch(File(input), File(output))
     }
 
-    throws(javaClass<Exception>())
     public fun patch(input: File, output: File) {
         val demo = HL2DEM.load(input, false)
         val messages = demo.frames

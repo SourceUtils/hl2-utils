@@ -15,7 +15,7 @@ public class Trie {
 
     public fun add(s: String) {
         var n = root
-        for (i in s.length().indices) {
+        for (i in 0..s.length() - 1) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
                 n = n[c]
@@ -41,7 +41,7 @@ public class Trie {
         var depth = depth
         var n = n
         val path = s + n
-        LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", array(s, depth, n))
+        LOG.log(Level.INFO, "Searching for ''{0}'' {1} levels down in {2}", arrayOf(s, depth, n))
         if (cache.containsKey(path)) {
             LOG.info("Fom cache")
             return cache[path]
@@ -59,7 +59,7 @@ public class Trie {
                 i++
             }
         }
-        LOG.log(Level.INFO, "Stopped at {0}, keys: {1}", array<Any>(s.substring(0, i), n.keySet()))
+        LOG.log(Level.INFO, "Stopped at {0}, keys: {1}", arrayOf(s.substring(0, i), n.keySet()))
         depth += 1
         val all = LinkedList<TrieMapping>()
         all.add(n)
@@ -76,7 +76,7 @@ public class Trie {
                     continue
                 }
                 val chars = tm.keySet()
-                LOG.log(Level.INFO, "    examining {0}, {1}", array<Any>(tm, chars))
+                LOG.log(Level.INFO, "    examining {0}, {1}", arrayOf(tm, chars))
                 for (ch in chars) {
                     if (ch == null) {
                         // exact match
@@ -101,7 +101,7 @@ public class Trie {
 
     public fun contains(s: String): Boolean {
         var n = root
-        for (i in s.length().indices) {
+        for (i in 0..s.length() - 1) {
             val c = s.charAt(i)
             if (n.containsKey(c)) {
                 n = n[c]
@@ -114,7 +114,7 @@ public class Trie {
 
     public fun node(s: String): TrieMapping? {
         var n = root
-        for (i in s.length().indices) {
+        for (i in 0..s.length() - 1) {
             val c = s.charAt(i)
             if (!n.containsKey(c)) {
                 // Return null if a letter is not present in the tree

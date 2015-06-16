@@ -15,7 +15,7 @@ import kotlin.platform.platformStatic
 /**
  * @author TimePath
  */
-class VDFDiffTest protected() : JFrame() {
+class VDFDiffTest protected constructor() : JFrame() {
     protected var text1: JTextArea
     protected var text2: JTextArea
 
@@ -46,8 +46,8 @@ class VDFDiffTest protected() : JFrame() {
                 addActionListener(object : ActionListener {
                     override fun actionPerformed(e: ActionEvent) {
                         try {
-                            val n1 = VDF.load(ByteArrayInputStream(text1.getText().getBytes(StandardCharsets.UTF_8)))
-                            val n2 = VDF.load(ByteArrayInputStream(text2.getText().getBytes(StandardCharsets.UTF_8)))
+                            val n1 = VDF.load(ByteArrayInputStream(text1.getText().toByteArray()))
+                            val n2 = VDF.load(ByteArrayInputStream(text2.getText().toByteArray()))
                             n1.getNodes()[0].rdiff2(n2.getNodes()[0])
                         } catch (ex: IOException) {
                             LOG.log(Level.SEVERE, null, ex)
