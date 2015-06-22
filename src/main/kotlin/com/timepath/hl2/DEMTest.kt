@@ -1,5 +1,6 @@
 package com.timepath.hl2
 
+import com.timepath.Logger
 import com.timepath.hex.HexEditor
 import com.timepath.hl2.io.demo.HL2DEM
 import com.timepath.hl2.io.demo.Message
@@ -8,13 +9,14 @@ import com.timepath.hl2.io.demo.Packet
 import com.timepath.plaf.x.filechooser.BaseFileChooser
 import com.timepath.plaf.x.filechooser.NativeFileChooser
 import com.timepath.steam.SteamUtils
+import com.timepath.with
 import org.jdesktop.swingx.JXFrame
 import org.jdesktop.swingx.JXTable
 import org.jdesktop.swingx.JXTree
 import org.jdesktop.swingx.decorator.AbstractHighlighter
 import org.jdesktop.swingx.decorator.ComponentAdapter
+import org.jetbrains.kotlin.utils.singletonOrEmptyList
 import java.awt.*
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.beans.PropertyVetoException
 import java.io.File
@@ -22,212 +24,170 @@ import java.io.IOException
 import java.util.ArrayList
 import java.util.concurrent.ExecutionException
 import java.util.logging.Level
-import java.util.logging.Logger
 import javax.swing.*
-import javax.swing.event.*
+import javax.swing.event.ListSelectionListener
+import javax.swing.event.TreeSelectionListener
 import javax.swing.table.AbstractTableModel
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import kotlin.platform.platformStatic
 
 
-/**
- * @author TimePath
- */
-SuppressWarnings("serial")
-public class DEMTest protected constructor() : JPanel() {
-    public val menu: JMenuBar
-    protected var hex: HexEditor
-    protected var tabs: JTabbedPane
-    protected var table: JXTable
-    protected var tree: JXTree
-    protected var tableModel: MessageModel
+public class DEMTest() : JPanel() {
+    protected val menu: JMenuBar
+    protected val hex: HexEditor
+    protected val tabs: JTabbedPane
+    protected val table: JXTable
+    protected val tree: JXTree
+    protected val tableModel: MessageModel
 
     init {
-        setLayout(BorderLayout())
-        add(object : JSplitPane() {
-            init {
-                setResizeWeight(1.0)
-                setContinuousLayout(true)
-                setOneTouchExpandable(true)
-                table = object : JXTable() {
-                    init {
-                        setAutoCreateRowSorter(true)
-                        setColumnControlVisible(true)
-                        setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED)
-                        tableModel = MessageModel()
-                        setModel(tableModel)
-                        setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
-                    }
-                }
-                setLeftComponent(JScrollPane(table))
-                setRightComponent(object : JSplitPane() {
-                    init {
-                        setOrientation(JSplitPane.VERTICAL_SPLIT)
-                        setResizeWeight(1.0)
-                        setContinuousLayout(true)
-                        setOneTouchExpandable(true)
-                        tabs = object : JTabbedPane() {
-                            init {
-                                setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1))
-                                tree = object : JXTree() {
-                                    init {
-                                        setModel(DefaultTreeModel(DefaultMutableTreeNode("root")))
-                                        setRootVisible(false)
-                                        setShowsRootHandles(true)
-                                    }
-                                }
-                                addTab("Hierarchy", JScrollPane(tree))
-                            }
-                        }
-                        setTopComponent(tabs)
-                        hex = HexEditor()
-                        setRightComponent(hex)
-                    }
-                })
-            }
-        })
+        tableModel = MessageModel()
+        table = JXTable() with {
+            setAutoCreateRowSorter(true)
+            setColumnControlVisible(true)
+            setSortOrderCycle(SortOrder.ASCENDING, SortOrder.DESCENDING, SortOrder.UNSORTED)
+            setModel(tableModel)
+            setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+        }
+        tree = JXTree() with {
+            setModel(DefaultTreeModel(DefaultMutableTreeNode("root")))
+            setRootVisible(false)
+            setShowsRootHandles(true)
+        }
+        tabs = JTabbedPane() with {
+            setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1))
+            addTab("Hierarchy", JScrollPane(tree))
+        }
+        hex = HexEditor()
         table.addHighlighter(object : AbstractHighlighter() {
             override fun doHighlight(component: Component, adapter: ComponentAdapter): Component {
                 if (adapter.row >= 0 && tableModel.messages.size() > 0 && adapter.row < tableModel.messages.size()) {
-                    val f = tableModel.messages[this@DEMTest.table.convertRowIndexToModel(adapter.row)]
-                    val c: Color
-                    if (f.incomplete) {
-                        c = Color.ORANGE
-                    } else {
-                        when (f.type) {
-                            MessageType.Signon, MessageType.Packet -> c = Color.CYAN
-                            MessageType.UserCmd -> c = Color.GREEN
-                            MessageType.ConsoleCmd -> c = Color.PINK
-                            else -> c = Color.WHITE
+                    val msg = tableModel.messages[table.convertRowIndexToModel(adapter.row)]
+                    component.setBackground(when {
+                        adapter.isSelected() -> component.getBackground()
+                        else -> when {
+                            msg.incomplete -> Color.ORANGE
+                            else -> when (msg.type) {
+                                MessageType.Signon, MessageType.Packet -> Color.CYAN
+                                MessageType.UserCmd -> Color.GREEN
+                                MessageType.ConsoleCmd -> Color.PINK
+                                else -> Color.WHITE
+                            }
                         }
-                    }
-                    component.setBackground(if (adapter.isSelected()) component.getBackground() else c)
+                    })
                 }
                 return component
             }
         })
-        table.getSelectionModel().addListSelectionListener(object : ListSelectionListener {
-            override fun valueChanged(e: ListSelectionEvent) {
-                val row = table.getSelectedRow()
-                if (row == -1) return
-                val frame = tableModel.messages[table.convertRowIndexToModel(row)]
-                hex.setData(frame.data)
-                val root = DefaultMutableTreeNode(frame)
-                recurse(frame.meta, root)
-                val container = DefaultMutableTreeNode()
-                container.add(root)
-                val tm = DefaultTreeModel(container)
-                tree.setModel(tm)
-                run {
-                    var i = -1
-                    while (++i < tree.getRowCount()) {
-                        // Expand all
-                        val node = tree.getPathForRow(i).getLastPathComponent() as DefaultMutableTreeNode
-                        if (node.getLevel() < 3) tree.expandRow(i)
-                    }
+        table.getSelectionModel().addListSelectionListener(ListSelectionListener {
+            val row = table.getSelectedRow()
+            if (row == -1) return@ListSelectionListener
+            val frame = tableModel.messages[table.convertRowIndexToModel(row)]
+            hex.setData(frame.data)
+            val root = DefaultMutableTreeNode(frame)
+            recurse(frame.meta, root)
+            tree.setModel(DefaultTreeModel(DefaultMutableTreeNode() with { add(root) }))
+            run {
+                var i = -1
+                while (++i < tree.getRowCount()) {
+                    // Expand all
+                    val node = tree.getPathForRow(i).getLastPathComponent() as DefaultMutableTreeNode
+                    if (node.getLevel() < 3) tree.expandRow(i)
                 }
             }
         })
-        tree.getSelectionModel().addTreeSelectionListener(object : TreeSelectionListener {
-            override fun valueChanged(e: TreeSelectionEvent) {
-                val selectionPath = tree.getSelectionPath()
-                if (selectionPath == null) return
-                val lastPathComponent = selectionPath.getLastPathComponent()
-                val o = (lastPathComponent as DefaultMutableTreeNode).getUserObject()
-                if (o is Packet) {
-                    try {
-                        val offsetBytes = o.offset / 8
-                        val offsetBits = o.offset % 8
-                        hex.seek((offsetBytes - (offsetBytes % 16)).toLong()) // Start of row
-                        hex.caretLocation = (offsetBytes.toLong())
-                        hex.bitShift = (offsetBits)
-                        hex.update()
-                    } catch (e1: PropertyVetoException) {
-                        e1.printStackTrace()
-                    }
-
+        tree.getSelectionModel().addTreeSelectionListener(TreeSelectionListener {
+            val selectionPath = tree.getSelectionPath() ?: return@TreeSelectionListener
+            val lastPathComponent = selectionPath.getLastPathComponent()
+            val o = (lastPathComponent as DefaultMutableTreeNode).getUserObject()
+            if (o is Packet) {
+                try {
+                    val offsetBytes = o.offset / 8
+                    val offsetBits = o.offset % 8
+                    hex.seek((offsetBytes - (offsetBytes % 16)).toLong()) // Start of row
+                    hex.caretLocation = (offsetBytes.toLong())
+                    hex.bitShift = (offsetBits)
+                    hex.update()
+                } catch (e: PropertyVetoException) {
+                    e.printStackTrace()
                 }
             }
         })
-        menu = object : JMenuBar() {
-            init {
-                add(object : JMenu("File") {
-                    init {
-                        setMnemonic('F')
-                        add(object : JMenuItem("Open") {
-                            init {
-                                addActionListener(object : ActionListener {
-                                    override fun actionPerformed(e: ActionEvent) {
-                                        open()
-                                    }
-                                })
-                            }
-                        })
-                        add(object : JMenuItem("Dump commands") {
-                            init {
-                                addActionListener(object : ActionListener {
-                                    override fun actionPerformed(e: ActionEvent) {
-                                        showCommands()
-                                    }
-                                })
-                            }
-                        })
-                    }
+        menu = JMenuBar() with {
+            add(JMenu("File") with {
+                setMnemonic('F')
+                add(JMenuItem("Open") with {
+                    addActionListener(ActionListener { open() })
                 })
+                add(JMenuItem("Dump commands") with {
+                    addActionListener(ActionListener { showCommands() })
+                })
+            })
+        }
+        setLayout(BorderLayout())
+        add(JSplitPane() with {
+            setResizeWeight(1.0)
+            setContinuousLayout(true)
+            setOneTouchExpandable(true)
+            setLeftComponent(JScrollPane(table))
+            setRightComponent(JSplitPane() with {
+                setOrientation(JSplitPane.VERTICAL_SPLIT)
+                setResizeWeight(1.0)
+                setContinuousLayout(true)
+                setOneTouchExpandable(true)
+                setTopComponent(tabs)
+                setRightComponent(hex)
+            })
+        })
+    }
+
+    protected fun recurse(iter: List<*>, parent: DefaultMutableTreeNode) {
+        for (e in iter) {
+            if (e !is Pair<*, *>) continue
+            val v = e.second
+            when (v) {
+                is List<*> -> recurse(v, DefaultMutableTreeNode(e.first) with { parent.add(this) })
+                else -> parent.add(DefaultMutableTreeNode(e))
             }
-        }
-    }
-
-    protected fun recurse(i: Iterable<*>, root: DefaultMutableTreeNode): Unit = i.forEach { entry ->
-        when (entry) {
-            is Pair<*, *> -> expand(entry, entry.first, entry.second, root)
-            is Map.Entry<*, *> -> expand(entry, entry.getKey(), entry.getValue(), root)
-            else -> root.add(DefaultMutableTreeNode(entry))
-        }
-    }
-
-    protected fun expand(entry: Any, k: Any?, v: Any?, root: DefaultMutableTreeNode) {
-        if (v is Iterable<*>) {
-            val n = DefaultMutableTreeNode(k)
-            root.add(n)
-            recurse(v, n)
-        } else {
-            root.add(DefaultMutableTreeNode(entry))
         }
     }
 
     protected fun open() {
         try {
-            val fs = NativeFileChooser().setTitle("Open DEM").setDirectory(File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/.")).addFilter(BaseFileChooser.ExtensionFilter("Demo files", "dem")).choose()
-            if (fs == null) return
-             object : SwingWorker<HL2DEM, Message>() {
-                var listEvt = DefaultListModel<Pair<*, *>>()
-                var listMsg = DefaultListModel<Pair<*, *>>()
+            val fs = NativeFileChooser()
+                    .setTitle("Open DEM")
+                    .setDirectory(File(SteamUtils.getSteamApps(), "common/Team Fortress 2/tf/."))
+                    .addFilter(BaseFileChooser.ExtensionFilter("Demo files", "dem"))
+                    .choose() ?: return
+            object : SwingWorker<HL2DEM, Message>() {
+                val listEvt = DefaultListModel<Pair<*, *>>()
+                val listMsg = DefaultListModel<Pair<*, *>>()
                 var incomplete = 0
 
                 override fun doInBackground(): HL2DEM {
                     tableModel.messages.clear()
                     val demo = HL2DEM.load(fs[0])
                     val frames = demo.frames // TODO: Stream
-                    publish(*frames.toTypedArray<Message?>())
+                    publish(*frames.toTypedArray())
                     return demo
                 }
 
-                override fun process(chunks: List<Message>?) {
-                    for (m in chunks!!) {
-                        if (m.incomplete) incomplete++
-                        tableModel.messages.add(m)
-                        when (m.type) {
-                            MessageType.Packet, MessageType.Signon -> for (ents in m.meta) {
-                                if (ents.first !is Packet) break
-                                if (ents.second !is Iterable<*>) break
-                                for (o in ents.second as Iterable<*>) {
-                                    if (o !is Pair<*, *>) break
-                                    when ((ents.first as Packet).type) {
-                                        Packet.Type.svc_GameEvent -> listEvt.addElement(o)
-                                        Packet.Type.svc_UserMessage -> listMsg.addElement(o)
-                                    }
+                override fun process(chunks: List<Message>) {
+                    for (msg in chunks) {
+                        if (msg.incomplete) incomplete++
+                        tableModel.messages.add(msg)
+                        when (msg.type) { MessageType.Packet, MessageType.Signon ->
+                            for ((k, v) in msg.meta) {
+                                if (k !is Packet) continue
+                                if (v !is List<*>) continue
+                                for (e in v) {
+                                    if (e !is Pair<*, *>) continue
+                                    when (k.type) {
+                                        Packet.Type.svc_GameEvent -> listEvt
+                                        Packet.Type.svc_UserMessage -> listMsg
+                                        else -> null
+                                    }?.addElement(e)
                                 }
                             }
                         }
@@ -236,31 +196,29 @@ public class DEMTest protected constructor() : JPanel() {
                 }
 
                 override fun done() {
-                    val demo: HL2DEM
-                    try {
-                        demo = get()
+                    val demo = try {
+                        get()
                     } catch (ignored: InterruptedException) {
                         return
                     } catch (e: ExecutionException) {
-                        LOG.log(Level.SEVERE, null, e)
+                        LOG.log(Level.SEVERE, { null }, e)
                         return
                     }
 
-                    LOG.info("Total incomplete messages: ${incomplete} / ${demo.frames.size()}")
+                    LOG.info({ "Total incomplete messages: ${incomplete} / ${demo.frames.size()}" })
                     while (tabs.getTabCount() > 1) tabs.remove(1) // Remove previous events and messages
-                    val jsp = JScrollPane(JList(listEvt))
-                    jsp.getVerticalScrollBar().setUnitIncrement(16)
-                    tabs.add("Events", jsp)
-                    val jsp2 = JScrollPane(JList(listMsg))
-                    jsp2.getVerticalScrollBar().setUnitIncrement(16)
-                    tabs.add("Messages", jsp2)
+                    tabs.add("Events", JScrollPane(JList(listEvt)) with {
+                        getVerticalScrollBar().setUnitIncrement(16)
+                    })
+                    tabs.add("Messages", JScrollPane(JList(listMsg)) with {
+                        getVerticalScrollBar().setUnitIncrement(16)
+                    })
                     table.setModel(tableModel)
                 }
             }.execute()
         } catch (e: IOException) {
-            LOG.log(Level.SEVERE, null, e)
+            LOG.log(Level.SEVERE, { null }, e)
         }
-
     }
 
     protected fun showCommands() {
@@ -268,22 +226,24 @@ public class DEMTest protected constructor() : JPanel() {
         for (m in tableModel.messages) {
             if (m.type != MessageType.ConsoleCmd) continue
             for (p in m.meta) {
-                sb.append('\n').append(p.second)
+                sb.append('\n').append(p.singletonOrEmptyList())
             }
         }
-        val jsp = JScrollPane(JTextArea(if (sb.length() > 0) sb.substring(1) else ""))
-        jsp.setPreferredSize(Dimension(500, 500))
-        JOptionPane.showMessageDialog(this, jsp)
+        JOptionPane.showMessageDialog(this,
+                JScrollPane(JTextArea(if (sb.length() > 0) sb.substring(1) else "")) with {
+                    setPreferredSize(Dimension(500, 500))
+                }
+        )
     }
 
     protected inner class MessageModel : AbstractTableModel() {
 
-        var messages: ArrayList<Message> = ArrayList()
+        val messages: MutableList<Message> = ArrayList()
 
         override fun getRowCount() = messages.size()
 
-        protected var columns: Array<String> = arrayOf("Tick", "Type", "Size")
-        protected var types: Array<Class<*>> = arrayOf(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
+        protected val columns: Array<String> = arrayOf("Tick", "Type", "Size")
+        protected val types: Array<Class<*>> = arrayOf(javaClass<Int>(), javaClass<Enum<*>>(), javaClass<Int>())
 
         override fun getColumnCount() = columns.size()
 
@@ -299,32 +259,27 @@ public class DEMTest protected constructor() : JPanel() {
             when (columnIndex) {
                 0 -> return m.tick
                 1 -> return m.type
-                2 -> return if ((m.data == null)) null else m.data!!.capacity()
+                2 -> return m.data?.capacity()
             }
             return null
         }
-
-        override fun setValueAt(aValue: Any?, rowIndex: Int, columnIndex: Int) = Unit
-
-        override fun addTableModelListener(l: TableModelListener) = Unit
-
-        override fun removeTableModelListener(l: TableModelListener) = Unit
     }
 
     companion object {
 
-        private val LOG = Logger.getLogger(javaClass<DEMTest>().getName())
+        private val LOG = Logger()
 
         public platformStatic fun main(args: Array<String>) {
             EventQueue.invokeLater {
-                val f = JXFrame("netdecode")
-                f.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
-                val demTest = DEMTest()
-                f.add(demTest)
-                f.setJMenuBar(demTest.menu)
-                f.pack()
-                f.setLocationRelativeTo(null)
-                f.setVisible(true)
+                JXFrame("netdecode") with {
+                    setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE)
+                    val demTest = DEMTest()
+                    setContentPane(demTest)
+                    setJMenuBar(demTest.menu)
+                    pack()
+                    setLocationRelativeTo(null)
+                    setVisible(true)
+                }
             }
         }
     }
