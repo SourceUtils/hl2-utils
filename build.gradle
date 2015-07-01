@@ -1,4 +1,4 @@
-apply from: 'https://raw.githubusercontent.com/SourceUtils/super/b9954f27cb/common.gradle'
+apply from: 'https://raw.githubusercontent.com/SourceUtils/super/3f21198/common.gradle'
 
 buildscript {
     ext.kotlin_version = '0.12.200'
