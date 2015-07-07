@@ -154,7 +154,7 @@ class GameLauncher private constructor() {
         private fun autoDetect(appID: Int): Options? {
             val bin = BVDF()
             bin.readExternal(DataUtils.mapFile(File(SteamUtils.getSteam(), "appcache/appinfo.vdf")))
-            val root = bin.getRoot()
+            val root = bin.root
             val gm = root[appID.toString()]!!
             val sections = gm["Sections"]!!
             val conf = sections["CONFIG"]!!["config"]!!
