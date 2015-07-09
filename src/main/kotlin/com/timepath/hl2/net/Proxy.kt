@@ -8,10 +8,14 @@ import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
     require(args.size() == 3, "Usage: <proxyPort> <serverAddr> <serverPort>")
+    // bind to localhost instead of broadcast, can break TF2 otherwise
+    val proxyAddr = InetAddress.getLocalHost();
     val proxyPort = args[0].toInt()
     val serverAddr = args[1].let { InetAddress.getByName(it) }
     val serverPort = args[2].toInt()
-    setupRoutes(DatagramSocket(proxyPort), serverAddr, serverPort, {})
+    // getHostAddress to remove hostname, easier to read
+    println("Proxy listening on ${proxyAddr.getHostAddress()}:$proxyPort, forwarding to ${serverAddr.getHostAddress()}:$serverPort")
+    setupRoutes(DatagramSocket(proxyPort, proxyAddr), serverAddr, serverPort, {})
 }
 
 fun setupRoutes(proxy: DatagramSocket, serverAddr: InetAddress, serverPort: Int, handle: (DatagramPacket) -> Unit) {
@@ -58,9 +62,9 @@ inline fun route(packet: DatagramPacket,
                  fromS: String, from: DatagramSocket,
                  toS: String, to: DatagramSocket,
                  handler: (DatagramPacket) -> Unit) {
-    log(fromS) { from.receive(packet) }
+    from.receive(packet)
     handler(packet)
-    log(toS) { to.send(packet) }
+    to.send(packet)
 }
 
 inline fun log(msg: String, f: () -> Unit) = run { println(msg + "...");  f();  println(msg) }
