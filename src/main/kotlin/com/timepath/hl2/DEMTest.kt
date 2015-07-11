@@ -184,8 +184,8 @@ public class DEMTest() : JPanel() {
                                 for (e in v) {
                                     if (e !is Pair<*, *>) continue
                                     when (k.type) {
-                                        Packet.Type.svc_GameEvent -> listEvt
-                                        Packet.Type.svc_UserMessage -> listMsg
+                                        Packet.svc_GameEvent -> listEvt
+                                        Packet.svc_UserMessage -> listMsg
                                         else -> null
                                     }?.addElement(e)
                                 }
