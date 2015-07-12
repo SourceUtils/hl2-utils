@@ -1,18 +1,18 @@
 package com.timepath.hl2
 
+import com.timepath.Logger
+import com.timepath.with
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.Font
-import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.io.*
 import java.net.InetAddress
 import java.net.Socket
+import java.util.Date
 import java.util.logging.Level
-import java.util.logging.Logger
-import java.util.regex.Pattern
 import javax.script.Invocable
 import javax.script.ScriptEngine
 import javax.script.ScriptEngineManager
@@ -24,10 +24,7 @@ import kotlin.platform.platformStatic
 
 /**
  * http://www.perkin.org.uk/posts/how-to-fix-stdio-buffering.html
- *
- * @author TimePath
  */
-SuppressWarnings("serial")
 public open class ExternalConsole protected constructor() : JFrame() {
     private val input: JTextField
     protected val output: JTextArea
@@ -37,77 +34,67 @@ public open class ExternalConsole protected constructor() : JFrame() {
     private var sock: Socket? = null
 
     init {
-        output = JTextArea()
-        output.setFont(Font("Monospaced", Font.PLAIN, 15))
-        output.setEnabled(false)
-        val caret = output.getCaret() as DefaultCaret
-        caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE)
-        val jsp = JScrollPane(output)
-        jsp.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-        jsp.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
-        input = JTextField()
-        input.setEnabled(false)
-        input.addActionListener(object : ActionListener {
-            override fun actionPerformed(e: ActionEvent) {
-                if (pw == null) {
-                    return
+        output = JTextArea() with {
+            setFont(Font("Monospaced", Font.PLAIN, 15))
+            setEnabled(false)
+            getCaret() as DefaultCaret with {
+                setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE)
+            }
+        }
+        getContentPane().add(JScrollPane(output) with {
+            setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+            setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
+        }, BorderLayout.CENTER)
+        input = JTextField() with {
+            setEnabled(false)
+            addActionListener(ActionListener {
+                pw?.let { pw ->
+                    output.append("] ")
+                    pw.println(input.getText())
+                    input.setText("")
                 }
-                output.append("] ")
-                pw!!.println(input.getText())
-                input.setText("")
-            }
-        })
-        val jmb = JMenuBar()
-        setJMenuBar(jmb)
-        val fileMenu = JMenu("File")
-        jmb.add(fileMenu)
-        val reload = JMenuItem("Reload script")
-        fileMenu.add(reload)
-        reload.addActionListener(object : ActionListener {
-            override fun actionPerformed(e: ActionEvent) {
-                engine = initScriptEngine()
-            }
+            })
+        }
+        getContentPane().add(input, BorderLayout.SOUTH) // TODO: work out better way of sending input
+        setJMenuBar(JMenuBar() with {
+            add(JMenu("File") with {
+                add(JMenuItem("Reload script") with {
+                    addActionListener { engine = initScriptEngine() }
+                })
+            })
         })
         setTitle("External console")
-        //        setAlwaysOnTop(true);
-        //        setUndecorated(true);
+        // setAlwaysOnTop(true);
+        // setUndecorated(true);
         setPreferredSize(Dimension(800, 600))
         addWindowListener(object : WindowAdapter() {
             override fun windowClosing(e: WindowEvent) {
-                if (sock != null) {
-                    try {
-                        sock!!.close()
-                    } catch (ex: IOException) {
-                        LOG.log(Level.SEVERE, null, ex)
-                    }
-
+                try {
+                    sock?.close()
+                } catch (ex: IOException) {
+                    LOG.log(Level.SEVERE, { null }, ex)
                 }
                 dispose()
             }
         })
-        getContentPane().add(jsp, BorderLayout.CENTER)
-        getContentPane().add(input, BorderLayout.SOUTH) // TODO: work out better way of sending input
         pack()
     }
 
-    private fun initScriptEngine(): ScriptEngine {
-        val factory = ScriptEngineManager()
-        val scriptEngine = factory.getEngineByName("JavaScript")
-        //        Bindings bindings = engine.createBindings();
-        //        bindings.put("loadTime", new Date());
-        scriptEngine.getContext().setWriter(pw)
-        try {
-            scriptEngine.eval(FileReader("extern.js"))
-        } catch (ex: ScriptException) {
-            Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
-        } catch (ex: FileNotFoundException) {
-            Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+    private fun initScriptEngine(file: String = "extern.js"): ScriptEngine {
+        return ScriptEngineManager().getEngineByExtension(file.substringAfterLast("."))!! with {
+            val bindings = createBindings()
+            bindings["loadTime"] = Date()
+            getContext().setWriter(pw)
+            try {
+                eval(FileReader(file))
+            } catch (ex: ScriptException) {
+                LOG.log(Level.SEVERE, { null }, ex)
+            } catch (ex: FileNotFoundException) {
+                LOG.log(Level.SEVERE, { null }, ex)
+            }
         }
-
-        return scriptEngine
     }
 
-    throws(IOException::class)
     protected fun connect(port: Int) {
         sock = Socket(InetAddress.getByName(null), port)
         setIn(sock!!.getInputStream())
@@ -122,7 +109,7 @@ public open class ExternalConsole protected constructor() : JFrame() {
                     update(it)
                 }
             } catch (ex: IOException) {
-                Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+                LOG.log(Level.SEVERE, { null }, ex)
             }
         }
     }
@@ -140,24 +127,22 @@ public open class ExternalConsole protected constructor() : JFrame() {
         }
         val str = lines.substring(3)
         System.out.println("Matching $str")
-        val m = regex.matcher(str)
-        if (!m.matches()) {
+        val m = regex.match(str)
+        if (m == null) {
             System.out.println("Doesn't match")
             return
         }
-        val fn = m.group(1)
+        val fn = m.groups[1]!!.value
         System.out.println(fn)
-        val args = m.group(2).splitBy(",")
+        val args = m.groups[2]!!.value.splitBy(",")
         System.out.println(System.currentTimeMillis())
-        val inv = engine as Invocable
         try {
-            inv.invokeFunction(fn, args)
+            (engine as Invocable).invokeFunction(fn, args)
         } catch (ex: ScriptException) {
-            Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+            LOG.log(Level.SEVERE, { null }, ex)
         } catch (ex: NoSuchMethodException) {
-            Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+            LOG.log(Level.SEVERE, { null }, ex)
         }
-
         System.out.println(System.currentTimeMillis())
     }
 
@@ -169,49 +154,32 @@ public open class ExternalConsole protected constructor() : JFrame() {
 
     companion object {
 
-        private val LOG = Logger.getLogger(javaClass<ExternalConsole>().getName())
-        private val regex = Pattern.compile("(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*")
+        private val LOG = Logger()
+        private val regex = "(\\S+)\\s*[(]\\s*(\\S*)\\s*[)].*".toRegex()
 
-        public fun exec(cmd: String, breakline: CharSequence?): String {
-            val sb = StringBuilder()
+        public fun exec(cmd: String, breakline: CharSequence?): String = StringBuilder {
             try {
                 val sock = Socket(InetAddress.getByName(null), 12345)
                 val pw = PrintWriter(sock.getOutputStream(), true)
-                val `in` = BufferedReader(InputStreamReader(sock.getInputStream()))
+                val br = sock.getInputStream().bufferedReader()
                 pw.println(cmd)
                 if (breakline != null) {
-                    `in`.readLine() // first line is echoed
-                    for (line in `in`.lines()) {
-                        sb.append(line).append('\n')
-                        if (breakline in line) {
-                            break
-                        }
+                    br.readLine() // first line is echoed
+                    for (line in br.lines()) {
+                        appendln(line)
+                        if (breakline in line) break
                     }
                 }
                 sock.close()
             } catch (ex: IOException) {
-                Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
+                LOG.log(Level.SEVERE, { null }, ex)
             }
-
-            return sb.toString()
-        }
+        }.toString()
 
         public platformStatic fun main(args: Array<String>) {
-            val ec = ExternalConsole()
-            ec.connect(12345)
-            ec.setVisible(true)
-        }
-
-        public fun setErr(s: InputStream) {
-            thread {
-                try {
-                    s.reader().forEachLine {
-                        System.err.println(it)
-                    }
-                    System.err.println("Stopped reading stderr")
-                } catch (ex: IOException) {
-                    Logger.getLogger(javaClass<ExternalConsole>().getName()).log(Level.SEVERE, null, ex)
-                }
+            ExternalConsole() let {
+                it.connect(12345)
+                it.setVisible(true)
             }
         }
     }
